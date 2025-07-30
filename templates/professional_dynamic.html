@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional European Roadtrip Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* PROFESSIONAL CORPORATE DESIGN */
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --secondary: #6b7280;
+            --accent: #0891b2;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --dark: #111827;
+            --light: #f9fafb;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* PROFESSIONAL HEADER */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .tagline {
+            color: var(--secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            padding: 4rem 2rem;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* FEATURES GRID */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--secondary);
+            font-size: 0.95rem;
+        }
+
+        /* PLANNING FORM */
+        .planning-section {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            margin: 3rem auto;
+            max-width: 800px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--secondary);
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .form-section {
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .form-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* API KEY SECTION */
+        .api-section {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid #93c5fd;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .api-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .api-description {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .api-benefits {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .benefits-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .benefits-list li {
+            padding: 0.25rem 0;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .benefits-list li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* SUBMIT BUTTON */
+        .submit-section {
+            text-align: center;
+            margin: 3rem 0 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: 1px solid var(--primary);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .btn-primary:disabled {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-help {
+            color: var(--secondary);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        /* FEATURES SHOWCASE */
+        .features-showcase {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 3rem;
+            margin: 3rem auto;
+            max-width: 1000px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .showcase-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .route-strategies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .strategy-card {
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .strategy-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+        }
+
+        .strategy-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .strategy-desc {
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .planning-section {
+                margin: 2rem 1rem;
+                padding: 2rem 1.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .header-content {
+                padding: 0 1rem;
+            }
+        }
+
+        /* LOADING STATE */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- PROFESSIONAL HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-route"></i>
+                </div>
+                <div>
+                    <div>European Roadtrip Planner</div>
+                    <div class="tagline">AI-Powered Travel Intelligence</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1 class="hero-title">Plan Your Perfect European Adventure</h1>
+        <p class="hero-subtitle">
+            Get 8 personalized route options with AI-powered insights, real-time optimization, 
+            and professional travel recommendations tailored to your preferences.
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="feature-title">AI-Powered Insights</h3>
+                <p class="feature-description">Claude AI provides personalized travel tips, local secrets, and practical advice for your journey</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-route"></i>
+                </div>
+                <h3 class="feature-title">8 Route Strategies</h3>
+                <p class="feature-description">Choose from diverse approaches: fastest, scenic, cultural, culinary, hidden gems, budget, adventure, or wellness</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h3 class="feature-title">Dynamic Optimization</h3>
+                <p class="feature-description">Routes adapt to your travel dates, season, preferences, and real-time conditions</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROUTE STRATEGIES SHOWCASE -->
+    <section class="features-showcase">
+        <h2 class="showcase-title">8 Unique Route Strategies</h2>
+        <div class="route-strategies">
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="strategy-name">Fastest Direct</div>
+                <div class="strategy-desc">Minimize driving time, maximize destination time</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-mountain"></i></div>
+                <div class="strategy-name">Scenic Mountain</div>
+                <div class="strategy-desc">Beautiful passes and panoramic viewpoints</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-university"></i></div>
+                <div class="strategy-name">Historic Cultural</div>
+                <div class="strategy-desc">UNESCO sites and cultural landmarks</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-utensils"></i></div>
+                <div class="strategy-name">Food & Wine</div>
+                <div class="strategy-desc">Regional cuisines and wine regions</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-gem"></i></div>
+                <div class="strategy-name">Hidden Gems</div>
+                <div class="strategy-desc">Authentic experiences off the beaten path</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-piggy-bank"></i></div>
+                <div class="strategy-name">Budget-Friendly</div>
+                <div class="strategy-desc">Maximum value with cost optimization</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-hiking"></i></div>
+                <div class="strategy-name">Adventure</div>
+                <div class="strategy-desc">Outdoor activities and sports experiences</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-icon"><i class="fas fa-spa"></i></div>
+                <div class="strategy-name">Wellness</div>
+                <div class="strategy-desc">Spas, thermal baths, and relaxation</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PLANNING FORM -->
+    <section class="planning-section">
+        <h2 class="section-title">Configure Your Journey</h2>
+        <p class="section-subtitle">Provide your travel details to generate personalized route options</p>
+
+        <form id="planningForm" method="POST" action="/plan">
+            <!-- BASIC TRIP INFO -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-map-marked-alt"></i> Trip Details
+                </h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="start_city">Starting City</label>
+                            <input type="text" class="form-control" id="start_city" name="start_city" 
+                                   value="Aix-en-Provence" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="end_city">Destination City</label>
+                            <input type="text" class="form-control" id="end_city" name="end_city" 
+                                   value="Venice" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label" for="travel_days">Travel Days</label>
+                            <select class="form-select" id="travel_days" name="travel_days">
+                                <option value="3">3 Days</option>
+                                <option value="4" selected>4 Days</option>
+                                <option value="5">5 Days</option>
+                                <option value="6">6 Days</option>
+                                <option value="7">7 Days</option>
+                                <option value="8">8 Days</option>
+                                <option value="9">9 Days</option>
+                                <option value="10">10 Days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label" for="venice_nights">Nights in Destination</label>
+                            <select class="form-select" id="venice_nights" name="venice_nights">
+                                <option value="1">1 Night</option>
+                                <option value="2" selected>2 Nights</option>
+                                <option value="3">3 Nights</option>
+                                <option value="4">4 Nights</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label" for="season">Travel Season</label>
+                            <select class="form-select" id="season" name="season">
+                                <option value="spring">Spring (Mar-May)</option>
+                                <option value="summer" selected>Summer (Jun-Aug)</option>
+                                <option value="autumn">Autumn (Sep-Nov)</option>
+                                <option value="winter">Winter (Dec-Feb)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI FEATURES SECTION -->
+            <div class="api-section">
+                <h3 class="api-title">
+                    <i class="fas fa-robot"></i> Unlock AI-Powered Insights
+                </h3>
+                <p class="api-description">
+                    Get personalized travel advice, local secrets, and practical tips by providing your Claude API key.
+                </p>
+                
+                <div class="form-group">
+                    <label class="form-label" for="claude_api_key">Claude API Key (Optional)</label>
+                    <input type="password" class="form-control" id="claude_api_key" name="claude_api_key" 
+                           placeholder="sk-ant-api03-... (Enter your Claude API key for AI insights)">
+                </div>
+
+                <div class="api-benefits">
+                    <div class="benefits-title">With AI enabled, you'll get:</div>
+                    <ul class="benefits-list">
+                        <li>Weather-specific packing recommendations</li>
+                        <li>Local customs and cultural tips</li>
+                        <li>Money-saving strategies for your route</li>
+                        <li>Hidden experiences most tourists miss</li>
+                        <li>Best times to visit key attractions</li>
+                        <li>Season-optimized activity suggestions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="submit-section">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-route"></i>
+                    Generate My 8 Personalized Routes
+                </button>
+                <div class="form-help">
+                    Creates 8 different route strategies optimized for your preferences and travel style
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // FORM HANDLING
+        document.getElementById('planningForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const form = this;
+            
+            // Add loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Generating Your Routes...';
+            form.classList.add('loading');
+            
+            // Let form submit normally
+        });
+
+        // FORM VALIDATION
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('planningForm');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', validateField);
+                input.addEventListener('input', validateField);
+            });
+            
+            function validateField() {
+                if (this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            }
+        });
+
+        console.log('Professional Dynamic European Roadtrip Planner Ready');
+    </script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your European Adventure Routes - {{ cache_buster }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* CLEAN FAST RESULTS DESIGN */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gradient);
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* RESULTS HEADER */
+        .results-header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .results-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .results-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        /* ROUTE CARDS */
+        .route-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .route-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: var(--dark);
+            transition: transform 0.2s ease;
+        }
+
+        .route-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .route-title-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .route-number {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .route-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .route-description {
+            font-size: 1rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .route-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-badge {
+            background: rgba(37,99,235,0.1);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .transport-badge {
+            background: var(--accent);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ROUTE SUMMARY */
+        .route-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(37,99,235,0.05);
+            border-radius: 8px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* ROUTE VISUALIZATION */
+        .route-visual {
+            background: rgba(255,255,255,0.5);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .route-path {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .route-stop {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .route-stop.multi-night {
+            background: var(--accent);
+        }
+
+        .nights-indicator {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--success);
+            color: white;
+            padding: 0.15rem 0.4rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .route-arrow {
+            color: var(--primary);
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        /* DETAILED ITINERARY */
+        .itinerary-section {
+            margin: 2rem 0;
+        }
+
+        .section-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .section-toggle:hover {
+            background: var(--primary-dark);
+        }
+
+        .itinerary-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .itinerary-content.expanded {
+            max-height: 2000px;
+        }
+
+        .itinerary-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .overnight-section, .day-section {
+            background: rgba(37,99,235,0.05);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .destination-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .destination-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .destination-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .destination-country {
+            color: var(--secondary);
+            font-size: 0.85rem;
+        }
+
+        .destination-score {
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .destination-details {
+            margin: 1rem 0;
+        }
+
+        .detail-section {
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--primary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .detail-content {
+            color: var(--dark);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* ACTION BUTTONS */
+        .action-section {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background: var(--primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action:hover {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .results-title {
+                font-size: 2rem;
+            }
+            
+            .route-card {
+                padding: 1.5rem 1rem;
+            }
+            
+            .itinerary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .route-path {
+                flex-direction: column;
+            }
+            
+            .route-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        /* EASY BROWSING IMPROVEMENTS */
+        .route-nav {
+            position: sticky;
+            top: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            z-index: 100;
+        }
+
+        .route-nav h5 {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .route-nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .route-nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .route-nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- RESULTS HEADER -->
+        <div class="results-header">
+            <h1 class="results-title">
+                <i class="fas fa-route"></i> Your European Adventure Routes
+            </h1>
+            <p class="results-subtitle">
+                {{ form_data.start_city }} → {{ form_data.end_city }} | {{ form_data.travel_days }} Days Journey
+            </p>
+            
+            <div class="results-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ itineraries|length }}</div>
+                    <div class="stat-label">Route Options</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">55</div>
+                    <div class="stat-label">AI Features</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ form_data.venice_nights or 1 }}</div>
+                    <div class="stat-label">Nights in {{ form_data.end_city }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Personalized</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EASY NAVIGATION -->
+        <div class="route-nav">
+            <h5><i class="fas fa-list"></i> Quick Route Navigation</h5>
+            <div class="route-nav-buttons">
+                {% for itinerary in itineraries %}
+                <button class="route-nav-btn" onclick="scrollToRoute({{ loop.index }})">
+                    {{ loop.index }}. {{ itinerary.strategy_name.split()[0] }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ROUTE CARDS -->
+        <div class="route-container">
+            {% for itinerary in itineraries %}
+            <div class="route-card" id="route-{{ loop.index }}">
+                <!-- Route Header -->
+                <div class="route-header">
+                    <div class="route-title-section">
+                        <div class="route-number">{{ loop.index }}</div>
+                        <h2 class="route-title">{{ itinerary.strategy_name }}</h2>
+                        <p class="route-description">{{ itinerary.strategy_description }}</p>
+                        
+                        {% if itinerary.get('transport_mode') %}
+                        <div class="transport-badge">
+                            <i class="fas fa-car"></i>
+                            {{ itinerary.transport_mode }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if itinerary.get('unique_features') %}
+                        <div class="route-features">
+                            {% for feature in itinerary.unique_features %}
+                                <span class="feature-badge">{{ feature }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Route Summary -->
+                <div class="route-summary">
+                    <div class="summary-item">
+                        <div class="summary-value">{{ itinerary.summary.total_km }}</div>
+                        <div class="summary-label">km</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">{{ itinerary.summary.driving_hours }}</div>
+                        <div class="summary-label">hours</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">{{ itinerary.summary.nights }}</div>
+                        <div class="summary-label">nights</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">{{ itinerary.summary.overnight_stops }}</div>
+                        <div class="summary-label">stops</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">{{ itinerary.summary.day_stops }}</div>
+                        <div class="summary-label">visits</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">{{ itinerary.summary.hidden_gems_count }}</div>
+                        <div class="summary-label">gems</div>
+                    </div>
+                </div>
+
+                <!-- Route Visualization -->
+                <div class="route-visual">
+                    <h5 style="color: var(--primary); margin-bottom: 1rem; text-align: center;">
+                        <i class="fas fa-map-marked-alt"></i> Journey Path
+                    </h5>
+                    <div class="route-path">
+                        {% for stop in itinerary.route.overnight_stops %}
+                            <div class="route-stop {{ 'multi-night' if stop.nights > 1 else '' }}">
+                                {{ stop.name }}
+                                {% if stop.nights > 1 %}
+                                    <span class="nights-indicator">{{ stop.nights }}N</span>
+                                {% endif %}
+                            </div>
+                            {% if not loop.last %}
+                                <i class="fas fa-arrow-right route-arrow"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Detailed Itinerary -->
+                <div class="itinerary-section">
+                    <button class="section-toggle" onclick="toggleItinerary({{ loop.index }})">
+                        <i class="fas fa-eye"></i> View Detailed Itinerary
+                    </button>
+                    
+                    <div id="itinerary-{{ loop.index }}" class="itinerary-content">
+                        <div class="itinerary-grid">
+                            <!-- Overnight Destinations -->
+                            <div class="overnight-section">
+                                <h4 class="section-title">
+                                    <i class="fas fa-bed"></i> Overnight Destinations
+                                </h4>
+                                
+                                {% for stop in itinerary.route.overnight_stops %}
+                                <div class="destination-card">
+                                    <div class="destination-header">
+                                        <div>
+                                            <h5 class="destination-name">{{ stop.name }}</h5>
+                                            <p class="destination-country">{{ stop.country }} | Pop: {{ "{:,}".format(stop.population) }}</p>
+                                            {% if stop.nights > 1 %}
+                                                <span class="badge bg-primary">{{ stop.nights }} nights</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="destination-score">{{ stop.score }}/10</div>
+                                    </div>
+                                    
+                                    <div class="destination-details">
+                                        {% if stop.activities %}
+                                        <div class="detail-section">
+                                            <div class="detail-label">
+                                                <i class="fas fa-star"></i> Top Activities
+                                            </div>
+                                            <div class="detail-content">{{ stop.activities|join(', ') }}</div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if stop.hidden_gems %}
+                                        <div class="detail-section">
+                                            <div class="detail-label">
+                                                <i class="fas fa-gem"></i> Hidden Gems
+                                            </div>
+                                            <div class="detail-content">{{ stop.hidden_gems|join(', ') }}</div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if stop.local_secret %}
+                                        <div class="detail-section">
+                                            <div class="detail-label">
+                                                <i class="fas fa-eye"></i> Local Secret
+                                            </div>
+                                            <div class="detail-content">{{ stop.local_secret }}</div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Day Visits -->
+                            <div class="day-section">
+                                <h4 class="section-title">
+                                    <i class="fas fa-coffee"></i> Day Visits
+                                </h4>
+                                
+                                {% for stop in itinerary.route.day_stops %}
+                                <div class="destination-card" style="border-left-color: var(--accent);">
+                                    <div class="destination-header">
+                                        <div>
+                                            <h6 class="destination-name">{{ stop.name }}</h6>
+                                            <p class="destination-country">{{ stop.get('country', 'En Route') }}</p>
+                                        </div>
+                                        <div class="destination-score">{{ stop.score }}/10</div>
+                                    </div>
+                                    <div class="detail-content">
+                                        <strong>Type:</strong> {{ stop.type|replace('_', ' ')|title }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+            <h3 style="margin-bottom: 2rem; font-size: 1.8rem; font-weight: 600;">Ready for Your Adventure?</h3>
+            <div class="action-buttons">
+                <a href="/" class="btn-action btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Plan Another Trip
+                </a>
+                <button class="btn-action" onclick="printResults()">
+                    <i class="fas fa-print"></i> Print Routes
+                </button>
+                <button class="btn-action" onclick="shareResults()">
+                    <i class="fas fa-share"></i> Share
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // EASY NAVIGATION
+        function scrollToRoute(index) {
+            document.getElementById(`route-${index}`).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // TOGGLE ITINERARY
+        function toggleItinerary(routeId) {
+            const content = document.getElementById(`itinerary-${routeId}`);
+            const button = content.previousElementSibling;
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                button.innerHTML = '<i class="fas fa-eye"></i> View Detailed Itinerary';
+            } else {
+                content.classList.add('expanded');
+                button.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Detailed Itinerary';
+            }
+        }
+
+        // ACTION FUNCTIONS
+        function printResults() {
+            window.print();
+        }
+
+        function shareResults() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My European Adventure Routes',
+                    text: 'Check out my personalized European roadtrip routes!',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Routes URL copied to clipboard!');
+                });
+            }
+        }
+
+        console.log('Clean Professional Results Loaded');
+    </script>
+</body>
+</html>
