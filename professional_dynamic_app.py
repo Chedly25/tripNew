@@ -13,6 +13,7 @@ from typing import Dict, List
 import requests
 from anthropic import Anthropic
 from enhanced_features import EnhancedFeatures
+from geographic_router import GeographicRouter
 
 app = Flask(__name__)
 
@@ -23,6 +24,7 @@ class ProfessionalDynamicPlanner:
         self.cache_buster = str(int(time.time()))
         self.claude_client = None
         self.enhanced_features = EnhancedFeatures()
+        self.geographic_router = GeographicRouter()
     
     def initialize_claude(self, api_key: str):
         """Initialize Claude API client."""
@@ -111,74 +113,35 @@ class ProfessionalDynamicPlanner:
     
     def _get_direct_route_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for fastest direct route."""
-        if start.lower() == 'aix-en-provence' and end.lower() == 'venice':
-            return [
-                {'name': 'Nice', 'country': 'France', 'population': 342637, 'reason': 'Major highway junction'},
-                {'name': 'Monaco', 'country': 'Monaco', 'population': 39242, 'reason': 'Coastal expressway access'},
-                {'name': 'Genoa', 'country': 'Italy', 'population': 580223, 'reason': 'Direct highway to Venice'}
-            ]
-        else:
-            return [
-                {'name': 'Lyon', 'country': 'France', 'population': 515695, 'reason': 'Major transport hub'},
-                {'name': 'Geneva', 'country': 'Switzerland', 'population': 203856, 'reason': 'Alpine crossing point'},
-                {'name': 'Milan', 'country': 'Italy', 'population': 1396059, 'reason': 'Northern Italy gateway'}
-            ]
+        return self.geographic_router.generate_route_cities(start, end, 'speed')
     
     def _get_mountain_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for scenic mountain route."""
-        return [
-            {'name': 'Chamonix', 'country': 'France', 'population': 8906, 'reason': 'Mont Blanc gateway'},
-            {'name': 'Zermatt', 'country': 'Switzerland', 'population': 5800, 'reason': 'Matterhorn base'},
-            {'name': 'Innsbruck', 'country': 'Austria', 'population': 132236, 'reason': 'Alpine capital'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'scenery')
     
     def _get_historic_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for historic cultural route."""
-        return [
-            {'name': 'Avignon', 'country': 'France', 'population': 92209, 'reason': 'Papal Palace UNESCO site'},
-            {'name': 'Florence', 'country': 'Italy', 'population': 382258, 'reason': 'Renaissance art capital'},
-            {'name': 'Verona', 'country': 'Italy', 'population': 259608, 'reason': 'Roman amphitheater & Shakespeare'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'culture')
     
     def _get_culinary_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for food & wine route."""
-        return [
-            {'name': 'Lyon', 'country': 'France', 'population': 515695, 'reason': 'Gastronomic capital of France'},
-            {'name': 'Alba', 'country': 'Italy', 'population': 31498, 'reason': 'Truffle and wine region'},
-            {'name': 'Parma', 'country': 'Italy', 'population': 195687, 'reason': 'Parmigiano-Reggiano origin'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'culinary')
     
     def _get_hidden_gem_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for hidden gems route."""
-        return [
-            {'name': 'Annecy', 'country': 'France', 'population': 128199, 'reason': 'Venice of the Alps'},
-            {'name': 'Bled', 'country': 'Slovenia', 'population': 5051, 'reason': 'Fairy tale lake castle'},
-            {'name': 'Rovinj', 'country': 'Croatia', 'population': 14294, 'reason': 'Istrian coastal gem'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'hidden_gems')
     
     def _get_budget_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for budget-friendly route."""
-        return [
-            {'name': 'Montpellier', 'country': 'France', 'population': 285121, 'reason': 'Student city with affordable options'},
-            {'name': 'Ljubljana', 'country': 'Slovenia', 'population': 294464, 'reason': 'Budget-friendly capital'},
-            {'name': 'Padua', 'country': 'Italy', 'population': 214198, 'reason': 'Venice proximity, lower costs'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'budget')
     
     def _get_adventure_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for adventure route."""
-        return [
-            {'name': 'Grenoble', 'country': 'France', 'population': 160649, 'reason': 'Alpine adventure base'},
-            {'name': 'Interlaken', 'country': 'Switzerland', 'population': 5749, 'reason': 'Extreme sports capital'},
-            {'name': 'Bovec', 'country': 'Slovenia', 'population': 3227, 'reason': 'Whitewater rafting paradise'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'adventure')
     
     def _get_wellness_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for wellness route."""
-        return [
-            {'name': 'Vichy', 'country': 'France', 'population': 25279, 'reason': 'Historic thermal spa town'},
-            {'name': 'Baden-Baden', 'country': 'Germany', 'population': 55449, 'reason': 'Luxury spa destination'},
-            {'name': 'Abano Terme', 'country': 'Italy', 'population': 19062, 'reason': 'Thermal wellness resort'}
-        ]
+        return self.geographic_router.generate_route_cities(start, end, 'wellness')
     
     def _build_route(self, config: Dict, start_city: str, end_city: str, 
                     travel_days: int, venice_nights: int, season: str, ai_enabled: bool) -> Dict:
@@ -334,21 +297,20 @@ Keep each section to 2-3 concise, practical points. Focus on actionable advice."
             return None
     
     def _calculate_realistic_distance(self, start: str, end: str, intermediate_count: int) -> int:
-        """Calculate realistic driving distance."""
-        base_distances = {
-            ('aix-en-provence', 'venice'): 850,
-            ('paris', 'rome'): 1420,
-            ('barcelona', 'vienna'): 1650,
-            ('amsterdam', 'venice'): 1280
-        }
+        """Calculate realistic driving distance based on actual geography."""
+        start_info = self.geographic_router.get_city_info(start)
+        end_info = self.geographic_router.get_city_info(end)
         
-        key = (start.lower().replace('-', ' '), end.lower())
-        base_distance = base_distances.get(key, 1000)
+        # Calculate base distance
+        base_distance = self.geographic_router.calculate_distance(
+            start_info['lat'], start_info['lon'],
+            end_info['lat'], end_info['lon']
+        )
         
-        # Add distance for intermediate stops
-        detour_distance = intermediate_count * random.randint(80, 150)
+        # Add realistic detour for intermediate stops (15-25% extra per stop)
+        detour_factor = 1 + (intermediate_count * random.uniform(0.15, 0.25))
         
-        return base_distance + detour_distance
+        return int(base_distance * detour_factor)
     
     def _get_activities_for_city(self, city: str, focus: str) -> List[str]:
         """Get contextual activities based on city and focus."""
