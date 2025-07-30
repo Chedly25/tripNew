@@ -81,16 +81,28 @@ class GeographicRouter:
             'norimberga': 'nuremberg'
         }
         
-        # Focus-specific city preferences
+        # COMPLETELY REWORKED Focus-specific city preferences with HEAVY hidden gems emphasis
         self.focus_preferences = {
-            'speed': ['major'],
-            'scenery': ['scenery', 'adventure', 'hidden_gems'],
-            'culture': ['cultural', 'major'],
-            'culinary': ['culinary', 'cultural'],
-            'hidden_gems': ['hidden_gems', 'cultural'],
-            'budget': ['budget', 'cultural'],
-            'adventure': ['adventure', 'scenery'],
-            'wellness': ['wellness', 'hidden_gems']
+            'speed': ['major', 'cultural'],  # Only for speed focus, use major cities
+            'scenery': ['hidden_gems', 'scenery', 'adventure'],  # Hidden gems first!
+            'culture': ['hidden_gems', 'cultural', 'major'],  # Hidden gems first!
+            'culinary': ['hidden_gems', 'culinary', 'cultural'],  # Hidden gems first!
+            'hidden_gems': ['hidden_gems', 'cultural', 'scenery'],  # Heavily weighted to hidden gems
+            'budget': ['hidden_gems', 'budget', 'cultural'],  # Hidden gems first!
+            'adventure': ['hidden_gems', 'adventure', 'scenery'],  # Hidden gems first!
+            'wellness': ['hidden_gems', 'wellness', 'scenery']  # Hidden gems first!
+        }
+        
+        # STRATEGY-SPECIFIC ROUTING PATTERNS - Each strategy gets completely different approach
+        self.strategy_patterns = {
+            1: {'preference': 'shortest_path', 'hidden_gems_weight': 2.0, 'variety_bonus': 1.0},
+            2: {'preference': 'scenic_route', 'hidden_gems_weight': 4.0, 'variety_bonus': 2.0},
+            3: {'preference': 'cultural_discovery', 'hidden_gems_weight': 3.5, 'variety_bonus': 2.5},
+            4: {'preference': 'culinary_adventure', 'hidden_gems_weight': 3.0, 'variety_bonus': 1.8},
+            5: {'preference': 'off_beaten_path', 'hidden_gems_weight': 5.0, 'variety_bonus': 3.0},
+            6: {'preference': 'local_authentic', 'hidden_gems_weight': 4.5, 'variety_bonus': 2.8},
+            7: {'preference': 'adventure_trail', 'hidden_gems_weight': 3.8, 'variety_bonus': 2.2},
+            8: {'preference': 'wellness_journey', 'hidden_gems_weight': 4.2, 'variety_bonus': 2.6}
         }
     
     def calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -153,37 +165,37 @@ class GeographicRouter:
                                end_lat: float, end_lon: float, 
                                start_city: str, end_city: str,
                                preferred_types: List[str], count: int, strategy_seed: int, focus: str) -> List[Dict]:
-        """Find cities that form a logical geographic progression."""
+        """COMPLETELY REWRITTEN: Find cities focusing heavily on hidden gems with strategy-specific variation."""
         
-        # Calculate total distance and bearing
+        # Get strategy-specific parameters
+        strategy_pattern = self.strategy_patterns.get(strategy_seed, self.strategy_patterns[1])
+        hidden_gems_weight = strategy_pattern['hidden_gems_weight']
+        variety_bonus = strategy_pattern['variety_bonus']
+        route_preference = strategy_pattern['preference']
+        
+        # Calculate total distance and create flexible search zones
         total_distance = self.calculate_distance(start_lat, start_lon, end_lat, end_lon)
-        main_bearing = self._calculate_bearing(start_lat, start_lon, end_lat, end_lon)
         
-        # Create segments along the route
-        segments = []
-        for i in range(1, count + 1):
-            progress = i / (count + 1)  # Evenly space segments
-            
-            # Calculate intermediate point along the great circle route
-            intermediate_lat, intermediate_lon = self._interpolate_route_point(
-                start_lat, start_lon, end_lat, end_lon, progress
-            )
-            
-            segments.append({
-                'target_lat': intermediate_lat,
-                'target_lon': intermediate_lon,
-                'progress': progress,
-                'min_distance_from_start': total_distance * progress * 0.4,  # Must be at least 40% of progress
-                'max_distance_from_start': total_distance * progress * 1.6,  # Must be at most 160% of progress
-                'search_radius': max(50, total_distance * 0.15)  # Search within radius
-            })
+        # STRATEGY-SPECIFIC ROUTE GENERATION
+        if route_preference == 'off_beaten_path':
+            # Maximum hidden gems focus - wider search, smaller towns preferred
+            search_zones = self._create_wide_search_zones(start_lat, start_lon, end_lat, end_lon, count, total_distance)
+        elif route_preference == 'scenic_route':
+            # Focus on scenic detours and mountain/coastal routes
+            search_zones = self._create_scenic_detour_zones(start_lat, start_lon, end_lat, end_lon, count, total_distance)
+        elif route_preference == 'cultural_discovery':
+            # Focus on historic and cultural hidden gems
+            search_zones = self._create_cultural_discovery_zones(start_lat, start_lon, end_lat, end_lon, count, total_distance)
+        else:
+            # Default balanced approach with hidden gems emphasis
+            search_zones = self._create_balanced_search_zones(start_lat, start_lon, end_lat, end_lon, count, total_distance)
         
         selected_cities = []
         used_city_names = {self.normalize_city_name(start_city), self.normalize_city_name(end_city)}
         
-        # Find best city for each segment
-        for segment_idx, segment in enumerate(segments):
-            best_candidates = []
+        # Find cities for each search zone with strategy-specific scoring
+        for zone_idx, zone in enumerate(search_zones):
+            zone_candidates = []
             
             for city_name, city_info in self.cities_db.items():
                 normalized_name = self.normalize_city_name(city_name)
@@ -194,60 +206,80 @@ class GeographicRouter:
                 
                 city_lat, city_lon = city_info['lat'], city_info['lon']
                 
-                # Calculate distances
+                # Check if city is within this search zone
+                dist_from_zone_center = self.calculate_distance(
+                    zone['center_lat'], zone['center_lon'], city_lat, city_lon
+                )
+                
+                if dist_from_zone_center > zone['radius']:
+                    continue
+                
+                # Calculate basic distances
                 dist_from_start = self.calculate_distance(start_lat, start_lon, city_lat, city_lon)
                 dist_from_end = self.calculate_distance(city_lat, city_lon, end_lat, end_lon)
-                dist_from_target = self.calculate_distance(
-                    segment['target_lat'], segment['target_lon'], city_lat, city_lon
-                )
                 
-                # Check if city is in reasonable position for this segment
-                if (dist_from_start < segment['min_distance_from_start'] or 
-                    dist_from_start > segment['max_distance_from_start'] or
-                    dist_from_target > segment['search_radius']):
-                    continue
-                
-                # Check route logic: city should be closer to end than to start for later segments
-                route_progress = dist_from_start / (dist_from_start + dist_from_end)
-                expected_progress = segment['progress']
-                progress_penalty = abs(route_progress - expected_progress)
-                
-                if progress_penalty > 0.3:  # Too far from expected route position
-                    continue
-                
-                # Calculate bearing consistency
-                bearing_to_city = self._calculate_bearing(start_lat, start_lon, city_lat, city_lon)
-                bearing_from_city = self._calculate_bearing(city_lat, city_lon, end_lat, end_lon)
-                
-                # Penalize cities that create sharp direction changes
-                bearing_consistency = self._calculate_bearing_consistency(
-                    main_bearing, bearing_to_city, bearing_from_city
-                )
-                
-                # Skip cities that create too much backtracking
-                if bearing_consistency < 0.3:
-                    continue
-                
-                # Calculate preference score
-                preference_score = 0
+                # HIDDEN GEMS SCORING - Heavily prioritize hidden gems
+                hidden_gems_score = 0
                 for city_type in city_info['type']:
-                    if city_type in preferred_types:
-                        preference_score += 3
+                    if city_type == 'hidden_gems':
+                        hidden_gems_score += 10 * hidden_gems_weight  # MASSIVE bonus for hidden gems
+                    elif city_type in preferred_types:
+                        hidden_gems_score += 4
                     else:
-                        preference_score += 1
+                        hidden_gems_score += 1
                 
-                # Calculate final score
-                distance_score = 1.0 / (1.0 + dist_from_target / 50.0)  # Closer to target is better
-                progress_score = 1.0 - progress_penalty  # Better route progression
-                population_score = min(city_info['population'] / 100000, 2.0)
+                # POPULATION INVERSE SCORING - Smaller = better (authentic experience)
+                population = city_info['population']
+                if population < 1000:
+                    population_score = 8.0  # Tiny villages - maximum authenticity
+                elif population < 5000:
+                    population_score = 6.0  # Small towns - high authenticity
+                elif population < 20000:
+                    population_score = 4.0  # Medium towns - good authenticity
+                elif population < 100000:
+                    population_score = 2.5  # Cities - moderate authenticity
+                else:
+                    population_score = 1.0  # Large cities - low authenticity (except for speed focus)
                 
-                # Add controlled randomization based on strategy seed
-                random_factor = random.uniform(0.7, 1.3)
+                # STRATEGY-SPECIFIC BONUSES
+                strategy_bonus = 1.0
+                if route_preference == 'off_beaten_path' and 'hidden_gems' in city_info['type']:
+                    strategy_bonus = 3.0  # Triple bonus for off-beaten-path hidden gems
+                elif route_preference == 'scenic_route' and ('scenery' in city_info['type'] or 'adventure' in city_info['type']):
+                    strategy_bonus = 2.5
+                elif route_preference == 'cultural_discovery' and 'cultural' in city_info['type']:
+                    strategy_bonus = 2.2
+                elif route_preference == 'culinary_adventure' and 'culinary' in city_info['type']:
+                    strategy_bonus = 2.8
+                elif route_preference == 'wellness_journey' and 'wellness' in city_info['type']:
+                    strategy_bonus = 2.4
+                elif route_preference == 'adventure_trail' and 'adventure' in city_info['type']:
+                    strategy_bonus = 2.6
                 
-                total_score = (preference_score * distance_score * progress_score * 
-                              bearing_consistency * population_score * random_factor)
+                # VARIETY BONUS - Encourage different countries/regions
+                country_bonus = 1.0
+                region_bonus = 1.0
+                if selected_cities:
+                    used_countries = {city['country'] for city in selected_cities}
+                    used_regions = {city['region'] for city in selected_cities}
+                    
+                    if city_info['country'] not in used_countries:
+                        country_bonus = 1.5 * variety_bonus
+                    if city_info.get('region', '') not in used_regions:
+                        region_bonus = 1.3 * variety_bonus
                 
-                best_candidates.append({
+                # DISTANCE-BASED SCORING - Reward good positioning
+                zone_position_score = 1.0 / (1.0 + dist_from_zone_center / 20.0)
+                
+                # STRATEGIC RANDOMIZATION - Different patterns for different strategies
+                random.seed(hash(f"{city_name}{strategy_seed}{zone_idx}") % 2**32)  # Deterministic but varied
+                random_factor = random.uniform(0.5, 2.0)  # Much wider range for variety
+                
+                # FINAL SCORING with heavy hidden gems weighting
+                total_score = (hidden_gems_score * population_score * strategy_bonus * 
+                              country_bonus * region_bonus * zone_position_score * random_factor)
+                
+                zone_candidates.append({
                     'name': city_name.replace('-', ' ').title(),
                     'country': city_info['country'],
                     'population': city_info['population'],
@@ -257,20 +289,20 @@ class GeographicRouter:
                     'types': city_info['type'],
                     'distance_from_start': dist_from_start,
                     'distance_from_end': dist_from_end,
-                    'distance_from_target': dist_from_target,
-                    'route_progress': route_progress,
-                    'bearing_consistency': bearing_consistency,
+                    'hidden_gems_score': hidden_gems_score,
+                    'population_score': population_score,
+                    'strategy_bonus': strategy_bonus,
                     'total_score': total_score,
                     'reason': self._generate_reason(city_info['type'], focus),
-                    'normalized_name': normalized_name
+                    'normalized_name': normalized_name,
+                    'is_hidden_gem': 'hidden_gems' in city_info['type']
                 })
             
-            # Sort candidates by score and select the best one that doesn't conflict
-            best_candidates.sort(key=lambda x: x['total_score'], reverse=True)
+            # Sort by total score and select best candidate that maintains spacing
+            zone_candidates.sort(key=lambda x: x['total_score'], reverse=True)
             
-            # Select best candidate that maintains good spacing
-            for candidate in best_candidates:
-                # Check minimum distance from already selected cities
+            # Select best candidate with minimum distance requirement
+            for candidate in zone_candidates[:20]:  # Consider top 20 to allow for spacing constraints
                 min_distance_ok = True
                 if selected_cities:
                     min_dist = min(
@@ -278,7 +310,9 @@ class GeographicRouter:
                                               city['lat'], city['lon'])
                         for city in selected_cities
                     )
-                    if min_dist < max(30, total_distance * 0.08):  # Minimum 30km or 8% of total
+                    # Dynamic minimum distance based on total trip length
+                    min_required = max(25, total_distance * 0.06)  # Minimum 25km or 6% of total
+                    if min_dist < min_required:
                         min_distance_ok = False
                 
                 if min_distance_ok:
@@ -290,6 +324,162 @@ class GeographicRouter:
         selected_cities.sort(key=lambda x: x['distance_from_start'])
         
         return selected_cities
+    
+    def _create_wide_search_zones(self, start_lat: float, start_lon: float, end_lat: float, end_lon: float, count: int, total_distance: float) -> List[Dict]:
+        """Create wide search zones for off-beaten-path routing with maximum variety."""
+        zones = []
+        
+        # Create zones with wider radius and strategic offsets for maximum variety
+        for i in range(count):
+            progress = (i + 1) / (count + 1)
+            
+            # Wide detour potential - up to 40% off main route
+            detour_factor = 0.4
+            zone_radius = max(80, total_distance * 0.25)  # Much wider search
+            
+            # Strategic offset perpendicular to main route
+            perpendicular_offset = random.uniform(-detour_factor, detour_factor) * total_distance * 0.3
+            
+            # Calculate zone center with detour
+            center_lat, center_lon = self._interpolate_route_point(start_lat, start_lon, end_lat, end_lon, progress)
+            
+            # Add perpendicular offset for variety
+            bearing = self._calculate_bearing(start_lat, start_lon, end_lat, end_lon)
+            perpendicular_bearing = (bearing + 90) % 360
+            
+            offset_lat, offset_lon = self._point_at_distance_bearing(
+                center_lat, center_lon, abs(perpendicular_offset), perpendicular_bearing
+            )
+            
+            zones.append({
+                'center_lat': offset_lat,
+                'center_lon': offset_lon,
+                'radius': zone_radius,
+                'emphasis': 'hidden_gems'
+            })
+        
+        return zones
+    
+    def _create_scenic_detour_zones(self, start_lat: float, start_lon: float, end_lat: float, end_lon: float, count: int, total_distance: float) -> List[Dict]:
+        """Create zones that favor scenic detours and natural beauty spots."""
+        zones = []
+        
+        for i in range(count):
+            progress = (i + 1) / (count + 1)
+            
+            # Scenic routes prefer moderate detours for beautiful landscapes
+            detour_factor = 0.25
+            zone_radius = max(60, total_distance * 0.18)
+            
+            # Strategic positioning for scenic variety
+            scenic_offset = random.uniform(-detour_factor, detour_factor) * total_distance * 0.2
+            
+            center_lat, center_lon = self._interpolate_route_point(start_lat, start_lon, end_lat, end_lon, progress)
+            
+            # Offset for scenic variation
+            bearing = self._calculate_bearing(start_lat, start_lon, end_lat, end_lon)
+            scenic_bearing = (bearing + random.choice([60, -60, 120, -120])) % 360
+            
+            offset_lat, offset_lon = self._point_at_distance_bearing(
+                center_lat, center_lon, abs(scenic_offset), scenic_bearing
+            )
+            
+            zones.append({
+                'center_lat': offset_lat,
+                'center_lon': offset_lon,
+                'radius': zone_radius,
+                'emphasis': 'scenery'
+            })
+        
+        return zones
+    
+    def _create_cultural_discovery_zones(self, start_lat: float, start_lon: float, end_lat: float, end_lon: float, count: int, total_distance: float) -> List[Dict]:
+        """Create zones that prioritize cultural sites and historic hidden gems."""
+        zones = []
+        
+        for i in range(count):
+            progress = (i + 1) / (count + 1)
+            
+            # Cultural routes balance direct path with cultural significance
+            detour_factor = 0.2
+            zone_radius = max(50, total_distance * 0.15)
+            
+            # Strategic cultural positioning
+            cultural_offset = random.uniform(-detour_factor, detour_factor) * total_distance * 0.15
+            
+            center_lat, center_lon = self._interpolate_route_point(start_lat, start_lon, end_lat, end_lon, progress)
+            
+            # Cultural variety through strategic offsets
+            bearing = self._calculate_bearing(start_lat, start_lon, end_lat, end_lon)
+            cultural_bearing = (bearing + random.choice([45, -45, 135, -135])) % 360
+            
+            offset_lat, offset_lon = self._point_at_distance_bearing(
+                center_lat, center_lon, abs(cultural_offset), cultural_bearing
+            )
+            
+            zones.append({
+                'center_lat': offset_lat,
+                'center_lon': offset_lon,
+                'radius': zone_radius,
+                'emphasis': 'cultural'
+            })
+        
+        return zones
+    
+    def _create_balanced_search_zones(self, start_lat: float, start_lon: float, end_lat: float, end_lon: float, count: int, total_distance: float) -> List[Dict]:
+        """Create balanced zones with moderate variety and hidden gems emphasis."""
+        zones = []
+        
+        for i in range(count):
+            progress = (i + 1) / (count + 1)
+            
+            # Balanced approach with hidden gems preference
+            detour_factor = 0.15
+            zone_radius = max(40, total_distance * 0.12)
+            
+            # Moderate strategic positioning
+            balanced_offset = random.uniform(-detour_factor, detour_factor) * total_distance * 0.1
+            
+            center_lat, center_lon = self._interpolate_route_point(start_lat, start_lon, end_lat, end_lon, progress)
+            
+            # Balanced variety
+            bearing = self._calculate_bearing(start_lat, start_lon, end_lat, end_lon)
+            balanced_bearing = (bearing + random.choice([30, -30, 90, -90])) % 360
+            
+            offset_lat, offset_lon = self._point_at_distance_bearing(
+                center_lat, center_lon, abs(balanced_offset), balanced_bearing
+            )
+            
+            zones.append({
+                'center_lat': offset_lat,
+                'center_lon': offset_lon,
+                'radius': zone_radius,
+                'emphasis': 'balanced'
+            })
+        
+        return zones
+    
+    def _point_at_distance_bearing(self, lat: float, lon: float, distance_km: float, bearing_deg: float) -> tuple:
+        """Calculate a point at given distance and bearing from origin point."""
+        import math
+        
+        R = 6371  # Earth radius in km
+        
+        lat_rad = math.radians(lat)
+        lon_rad = math.radians(lon)
+        bearing_rad = math.radians(bearing_deg)
+        
+        new_lat_rad = math.asin(
+            math.sin(lat_rad) * math.cos(distance_km / R) +
+            math.cos(lat_rad) * math.sin(distance_km / R) * math.cos(bearing_rad)
+        )
+        
+        new_lon_rad = lon_rad + math.atan2(
+            math.sin(bearing_rad) * math.sin(distance_km / R) * math.cos(lat_rad),
+            math.cos(distance_km / R) - math.sin(lat_rad) * math.sin(new_lat_rad)
+        )
+        
+        return math.degrees(new_lat_rad), math.degrees(new_lon_rad)
     
     def _interpolate_route_point(self, lat1: float, lon1: float, lat2: float, lon2: float, progress: float) -> tuple:
         """Calculate intermediate point along great circle route."""
