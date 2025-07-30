@@ -128,7 +128,7 @@ class GeographicRouter:
         })
     
     def find_intermediate_cities(self, start_city: str, end_city: str, focus: str, count: int = 3, strategy_seed: int = 0) -> List[Dict]:
-        """Find geographically logical intermediate cities."""
+        """Find geographically logical intermediate cities with proper route progression."""
         start_info = self.get_city_info(start_city)
         end_info = self.get_city_info(end_city)
         
@@ -141,45 +141,113 @@ class GeographicRouter:
         # Use strategy seed to create variation within same focus
         random.seed(hash(f"{start_city}{end_city}{focus}{strategy_seed}") % 2**32)
         
-        # Find cities that are roughly between start and end
-        candidates = []
-        total_distance = self.calculate_distance(start_lat, start_lon, end_lat, end_lon)
+        # Find cities using improved geographic logic
+        route_cities = self._find_route_progression(
+            start_lat, start_lon, end_lat, end_lon, 
+            start_city, end_city, preferred_types, count, strategy_seed, focus
+        )
         
-        for city_name, city_info in self.cities_db.items():
-            # Skip start and end cities
-            if (self.normalize_city_name(city_name) == self.normalize_city_name(start_city) or 
-                self.normalize_city_name(city_name) == self.normalize_city_name(end_city)):
-                continue
+        return route_cities
+    
+    def _find_route_progression(self, start_lat: float, start_lon: float, 
+                               end_lat: float, end_lon: float, 
+                               start_city: str, end_city: str,
+                               preferred_types: List[str], count: int, strategy_seed: int, focus: str) -> List[Dict]:
+        """Find cities that form a logical geographic progression."""
+        
+        # Calculate total distance and bearing
+        total_distance = self.calculate_distance(start_lat, start_lon, end_lat, end_lon)
+        main_bearing = self._calculate_bearing(start_lat, start_lon, end_lat, end_lon)
+        
+        # Create segments along the route
+        segments = []
+        for i in range(1, count + 1):
+            progress = i / (count + 1)  # Evenly space segments
             
-            city_lat, city_lon = city_info['lat'], city_info['lon']
+            # Calculate intermediate point along the great circle route
+            intermediate_lat, intermediate_lon = self._interpolate_route_point(
+                start_lat, start_lon, end_lat, end_lon, progress
+            )
             
-            # Calculate distances
-            dist_from_start = self.calculate_distance(start_lat, start_lon, city_lat, city_lon)
-            dist_from_end = self.calculate_distance(city_lat, city_lon, end_lat, end_lon)
-            total_via_city = dist_from_start + dist_from_end
+            segments.append({
+                'target_lat': intermediate_lat,
+                'target_lon': intermediate_lon,
+                'progress': progress,
+                'min_distance_from_start': total_distance * progress * 0.4,  # Must be at least 40% of progress
+                'max_distance_from_start': total_distance * progress * 1.6,  # Must be at most 160% of progress
+                'search_radius': max(50, total_distance * 0.15)  # Search within radius
+            })
+        
+        selected_cities = []
+        used_city_names = {self.normalize_city_name(start_city), self.normalize_city_name(end_city)}
+        
+        # Find best city for each segment
+        for segment_idx, segment in enumerate(segments):
+            best_candidates = []
             
-            # Check if city is roughly on the route (not too much detour)
-            detour_factor = total_via_city / total_distance if total_distance > 0 else 2
-            
-            if detour_factor <= 1.5:  # Allow up to 50% detour
+            for city_name, city_info in self.cities_db.items():
+                normalized_name = self.normalize_city_name(city_name)
+                
+                # Skip already used cities
+                if normalized_name in used_city_names:
+                    continue
+                
+                city_lat, city_lon = city_info['lat'], city_info['lon']
+                
+                # Calculate distances
+                dist_from_start = self.calculate_distance(start_lat, start_lon, city_lat, city_lon)
+                dist_from_end = self.calculate_distance(city_lat, city_lon, end_lat, end_lon)
+                dist_from_target = self.calculate_distance(
+                    segment['target_lat'], segment['target_lon'], city_lat, city_lon
+                )
+                
+                # Check if city is in reasonable position for this segment
+                if (dist_from_start < segment['min_distance_from_start'] or 
+                    dist_from_start > segment['max_distance_from_start'] or
+                    dist_from_target > segment['search_radius']):
+                    continue
+                
+                # Check route logic: city should be closer to end than to start for later segments
+                route_progress = dist_from_start / (dist_from_start + dist_from_end)
+                expected_progress = segment['progress']
+                progress_penalty = abs(route_progress - expected_progress)
+                
+                if progress_penalty > 0.3:  # Too far from expected route position
+                    continue
+                
+                # Calculate bearing consistency
+                bearing_to_city = self._calculate_bearing(start_lat, start_lon, city_lat, city_lon)
+                bearing_from_city = self._calculate_bearing(city_lat, city_lon, end_lat, end_lon)
+                
+                # Penalize cities that create sharp direction changes
+                bearing_consistency = self._calculate_bearing_consistency(
+                    main_bearing, bearing_to_city, bearing_from_city
+                )
+                
+                # Skip cities that create too much backtracking
+                if bearing_consistency < 0.3:
+                    continue
+                
                 # Calculate preference score
                 preference_score = 0
                 for city_type in city_info['type']:
                     if city_type in preferred_types:
-                        preference_score += 3  # Higher weight for preferred types
+                        preference_score += 3
                     else:
                         preference_score += 1
                 
-                # Add distance-based scoring (prefer cities that create good spacing)
-                distance_score = 1 / (detour_factor * 0.5 + 0.5)  # Favor direct routes
+                # Calculate final score
+                distance_score = 1.0 / (1.0 + dist_from_target / 50.0)  # Closer to target is better
+                progress_score = 1.0 - progress_penalty  # Better route progression
+                population_score = min(city_info['population'] / 100000, 2.0)
                 
-                # Add strategy variation factor with larger range
-                strategy_variation = random.uniform(0.5, 1.5)  # 100% variation range
+                # Add controlled randomization based on strategy seed
+                random_factor = random.uniform(0.7, 1.3)
                 
-                # Add population bonus for variety
-                population_factor = min(city_info['population'] / 100000, 2.0)  # Cap at 2x
+                total_score = (preference_score * distance_score * progress_score * 
+                              bearing_consistency * population_score * random_factor)
                 
-                candidates.append({
+                best_candidates.append({
                     'name': city_name.replace('-', ' ').title(),
                     'country': city_info['country'],
                     'population': city_info['population'],
@@ -189,58 +257,102 @@ class GeographicRouter:
                     'types': city_info['type'],
                     'distance_from_start': dist_from_start,
                     'distance_from_end': dist_from_end,
-                    'detour_factor': detour_factor,
-                    'preference_score': preference_score,
-                    'total_score': preference_score * distance_score * strategy_variation * population_factor,
-                    'reason': self._generate_reason(city_info['type'], focus)
+                    'distance_from_target': dist_from_target,
+                    'route_progress': route_progress,
+                    'bearing_consistency': bearing_consistency,
+                    'total_score': total_score,
+                    'reason': self._generate_reason(city_info['type'], focus),
+                    'normalized_name': normalized_name
                 })
-        
-        # Sort by total score and select best candidates
-        candidates.sort(key=lambda x: x['total_score'], reverse=True)
-        
-        # Select cities ensuring good geographic distribution and variety
-        selected = []
-        used_countries = set()
-        used_regions = set()
-        
-        for candidate in candidates[:count * 5]:  # Consider more candidates for better variety
-            # Check if this city provides good spacing and variety
-            if not selected:
-                selected.append(candidate)
-                used_countries.add(candidate['country'])
-                used_regions.add(candidate['region'])
-            else:
-                # Ensure minimum distance between selected cities
-                min_dist_to_selected = min(
-                    self.calculate_distance(candidate['lat'], candidate['lon'], 
-                                          sel['lat'], sel['lon']) 
-                    for sel in selected
-                )
+            
+            # Sort candidates by score and select the best one that doesn't conflict
+            best_candidates.sort(key=lambda x: x['total_score'], reverse=True)
+            
+            # Select best candidate that maintains good spacing
+            for candidate in best_candidates:
+                # Check minimum distance from already selected cities
+                min_distance_ok = True
+                if selected_cities:
+                    min_dist = min(
+                        self.calculate_distance(candidate['lat'], candidate['lon'], 
+                                              city['lat'], city['lon'])
+                        for city in selected_cities
+                    )
+                    if min_dist < max(30, total_distance * 0.08):  # Minimum 30km or 8% of total
+                        min_distance_ok = False
                 
-                # Favor cities from different countries/regions for variety
-                country_bonus = 1.5 if candidate['country'] not in used_countries else 1.0
-                region_bonus = 1.3 if candidate['region'] not in used_regions else 1.0
-                variety_bonus = country_bonus * region_bonus
-                
-                # Adjusted minimum distance based on total trip length
-                min_required_distance = max(50, total_distance * 0.1)  # At least 50km or 10% of total
-                
-                if (min_dist_to_selected > min_required_distance and 
-                    (len(selected) < count or variety_bonus > 1.2)):
-                    selected.append(candidate)
-                    used_countries.add(candidate['country'])
-                    used_regions.add(candidate['region'])
-                    if len(selected) >= count:
-                        break
-        
-        # If we don't have enough diverse cities, fill with best remaining
-        while len(selected) < count and len(candidates) > len(selected):
-            for candidate in candidates:
-                if candidate not in selected:
-                    selected.append(candidate)
+                if min_distance_ok:
+                    selected_cities.append(candidate)
+                    used_city_names.add(candidate['normalized_name'])
                     break
         
-        return selected[:count]
+        # Sort selected cities by distance from start to ensure proper order
+        selected_cities.sort(key=lambda x: x['distance_from_start'])
+        
+        return selected_cities
+    
+    def _interpolate_route_point(self, lat1: float, lon1: float, lat2: float, lon2: float, progress: float) -> tuple:
+        """Calculate intermediate point along great circle route."""
+        import math
+        
+        lat1_rad = math.radians(lat1)
+        lon1_rad = math.radians(lon1)
+        lat2_rad = math.radians(lat2)
+        lon2_rad = math.radians(lon2)
+        
+        # Calculate distance
+        d = math.acos(math.sin(lat1_rad) * math.sin(lat2_rad) + 
+                     math.cos(lat1_rad) * math.cos(lat2_rad) * math.cos(lon2_rad - lon1_rad))
+        
+        if d == 0:
+            return lat1, lon1
+        
+        # Calculate intermediate point
+        a = math.sin((1 - progress) * d) / math.sin(d)
+        b = math.sin(progress * d) / math.sin(d)
+        
+        x = a * math.cos(lat1_rad) * math.cos(lon1_rad) + b * math.cos(lat2_rad) * math.cos(lon2_rad)
+        y = a * math.cos(lat1_rad) * math.sin(lon1_rad) + b * math.cos(lat2_rad) * math.sin(lon2_rad)
+        z = a * math.sin(lat1_rad) + b * math.sin(lat2_rad)
+        
+        lat_result = math.atan2(z, math.sqrt(x*x + y*y))
+        lon_result = math.atan2(y, x)
+        
+        return math.degrees(lat_result), math.degrees(lon_result)
+    
+    def _calculate_bearing(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Calculate bearing between two points."""
+        import math
+        
+        lat1_rad = math.radians(lat1)
+        lat2_rad = math.radians(lat2)
+        delta_lon_rad = math.radians(lon2 - lon1)
+        
+        y = math.sin(delta_lon_rad) * math.cos(lat2_rad)
+        x = (math.cos(lat1_rad) * math.sin(lat2_rad) - 
+             math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(delta_lon_rad))
+        
+        bearing_rad = math.atan2(y, x)
+        bearing_deg = math.degrees(bearing_rad)
+        
+        return (bearing_deg + 360) % 360
+    
+    def _calculate_bearing_consistency(self, main_bearing: float, bearing1: float, bearing2: float) -> float:
+        """Calculate how consistent bearings are with the main route direction."""
+        
+        def angle_difference(a1, a2):
+            diff = abs(a1 - a2)
+            return min(diff, 360 - diff)
+        
+        # Calculate how much each bearing deviates from main bearing
+        dev1 = angle_difference(main_bearing, bearing1)
+        dev2 = angle_difference(main_bearing, bearing2)
+        
+        # Good consistency means small deviations
+        consistency1 = max(0, 1 - dev1 / 90)  # Normalize to 0-1
+        consistency2 = max(0, 1 - dev2 / 90)
+        
+        return (consistency1 + consistency2) / 2
     
     def _generate_reason(self, city_types: List[str], focus: str) -> str:
         """Generate a reason why this city fits the route focus."""
