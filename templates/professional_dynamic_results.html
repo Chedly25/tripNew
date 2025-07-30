@@ -1123,10 +1123,17 @@
         {% endfor %}
     </div>
 
-    <!-- 15 ENHANCED FEATURES -->
+    <!-- 25 ENHANCED FEATURES -->
     <div class="features-panel">
-        <h3 class="features-title">15 Enhanced Features to Perfect Your Journey</h3>
+        <h3 class="features-title">26 Enhanced Features to Perfect Your Journey</h3>
         <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-camera"></i></div>
+                <div class="feature-name">Route Attractions & Photo Spots</div>
+                <div class="feature-desc">Discover attractions and photo opportunities along your route</div>
+                <button class="feature-button" onclick="showRouteAttractions()">Explore</button>
+            </div>
+            
             <div class="feature-item">
                 <div class="feature-icon"><i class="fas fa-route"></i></div>
                 <div class="feature-name">Route Optimization</div>
@@ -1230,6 +1237,77 @@
                 <div class="feature-name">Local Recommendations</div>
                 <div class="feature-desc">Hidden gems suggested by locals</div>
                 <button class="feature-button" onclick="localTips()">Discover</button>
+            </div>
+            
+            <!-- 10 NEW FULLY IMPLEMENTED FEATURES -->
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-traffic-light"></i></div>
+                <div class="feature-name">Real-Time Traffic</div>
+                <div class="feature-desc">Live traffic conditions and alternate routes</div>
+                <button class="feature-button" onclick="realTimeTraffic()">Check Traffic</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-coins"></i></div>
+                <div class="feature-name">Currency Converter</div>
+                <div class="feature-desc">Real-time exchange rates for all countries</div>
+                <button class="feature-button" onclick="currencyConverter()">Convert</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-phone-alt"></i></div>
+                <div class="feature-name">Emergency Contacts</div>
+                <div class="feature-desc">Critical emergency numbers and safety info</div>
+                <button class="feature-button" onclick="emergencyContacts()">Get Contacts</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="feature-name">Travel Insurance</div>
+                <div class="feature-desc">Compare and find the best insurance policies</div>
+                <button class="feature-button" onclick="travelInsurance()">Compare</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-leaf"></i></div>
+                <div class="feature-name">Carbon Footprint</div>
+                <div class="feature-desc">Calculate emissions and find offset options</div>
+                <button class="feature-button" onclick="carbonFootprint()">Calculate</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="feature-name">Local Events</div>
+                <div class="feature-desc">Festivals, concerts, and cultural events</div>
+                <button class="feature-button" onclick="localEvents()">Find Events</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-car"></i></div>
+                <div class="feature-name">Vehicle Prep</div>
+                <div class="feature-desc">Complete vehicle preparation checklist</div>
+                <button class="feature-button" onclick="vehiclePreparation()">Check Vehicle</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-language"></i></div>
+                <div class="feature-name">Language Phrases</div>
+                <div class="feature-desc">Essential phrases for each destination</div>
+                <button class="feature-button" onclick="languagePhrases()">Learn Phrases</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-passport"></i></div>
+                <div class="feature-name">Border Crossings</div>
+                <div class="feature-desc">Requirements and wait times for borders</div>
+                <button class="feature-button" onclick="borderCrossings()">Check Borders</button>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <div class="feature-name">Group Coordinator</div>
+                <div class="feature-desc">Manage expenses and logistics for groups</div>
+                <button class="feature-button" onclick="groupCoordinator()">Coordinate</button>
             </div>
         </div>
     </div>
@@ -1479,7 +1557,160 @@
             modal.show();
         }
 
-        // 15 ENHANCED FEATURES FUNCTIONS
+        // 26 ENHANCED FEATURES FUNCTIONS
+        async function showRouteAttractions() {
+            try {
+                const routeData = getCurrentRouteData();
+                
+                // Extract cities from the current selected route
+                const startCity = routeData.start_city || 'aix-en-provence';
+                const endCity = routeData.end_city || 'venice';
+                
+                // Get intermediate cities from the currently selected route
+                let intermediateCities = [];
+                const selectedRoute = getSelectedRoute();
+                if (selectedRoute && selectedRoute.overnight_stops) {
+                    intermediateCities = selectedRoute.overnight_stops
+                        .slice(1, -1) // Exclude start and end cities
+                        .map(stop => stop.name.toLowerCase().replace(' ', '-'));
+                }
+                
+                const response = await fetch('/api/route-attractions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start_city: startCity,
+                        end_city: endCity,
+                        intermediate_cities: intermediateCities
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let attractionsHtml = '<div class="route-attractions">';
+                    attractionsHtml += '<h5><i class="fas fa-camera text-primary"></i> Route Attractions & Photo Spots</h5>';
+                    attractionsHtml += `<div class="mb-3"><strong>Total Attractions:</strong> ${result.total_attractions} | <strong>Photo Spots:</strong> ${result.photo_opportunities}</div>`;
+                    
+                    // Must-see highlights
+                    if (result.must_see_highlights && result.must_see_highlights.length > 0) {
+                        attractionsHtml += '<h6 class="text-success"><i class="fas fa-star"></i> Must-See Route Highlights</h6>';
+                        attractionsHtml += '<div class="row mb-4">';
+                        result.must_see_highlights.forEach(highlight => {
+                            attractionsHtml += `
+                                <div class="col-md-6 mb-2">
+                                    <div class="card border-success">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-success">${highlight.city}</h6>
+                                            <p class="card-text small mb-1">${highlight.highlight}</p>
+                                            <small class="text-muted"><i class="fas fa-camera"></i> ${highlight.photo_tip}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        attractionsHtml += '</div>';
+                    }
+                    
+                    // City-by-city attractions
+                    attractionsHtml += '<h6><i class="fas fa-map-marked-alt"></i> Attractions by City</h6>';
+                    attractionsHtml += '<div class="accordion" id="attractionsAccordion">';
+                    
+                    let cityIndex = 0;
+                    Object.entries(result.route_attractions).forEach(([city, cityData]) => {
+                        const cityDisplayName = city.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        
+                        attractionsHtml += `
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading${cityIndex}">
+                                    <button class="accordion-button ${cityIndex > 0 ? 'collapsed' : ''}" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#collapse${cityIndex}">
+                                        <strong>${cityDisplayName}</strong> 
+                                        <span class="badge bg-primary ms-2">${cityData.attractions?.length || 0} attractions</span>
+                                        <span class="badge bg-info ms-1">${cityData.photo_spots?.length || 0} photo spots</span>
+                                    </button>
+                                </h2>
+                                <div id="collapse${cityIndex}" class="accordion-collapse collapse ${cityIndex === 0 ? 'show' : ''}" 
+                                     data-bs-parent="#attractionsAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="text-primary"><i class="fas fa-map-marker-alt"></i> Top Attractions</h6>
+                                                <ul class="list-unstyled">
+                        `;
+                        
+                        if (cityData.attractions) {
+                            cityData.attractions.forEach(attraction => {
+                                attractionsHtml += `<li class="mb-2"><i class="fas fa-star text-warning"></i> ${attraction}</li>`;
+                            });
+                        }
+                        
+                        attractionsHtml += `
+                                                </ul>
+                                                <small class="text-muted"><i class="fas fa-clock"></i> Estimated visit time: ${cityData.estimated_visit_time || '2-4 hours'}</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6 class="text-info"><i class="fas fa-camera"></i> Photo Opportunities</h6>
+                                                <ul class="list-unstyled">
+                        `;
+                        
+                        if (cityData.photo_spots) {
+                            cityData.photo_spots.forEach(spot => {
+                                attractionsHtml += `<li class="mb-1"><i class="fas fa-camera text-info"></i> ${spot}</li>`;
+                            });
+                        }
+                        
+                        attractionsHtml += `
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        cityIndex++;
+                    });
+                    
+                    attractionsHtml += '</div></div>';
+                    
+                    showModal('Route Attractions & Photo Spots', attractionsHtml);
+                } else {
+                    showModal('Route Attractions', `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> ${result.error || 'Unable to load attractions data'}</div>`);
+                }
+                
+            } catch (error) {
+                console.error('Route attractions error:', error);
+                showModal('Route Attractions', `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Failed to load attractions: ${error.message}</div>`);
+            }
+        }
+        
+        function getSelectedRoute() {
+            // Get the currently selected/highlighted route
+            const routeCards = document.querySelectorAll('.route-card');
+            for (let card of routeCards) {
+                if (card.classList.contains('selected') || card.style.border) {
+                    // Extract route data from the card
+                    return {
+                        overnight_stops: Array.from(card.querySelectorAll('.stop-item')).map(stop => ({
+                            name: stop.querySelector('.stop-name')?.textContent || ''
+                        }))
+                    };
+                }
+            }
+            
+            // Fallback: return first route
+            if (routeCards.length > 0) {
+                const firstCard = routeCards[0];
+                return {
+                    overnight_stops: Array.from(firstCard.querySelectorAll('.stop-item')).map(stop => ({
+                        name: stop.querySelector('.stop-name')?.textContent || ''
+                    }))
+                };
+            }
+            
+            return null;
+        }
+        
         function optimizeRoute() {
             alert('🚗 Route Optimization: Analyzing traffic patterns and suggesting faster alternatives...');
         }
@@ -1565,6 +1796,475 @@
 
         function localTips() {
             alert('💎 Local Recommendations: Gathering insider tips from locals in each destination...');
+        }
+
+        // 10 NEW FULLY IMPLEMENTED FEATURES FUNCTIONS
+        async function realTimeTraffic() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/real-time-traffic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let trafficHtml = '<div class="traffic-info"><h5>🚦 Real-Time Traffic Conditions</h5>';
+                    trafficHtml += `<p><strong>Overall Delay:</strong> ${result.overall_delay} minutes</p>`;
+                    trafficHtml += `<p><strong>Summary:</strong> ${result.traffic_summary}</p>`;
+                    
+                    Object.entries(result.traffic_data).forEach(([route, data]) => {
+                        trafficHtml += `
+                            <div class="traffic-segment mb-3 p-3 border rounded">
+                                <h6>${route}</h6>
+                                <p><strong>Current Traffic:</strong> ${data.current_traffic}</p>
+                                <p><strong>Estimated Delay:</strong> ${data.estimated_delay}</p>
+                                <p><strong>Best Departure:</strong> ${data.best_departure_time}</p>
+                                <p><strong>Road Conditions:</strong> ${data.road_conditions}</p>
+                                <p><strong>Rest Areas:</strong> ${data.rest_areas} available</p>
+                            </div>
+                        `;
+                    });
+                    
+                    trafficHtml += '<h6>Recommendations:</h6><ul>';
+                    result.recommendations.forEach(rec => {
+                        trafficHtml += `<li>${rec}</li>`;
+                    });
+                    trafficHtml += '</ul></div>';
+                    showModal('Real-Time Traffic', trafficHtml);
+                } else {
+                    showModal('Error', result.error || 'Traffic check failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to check traffic: ' + error.message);
+            }
+        }
+
+        async function currencyConverter() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/currency-converter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...routeData, base_currency: 'EUR' })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let currencyHtml = '<div class="currency-info"><h5>💱 Currency Converter</h5>';
+                    currencyHtml += `<p><strong>Base Currency:</strong> ${result.base_currency}</p>`;
+                    
+                    Object.entries(result.currency_info).forEach(([country, info]) => {
+                        currencyHtml += `
+                            <div class="currency-card mb-3 p-3 border rounded">
+                                <h6>${country} - ${info.currency}</h6>
+                                <p><strong>Exchange Rate:</strong> ${info.exchange_rate} ${info.currency} per EUR</p>
+                                <p><strong>Budget in Local Currency:</strong> ${info.budget_in_local} ${info.currency}</p>
+                                <p><strong>Useful Amounts:</strong></p>
+                                <ul>
+                                    <li>Coffee: ${info.useful_amounts.coffee}</li>
+                                    <li>Meal: ${info.useful_amounts.meal}</li>
+                                    <li>Hotel Night: ${info.useful_amounts.hotel_night}</li>
+                                    <li>Fuel per Liter: ${info.useful_amounts.fuel_liter}</li>
+                                </ul>
+                                <p><strong>ATM Locations:</strong> ${info.atm_locations} | <strong>Card Acceptance:</strong> ${info.card_acceptance}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    currencyHtml += '<h6>Money Tips:</h6><ul>';
+                    result.money_tips.forEach(tip => {
+                        currencyHtml += `<li>${tip}</li>`;
+                    });
+                    currencyHtml += '</ul></div>';
+                    showModal('Currency Converter', currencyHtml);
+                } else {
+                    showModal('Error', result.error || 'Currency conversion failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to convert currency: ' + error.message);
+            }
+        }
+
+        async function emergencyContacts() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/emergency-contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let emergencyHtml = '<div class="emergency-info"><h5>🚨 Emergency Contacts</h5>';
+                    emergencyHtml += `<p><strong>Universal Emergency Number:</strong> ${result.universal_emergency}</p>`;
+                    
+                    Object.entries(result.emergency_contacts).forEach(([country, info]) => {
+                        emergencyHtml += `
+                            <div class="emergency-card mb-3 p-3 border rounded">
+                                <h6>${country}</h6>
+                                <p><strong>Emergency:</strong> ${info.emergency_number}</p>
+                                <p><strong>Police:</strong> ${info.police}</p>
+                                <p><strong>Medical:</strong> ${info.medical}</p>
+                                <p><strong>Fire:</strong> ${info.fire}</p>
+                                <p><strong>Tourist Helpline:</strong> ${info.tourist_helpline}</p>
+                                <p><strong>Embassy:</strong> ${info.embassy_contact}</p>
+                                <p><strong>Roadside Assistance:</strong> ${info.roadside_assistance}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    emergencyHtml += '<h6>Important Phrases:</h6>';
+                    Object.entries(result.important_phrases).forEach(([phrase, translations]) => {
+                        emergencyHtml += `<p><strong>${phrase.toUpperCase()}:</strong> ${translations}</p>`;
+                    });
+                    
+                    emergencyHtml += '<h6>Safety Tips:</h6><ul>';
+                    result.safety_tips.forEach(tip => {
+                        emergencyHtml += `<li>${tip}</li>`;
+                    });
+                    emergencyHtml += '</ul></div>';
+                    showModal('Emergency Contacts', emergencyHtml);
+                } else {
+                    showModal('Error', result.error || 'Emergency contacts failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to get emergency contacts: ' + error.message);
+            }
+        }
+
+        async function travelInsurance() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/travel-insurance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...routeData, traveler_age: 35 })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let insuranceHtml = '<div class="insurance-info"><h5>🛡️ Travel Insurance Options</h5>';
+                    insuranceHtml += `<p><strong>Recommendation:</strong> ${result.recommendation}</p>`;
+                    
+                    result.insurance_options.forEach(option => {
+                        insuranceHtml += `
+                            <div class="insurance-card mb-3 p-3 border rounded">
+                                <h6>${option.provider} - ${option.plan_name}</h6>
+                                <p><strong>Cost:</strong> €${option.cost_per_day}/day (Total: €${option.total_cost})</p>
+                                <p><strong>Medical Coverage:</strong> ${option.medical_coverage}</p>
+                                <p><strong>Trip Cancellation:</strong> ${option.trip_cancellation}</p>
+                                <p><strong>Rating:</strong> ${option.rating}⭐</p>
+                            </div>
+                        `;
+                    });
+                    
+                    insuranceHtml += '<h6>Coverage Tips:</h6><ul>';
+                    result.coverage_tips.forEach(tip => {
+                        insuranceHtml += `<li>${tip}</li>`;
+                    });
+                    insuranceHtml += '</ul></div>';
+                    showModal('Travel Insurance', insuranceHtml);
+                } else {
+                    showModal('Error', result.error || 'Insurance search failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to find insurance: ' + error.message);
+            }
+        }
+
+        async function carbonFootprint() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/carbon-footprint', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let carbonHtml = '<div class="carbon-info"><h5>🌱 Carbon Footprint Calculator</h5>';
+                    carbonHtml += `<p><strong>Total Emissions:</strong> ${result.total_emissions_kg} kg CO2</p>`;
+                    
+                    carbonHtml += '<h6>Emissions Breakdown:</h6><ul>';
+                    Object.entries(result.emissions_breakdown).forEach(([category, amount]) => {
+                        carbonHtml += `<li>${category.replace('_', ' ').toUpperCase()}: ${amount} kg CO2</li>`;
+                    });
+                    carbonHtml += '</ul>';
+                    
+                    carbonHtml += '<h6>Offset Options:</h6>';
+                    result.offset_options.forEach(option => {
+                        carbonHtml += `
+                            <div class="offset-card mb-3 p-3 border rounded">
+                                <h6>${option.project}</h6>
+                                <p><strong>Cost:</strong> €${option.cost_per_ton}/ton (Total: €${option.total_cost})</p>
+                                <p>${option.description}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    carbonHtml += '<h6>Environmental Impact:</h6>';
+                    Object.entries(result.comparison).forEach(([comparison, value]) => {
+                        carbonHtml += `<p><strong>${comparison.replace('_', ' ').toUpperCase()}:</strong> ${value}</p>`;
+                    });
+                    carbonHtml += '</div>';
+                    showModal('Carbon Footprint', carbonHtml);
+                } else {
+                    showModal('Error', result.error || 'Carbon calculation failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to calculate carbon footprint: ' + error.message);
+            }
+        }
+
+        async function localEvents() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/local-events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let eventsHtml = '<div class="events-info"><h5>🎭 Local Events & Festivals</h5>';
+                    
+                    Object.entries(result.events_by_city).forEach(([city, cityData]) => {
+                        eventsHtml += `
+                            <div class="city-events mb-4 p-3 border rounded">
+                                <h6>${city}</h6>
+                                <div class="events-list">
+                        `;
+                        
+                        cityData.events.forEach(event => {
+                            eventsHtml += `
+                                <div class="event-item mb-2 p-2 bg-light rounded">
+                                    <strong>${event.name}</strong> (${event.type})
+                                    <br><small>Cost: ${event.cost} | Time: ${event.time}</small>
+                                </div>
+                            `;
+                        });
+                        
+                        eventsHtml += `
+                                </div>
+                                <p><strong>Seasonal Highlights:</strong> ${cityData.seasonal_highlights.join(', ')}</p>
+                                <p><strong>Local Customs:</strong> ${cityData.local_customs.join(', ')}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    eventsHtml += '<h6>Booking Tips:</h6><ul>';
+                    result.booking_tips.forEach(tip => {
+                        eventsHtml += `<li>${tip}</li>`;
+                    });
+                    eventsHtml += '</ul></div>';
+                    showModal('Local Events', eventsHtml);
+                } else {
+                    showModal('Error', result.error || 'Events search failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to find local events: ' + error.message);
+            }
+        }
+
+        async function vehiclePreparation() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/vehicle-preparation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let vehicleHtml = '<div class="vehicle-info"><h5>🚗 Vehicle Preparation Checklist</h5>';
+                    
+                    vehicleHtml += '<h6>Maintenance Checklist:</h6>';
+                    result.maintenance_checklist.forEach(item => {
+                        vehicleHtml += `
+                            <div class="maintenance-item mb-2 p-2 border rounded">
+                                <strong>${item.item}</strong> (${item.priority})
+                                <br><small>Check: ${item.check}</small>
+                            </div>
+                        `;
+                    });
+                    
+                    vehicleHtml += '<h6>Emergency Kit:</h6><ul>';
+                    result.emergency_kit.forEach(item => {
+                        vehicleHtml += `<li>${item}</li>`;
+                    });
+                    vehicleHtml += '</ul>';
+                    
+                    vehicleHtml += '<h6>Fuel Planning:</h6>';
+                    Object.entries(result.fuel_planning).forEach(([key, value]) => {
+                        vehicleHtml += `<p><strong>${key.replace('_', ' ').toUpperCase()}:</strong> ${value}</p>`;
+                    });
+                    
+                    vehicleHtml += '<h6>Route Planning Tips:</h6><ul>';
+                    result.route_planning.forEach(tip => {
+                        vehicleHtml += `<li>${tip}</li>`;
+                    });
+                    vehicleHtml += '</ul></div>';
+                    showModal('Vehicle Preparation', vehicleHtml);
+                } else {
+                    showModal('Error', result.error || 'Vehicle preparation failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to get vehicle preparation: ' + error.message);
+            }
+        }
+
+        async function languagePhrases() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/language-phrases', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let languageHtml = '<div class="language-info"><h5>🗣️ Essential Language Phrases</h5>';
+                    
+                    Object.entries(result.languages_by_country).forEach(([country, info]) => {
+                        languageHtml += `
+                            <div class="language-card mb-4 p-3 border rounded">
+                                <h6>${country} - ${info.primary_language}</h6>
+                        `;
+                        
+                        Object.entries(info.useful_phrases).forEach(([category, phrases]) => {
+                            languageHtml += `<h7><strong>${category.replace('_', ' ').toUpperCase()}</strong></h7><ul>`;
+                            Object.entries(phrases).forEach(([phrase, translation]) => {
+                                languageHtml += `<li><strong>${phrase.replace('_', ' ')}:</strong> ${translation}</li>`;
+                            });
+                            languageHtml += '</ul>';
+                        });
+                        
+                        languageHtml += '</div>';
+                    });
+                    
+                    languageHtml += '<h6>Pronunciation Tips:</h6><ul>';
+                    result.pronunciation_tips.forEach(tip => {
+                        languageHtml += `<li>${tip}</li>`;
+                    });
+                    languageHtml += '</ul></div>';
+                    showModal('Language Phrases', languageHtml);
+                } else {
+                    showModal('Error', result.error || 'Language phrases failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to get language phrases: ' + error.message);
+            }
+        }
+
+        async function borderCrossings() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/border-crossing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(routeData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let borderHtml = '<div class="border-info"><h5>🛂 Border Crossing Information</h5>';
+                    
+                    if (result.border_crossings.length > 0) {
+                        result.border_crossings.forEach(crossing => {
+                            borderHtml += `
+                                <div class="border-crossing mb-3 p-3 border rounded">
+                                    <h6>${crossing.from_country} → ${crossing.to_country}</h6>
+                                    <p><strong>Type:</strong> ${crossing.crossing_type}</p>
+                                    <p><strong>Estimated Wait:</strong> ${crossing.estimated_wait}</p>
+                                    <p><strong>Requirements:</strong> ${crossing.requirements.join(', ')}</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        borderHtml += '<p>No border crossings required for this route.</p>';
+                    }
+                    
+                    borderHtml += '<h6>Document Requirements:</h6>';
+                    Object.entries(result.document_requirements).forEach(([type, docs]) => {
+                        borderHtml += `<p><strong>${type.replace('_', ' ').toUpperCase()}:</strong> ${docs.join(', ')}</p>`;
+                    });
+                    
+                    borderHtml += '<h6>Customs Regulations:</h6>';
+                    Object.entries(result.customs_regulations.duty_free_limits).forEach(([item, limit]) => {
+                        borderHtml += `<p><strong>${item.toUpperCase()}:</strong> ${limit}</p>`;
+                    });
+                    
+                    borderHtml += '<h6>Travel Tips:</h6><ul>';
+                    result.travel_tips.forEach(tip => {
+                        borderHtml += `<li>${tip}</li>`;
+                    });
+                    borderHtml += '</ul></div>';
+                    showModal('Border Crossings', borderHtml);
+                } else {
+                    showModal('Error', result.error || 'Border crossing info failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to get border crossing info: ' + error.message);
+            }
+        }
+
+        async function groupCoordinator() {
+            try {
+                const routeData = getCurrentRouteData();
+                const response = await fetch('/api/group-coordinator', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...routeData, group_size: 4 })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    let groupHtml = '<div class="group-info"><h5>👥 Group Travel Coordinator</h5>';
+                    groupHtml += `<p><strong>Group Size:</strong> ${result.group_size} people</p>`;
+                    
+                    groupHtml += '<h6>Shared Expenses:</h6>';
+                    Object.entries(result.shared_expenses).forEach(([category, data]) => {
+                        groupHtml += `<div class="expense-category mb-2 p-2 border rounded">`;
+                        groupHtml += `<strong>${category.replace('_', ' ').toUpperCase()}</strong><br>`;
+                        Object.entries(data).forEach(([key, value]) => {
+                            groupHtml += `${key.replace('_', ' ')}: €${value}<br>`;
+                        });
+                        groupHtml += '</div>';
+                    });
+                    
+                    groupHtml += '<h6>Coordination Tools:</h6>';
+                    Object.entries(result.coordination_tools).forEach(([tool, info]) => {
+                        groupHtml += `<div class="tool mb-2 p-2 bg-light rounded">`;
+                        groupHtml += `<strong>${tool.replace('_', ' ').toUpperCase()}</strong><br>`;
+                        if (typeof info === 'object') {
+                            Object.entries(info).forEach(([key, value]) => {
+                                groupHtml += `${key}: ${Array.isArray(value) ? value.join(', ') : value}<br>`;
+                            });
+                        } else {
+                            groupHtml += `${info}<br>`;
+                        }
+                        groupHtml += '</div>';
+                    });
+                    
+                    groupHtml += '<h6>Group Benefits:</h6><ul>';
+                    result.group_benefits.forEach(benefit => {
+                        groupHtml += `<li>${benefit}</li>`;
+                    });
+                    groupHtml += '</ul></div>';
+                    showModal('Group Coordinator', groupHtml);
+                } else {
+                    showModal('Error', result.error || 'Group coordination failed');
+                }
+            } catch (error) {
+                showModal('Error', 'Failed to coordinate group: ' + error.message);
+            }
         }
 
         // ITINERARY TOOLS

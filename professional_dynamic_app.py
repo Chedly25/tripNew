@@ -14,6 +14,8 @@ import requests
 from anthropic import Anthropic
 from enhanced_features import EnhancedFeatures
 from geographic_router import GeographicRouter
+from additional_features import AdditionalFeatures
+from ai_travel_assistant import AITravelAssistant
 
 app = Flask(__name__)
 
@@ -25,6 +27,8 @@ class ProfessionalDynamicPlanner:
         self.claude_client = None
         self.enhanced_features = EnhancedFeatures()
         self.geographic_router = GeographicRouter()
+        self.additional_features = AdditionalFeatures()
+        self.ai_assistant = AITravelAssistant()
     
     def initialize_claude(self, api_key: str):
         """Initialize Claude API client."""
@@ -43,6 +47,8 @@ class ProfessionalDynamicPlanner:
         
         # Initialize Claude if API key provided
         ai_enabled = self.initialize_claude(claude_api_key) if claude_api_key else False
+        if ai_enabled:
+            self.ai_assistant = AITravelAssistant(self.claude_client)
         
         # Base route configurations - each truly different
         route_configs = [
@@ -113,35 +119,225 @@ class ProfessionalDynamicPlanner:
     
     def _get_direct_route_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for fastest direct route."""
-        return self.geographic_router.generate_route_cities(start, end, 'speed')
+        return self.geographic_router.generate_route_cities(start, end, 'speed', 1)
     
     def _get_mountain_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for scenic mountain route."""
-        return self.geographic_router.generate_route_cities(start, end, 'scenery')
+        return self.geographic_router.generate_route_cities(start, end, 'scenery', 2)
     
     def _get_historic_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for historic cultural route."""
-        return self.geographic_router.generate_route_cities(start, end, 'culture')
+        return self.geographic_router.generate_route_cities(start, end, 'culture', 3)
     
     def _get_culinary_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for food & wine route."""
-        return self.geographic_router.generate_route_cities(start, end, 'culinary')
+        return self.geographic_router.generate_route_cities(start, end, 'culinary', 4)
     
     def _get_hidden_gem_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for hidden gems route."""
-        return self.geographic_router.generate_route_cities(start, end, 'hidden_gems')
+        return self.geographic_router.generate_route_cities(start, end, 'hidden_gems', 5)
     
     def _get_budget_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for budget-friendly route."""
-        return self.geographic_router.generate_route_cities(start, end, 'budget')
+        return self.geographic_router.generate_route_cities(start, end, 'budget', 6)
     
     def _get_adventure_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for adventure route."""
-        return self.geographic_router.generate_route_cities(start, end, 'adventure')
+        return self.geographic_router.generate_route_cities(start, end, 'adventure', 7)
     
     def _get_wellness_cities(self, start: str, end: str) -> List[Dict]:
         """Get cities for wellness route."""
-        return self.geographic_router.generate_route_cities(start, end, 'wellness')
+        return self.geographic_router.generate_route_cities(start, end, 'wellness', 8)
+    
+    def get_route_attractions(self, start_city: str, end_city: str, intermediate_cities: List[str]) -> Dict:
+        """Get attractions and photo spots along the entire route."""
+        try:
+            all_cities = [start_city] + intermediate_cities + [end_city]
+            attractions_by_city = {}
+            
+            for city in all_cities:
+                city_info = self.geographic_router.get_city_info(city)
+                attractions = self._generate_city_attractions(city, city_info)
+                attractions_by_city[city] = attractions
+            
+            return {
+                'success': True,
+                'route_attractions': attractions_by_city,
+                'total_attractions': sum(len(attrs['attractions']) for attrs in attractions_by_city.values()),
+                'photo_opportunities': sum(len(attrs['photo_spots']) for attrs in attractions_by_city.values()),
+                'must_see_highlights': self._get_route_highlights(all_cities)
+            }
+        except Exception as e:
+            return {'error': f'Failed to get route attractions: {str(e)}'}
+    
+    def _generate_city_attractions(self, city_name: str, city_info: Dict) -> Dict:
+        """Generate attractions for a specific city."""
+        city_types = city_info.get('type', ['cultural'])
+        population = city_info.get('population', 100000)
+        
+        # Base attractions based on city type
+        attractions = []
+        photo_spots = []
+        
+        # Major attractions based on city type
+        if 'major' in city_types:
+            attractions.extend([
+                f"{city_name} Historic Center - UNESCO World Heritage architecture and cobblestone streets",
+                f"Grand Cathedral of {city_name} - Spectacular Gothic/Romanesque masterpiece",
+                f"{city_name} Central Square - Vibrant main plaza with street performers and cafes",
+                f"Municipal Museum - Local history and art collections",
+                f"Old Town Walking Tour - Guided exploration of medieval quarters"
+            ])
+            photo_spots.extend([
+                f"Cathedral spires at golden hour",
+                f"Panoramic city view from bell tower",
+                f"Street art and colorful building facades",
+                f"Traditional market scenes"
+            ])
+        
+        if 'cultural' in city_types:
+            attractions.extend([
+                f"{city_name} Art Gallery - Regional and contemporary exhibitions",
+                f"Cultural Heritage Museum - Traditional crafts and local customs",
+                f"Historic District - Preserved medieval architecture",
+                f"Local Artisan Workshops - Traditional crafts demonstrations"
+            ])
+            photo_spots.extend([
+                f"Ancient stone bridges and waterways",
+                f"Traditional architecture details",
+                f"Local craftspeople at work"
+            ])
+        
+        if 'culinary' in city_types:
+            attractions.extend([
+                f"Traditional Food Market - Local specialties and fresh produce",
+                f"{city_name} Wine Cellars - Regional wine tasting experiences",
+                f"Cooking Class with Local Chef - Authentic regional cuisine",
+                f"Historic Restaurants - Century-old dining establishments"
+            ])
+            photo_spots.extend([
+                f"Colorful spice markets and food displays",
+                f"Traditional cooking techniques",
+                f"Wine cellars and vineyard landscapes"
+            ])
+        
+        if 'scenery' in city_types:
+            attractions.extend([
+                f"Scenic Viewpoint - Panoramic landscape photography",
+                f"Nature Walking Trails - Hiking paths with stunning vistas",
+                f"Mountain/Lake Excursions - Natural beauty tours",
+                f"Botanical Gardens - Native flora and peaceful gardens"
+            ])
+            photo_spots.extend([
+                f"Sunrise/sunset mountain silhouettes",
+                f"Reflection photography at lakes",
+                f"Wildflower meadows and forests",
+                f"Dramatic cliff and valley views"
+            ])
+        
+        if 'adventure' in city_types:
+            attractions.extend([
+                f"Adventure Sports Center - Rock climbing, kayaking, cycling",
+                f"Outdoor Activity Base - Hiking and nature exploration",
+                f"Extreme Sports Facilities - Zip-lining, paragliding",
+                f"National Park Access - Wildlife watching and trails"
+            ])
+            photo_spots.extend([
+                f"Action sports photography",
+                f"Wildlife and nature close-ups",
+                f"Adventure equipment and gear shots"
+            ])
+        
+        if 'wellness' in city_types:
+            attractions.extend([
+                f"Historic Thermal Baths - Natural hot springs and spa treatments",
+                f"Wellness Center - Massage, meditation, yoga classes",
+                f"Peaceful Gardens - Relaxation and contemplation spaces",
+                f"Health Resort - Complete wellness packages"
+            ])
+            photo_spots.extend([
+                f"Serene spa environments",
+                f"Zen garden compositions",
+                f"Peaceful water features"
+            ])
+        
+        if 'hidden_gems' in city_types:
+            attractions.extend([
+                f"Secret Local Viewpoint - Known only to locals",
+                f"Underground Historic Sites - Hidden cellars or tunnels",
+                f"Local Family Restaurant - Authentic, non-touristy dining",
+                f"Artisan Quarter - Small workshops and local creators"
+            ])
+            photo_spots.extend([
+                f"Hidden alleyways and secret corners",
+                f"Local life and authentic moments",
+                f"Undiscovered architectural details"
+            ])
+        
+        # Ensure we have at least basic attractions
+        if not attractions:
+            attractions = [
+                f"{city_name} Town Center - Main attractions and local life",
+                f"Historic Buildings - Notable architecture and landmarks",
+                f"Local Market - Regional products and crafts",
+                f"Scenic Walk - Best views and photo opportunities"
+            ]
+            photo_spots = [
+                f"Town square and main monuments",
+                f"Local architecture and street scenes",
+                f"Market life and local culture"
+            ]
+        
+        return {
+            'attractions': attractions[:6],  # Limit to top 6
+            'photo_spots': photo_spots[:4],  # Limit to top 4
+            'city_type': city_types,
+            'estimated_visit_time': '2-4 hours' if population < 200000 else '4-8 hours'
+        }
+    
+    def _get_route_highlights(self, cities: List[str]) -> List[Dict]:
+        """Get must-see highlights for the entire route."""
+        highlights = []
+        for i, city in enumerate(cities):
+            city_info = self.geographic_router.get_city_info(city)
+            
+            if i == 0:  # Start city
+                highlights.append({
+                    'city': city,
+                    'highlight': f'Departure from {city} - Stock up on regional specialties for the journey',
+                    'type': 'departure',
+                    'photo_tip': 'Capture the excitement of starting your European adventure'
+                })
+            elif i == len(cities) - 1:  # End city
+                highlights.append({
+                    'city': city,
+                    'highlight': f'Grand Finale in {city} - Celebrate your epic journey',
+                    'type': 'destination',
+                    'photo_tip': 'Document your arrival and reflect on the incredible route'
+                })
+            else:  # Intermediate cities
+                city_types = city_info.get('type', ['cultural'])
+                if 'major' in city_types:
+                    highlight_text = f'Major cultural hub - Explore world-class attractions'
+                    photo_tip = 'Iconic architecture and bustling city life'
+                elif 'scenery' in city_types:
+                    highlight_text = f'Scenic paradise - Nature photography opportunities'
+                    photo_tip = 'Golden hour landscapes and natural beauty'
+                elif 'culinary' in city_types:
+                    highlight_text = f'Culinary hotspot - Taste authentic regional cuisine'
+                    photo_tip = 'Food photography and local market scenes'
+                else:
+                    highlight_text = f'Cultural gem - Discover local traditions and history'
+                    photo_tip = 'Authentic local life and hidden corners'
+                
+                highlights.append({
+                    'city': city,
+                    'highlight': highlight_text,
+                    'type': 'stopover',
+                    'photo_tip': photo_tip
+                })
+        
+        return highlights
     
     def _build_route(self, config: Dict, start_city: str, end_city: str, 
                     travel_days: int, venice_nights: int, season: str, ai_enabled: bool) -> Dict:
@@ -453,6 +649,181 @@ def plan_trip():
     except Exception as e:
         return render_template('error.html', error=str(e))
 
+# AI TRAVEL ASSISTANT API ENDPOINTS - 12 Advanced Features
+@app.route('/api/ai-destination-finder', methods=['POST'])
+def ai_destination_finder():
+    """AI-powered destination finder based on travel reasons."""
+    try:
+        data = request.get_json()
+        travel_reason = data.get('travel_reason', 'vacation')
+        preferences = data.get('preferences', {})
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.intelligent_destination_finder(travel_reason, preferences)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-personalized-itinerary', methods=['POST'])
+def ai_personalized_itinerary():
+    """Create AI-powered personalized itineraries."""
+    try:
+        data = request.get_json()
+        destination = data.get('destination', 'Paris')
+        duration = data.get('duration', 3)
+        interests = data.get('interests', ['culture'])
+        travel_style = data.get('travel_style', 'mid_range')
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.personalized_itinerary_creator(destination, duration, interests, travel_style)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-budget-optimizer', methods=['POST'])
+def ai_budget_optimizer():
+    """AI-powered budget optimization."""
+    try:
+        data = request.get_json()
+        budget = data.get('budget', 1000)
+        preferences = data.get('preferences', {})
+        destination = data.get('destination', 'Paris')
+        duration = data.get('duration', 3)
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.smart_budget_optimizer(budget, preferences, destination, duration)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-seasonal-advisor', methods=['POST'])
+def ai_seasonal_advisor():
+    """AI seasonal travel advisor."""
+    try:
+        data = request.get_json()
+        destinations = data.get('destinations', ['Paris', 'Rome'])
+        travel_months = data.get('travel_months', ['June', 'July'])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.seasonal_travel_advisor(destinations, travel_months)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-cultural-planner', methods=['POST'])
+def ai_cultural_planner():
+    """AI cultural immersion planner."""
+    try:
+        data = request.get_json()
+        destination = data.get('destination', 'Florence')
+        cultural_interests = data.get('cultural_interests', ['art', 'history'])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.cultural_immersion_planner(destination, cultural_interests)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-risk-assessment', methods=['POST'])
+def ai_risk_assessment():
+    """AI travel risk assessment."""
+    try:
+        data = request.get_json()
+        destinations = data.get('destinations', ['Paris'])
+        travel_dates = data.get('travel_dates', ['2024-06-01'])
+        traveler_profile = data.get('traveler_profile', {'age': 30, 'experience': 'moderate'})
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.risk_assessment_advisor(destinations, travel_dates, traveler_profile)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-sustainable-travel', methods=['POST'])
+def ai_sustainable_travel():
+    """AI sustainable travel planner."""
+    try:
+        data = request.get_json()
+        route_data = data.get('route_data', {})
+        sustainability_goals = data.get('sustainability_goals', ['reduce_carbon'])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.sustainable_travel_planner(route_data, sustainability_goals)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-accessibility-planner', methods=['POST'])
+def ai_accessibility_planner():
+    """AI accessibility travel planner."""
+    try:
+        data = request.get_json()
+        destination = data.get('destination', 'Barcelona')
+        accessibility_needs = data.get('accessibility_needs', ['wheelchair_access'])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.accessibility_travel_planner(destination, accessibility_needs)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-events-curator', methods=['POST'])
+def ai_events_curator():
+    """AI local events curator."""
+    try:
+        data = request.get_json()
+        destination = data.get('destination', 'Prague')
+        travel_dates = data.get('travel_dates', ['2024-06-15'])
+        interests = data.get('interests', ['music', 'culture'])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.local_events_curator(destination, travel_dates, interests)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-multi-destination', methods=['POST'])
+def ai_multi_destination():
+    """AI multi-destination optimizer."""
+    try:
+        data = request.get_json()
+        destinations = data.get('destinations', ['Paris', 'Rome', 'Barcelona'])
+        constraints = data.get('constraints', {'budget': 2000, 'time': 10})
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.multi_destination_optimizer(destinations, constraints)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-companion-matcher', methods=['POST'])
+def ai_companion_matcher():
+    """AI travel companion matcher."""
+    try:
+        data = request.get_json()
+        traveler_profile = data.get('traveler_profile', {'age': 28, 'interests': ['culture']})
+        trip_details = data.get('trip_details', {'destination': 'Italy', 'duration': 7})
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.travel_companion_matcher(traveler_profile, trip_details)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai-travel-concierge', methods=['POST'])
+def ai_travel_concierge():
+    """AI real-time travel concierge."""
+    try:
+        data = request.get_json()
+        current_location = data.get('current_location', 'Paris')
+        immediate_needs = data.get('immediate_needs', ['restaurant', 'directions'])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.ai_assistant.real_time_travel_concierge(current_location, immediate_needs)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # Enhanced Features API Endpoints
 @app.route('/api/optimize-route', methods=['POST'])
 def optimize_route():
@@ -553,6 +924,158 @@ def generate_packing_list():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 10 NEW FEATURE API ENDPOINTS
+@app.route('/api/real-time-traffic', methods=['POST'])
+def real_time_traffic():
+    """Get real-time traffic conditions."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.real_time_traffic(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/currency-converter', methods=['POST'])
+def currency_converter():
+    """Convert currencies for multi-country trips."""
+    try:
+        data = request.get_json()
+        base_currency = data.get('base_currency', 'EUR')
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.currency_converter(data, base_currency)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/emergency-contacts', methods=['POST'])
+def emergency_contacts():
+    """Get emergency contacts and safety info."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.emergency_contacts(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/travel-insurance', methods=['POST'])
+def travel_insurance():
+    """Find and compare travel insurance."""
+    try:
+        data = request.get_json()
+        traveler_age = data.get('traveler_age', 35)
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.travel_insurance_finder(data, traveler_age)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/carbon-footprint', methods=['POST'])
+def carbon_footprint():
+    """Calculate trip carbon footprint."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.carbon_footprint_calculator(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/local-events', methods=['POST'])
+def local_events():
+    """Find local events and festivals."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.local_events_finder(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/vehicle-preparation', methods=['POST'])
+def vehicle_preparation():
+    """Get vehicle preparation checklist."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.vehicle_preparation(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/language-phrases', methods=['POST'])
+def language_phrases():
+    """Get language phrase book."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.language_phrase_book(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/border-crossing', methods=['POST'])
+def border_crossing():
+    """Get border crossing information."""
+    try:
+        data = request.get_json()
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.border_crossing_info(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/group-coordinator', methods=['POST'])
+def group_coordinator():
+    """Coordinate group travel."""
+    try:
+        data = request.get_json()
+        group_size = data.get('group_size', 4)
+        interface = ProfessionalDynamicPlanner()
+        result = interface.additional_features.group_travel_coordinator(data, group_size)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# NEW API ENDPOINTS FOR REQUIRED FEATURES
+
+@app.route('/api/cities', methods=['GET'])
+def get_cities():
+    """Get all available cities for autocomplete."""
+    try:
+        interface = ProfessionalDynamicPlanner()
+        cities = []
+        for city_key, city_info in interface.geographic_router.cities_db.items():
+            cities.append({
+                'value': city_key,
+                'label': city_key.replace('-', ' ').title(),
+                'country': city_info['country'],
+                'region': city_info.get('region', ''),
+                'population': city_info['population']
+            })
+        
+        # Sort cities by popularity (population) and name
+        cities.sort(key=lambda x: (-x['population'], x['label']))
+        return jsonify(cities)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/route-attractions', methods=['POST'])
+def route_attractions():
+    """Get attractions and photo spots along the route."""
+    try:
+        data = request.get_json()
+        start_city = data.get('start_city', '')
+        end_city = data.get('end_city', '')
+        intermediate_cities = data.get('intermediate_cities', [])
+        
+        interface = ProfessionalDynamicPlanner()
+        result = interface.get_route_attractions(start_city, end_city, intermediate_cities)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     print("=" * 70)
     print("PROFESSIONAL DYNAMIC EUROPEAN ROADTRIP PLANNER")
@@ -561,7 +1084,9 @@ if __name__ == '__main__':
     print("- Claude AI integration for personalized insights")
     print("- 8 different route strategies with unique focuses")
     print("- Professional interface with ALL FEATURES WORKING")
-    print("- 15 Enhanced Features + 6 Itinerary Tools per route")
-    print("PORT: http://localhost:5004")
+    print("- 25 Enhanced Features + 12 AI Assistant Features")
+    print("- Complete European Database: France, Spain, Italy + More")
+    print("- AI Travel Assistant with Claude Integration")
+    print("PORT: http://localhost:5006")
     print("=" * 70)
-    app.run(debug=True, host='0.0.0.0', port=5004)
+    app.run(debug=True, host='0.0.0.0', port=5006)

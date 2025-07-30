@@ -379,6 +379,94 @@
             font-size: 0.875rem;
         }
 
+        /* AI ASSISTANT STYLES */
+        .ai-assistant-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0891b2;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .ai-features-grid {
+            margin-top: 1.5rem;
+        }
+
+        .ai-feature-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ai-feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .ai-feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .ai-feature-card h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-feature-card p {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .ai-more-features {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .ai-more-features p {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .city-select {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: var(--dark);
+        }
+
+        .city-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
         /* RESPONSIVE DESIGN */
         @media (max-width: 768px) {
             .hero-title {
@@ -536,15 +624,19 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label" for="start_city">Starting City</label>
-                            <input type="text" class="form-control" id="start_city" name="start_city" 
-                                   value="Aix-en-Provence" required>
+                            <select class="form-control city-select" id="start_city" name="start_city" required>
+                                <option value="">Select starting city...</option>
+                            </select>
+                            <small class="form-text text-muted">Choose from our comprehensive European database</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label" for="end_city">Destination City</label>
-                            <input type="text" class="form-control" id="end_city" name="end_city" 
-                                   value="Venice" required>
+                            <select class="form-control city-select" id="end_city" name="end_city" required>
+                                <option value="">Select destination city...</option>
+                            </select>
+                            <small class="form-text text-muted">500+ European cities available</small>
                         </div>
                     </div>
                 </div>
@@ -618,6 +710,79 @@
                 </div>
             </div>
 
+            <!-- AI TRAVEL ASSISTANT -->
+            <div class="form-section ai-assistant-section" id="aiAssistantSection" style="display: none;">
+                <h3 class="form-section-title">
+                    <i class="fas fa-robot"></i> AI Travel Assistant
+                </h3>
+                <p class="section-description">
+                    Access our advanced AI Travel Assistant with 12 specialized features for personalized travel planning.
+                </p>
+                
+                <div class="ai-features-grid">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="ai-feature-card" onclick="useAIFeature('destination-finder')">
+                                <div class="ai-feature-icon">
+                                    <i class="fas fa-search-location"></i>
+                                </div>
+                                <h5>Destination Finder</h5>
+                                <p>Find perfect destinations based on your travel reason and preferences</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="ai-feature-card" onclick="useAIFeature('itinerary-creator')">
+                                <div class="ai-feature-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <h5>Itinerary Creator</h5>
+                                <p>Generate personalized day-by-day itineraries</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="ai-feature-card" onclick="useAIFeature('budget-optimizer')">
+                                <div class="ai-feature-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <h5>Budget Optimizer</h5>
+                                <p>Optimize travel plans within budget constraints</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="ai-feature-card" onclick="useAIFeature('seasonal-advisor')">
+                                <div class="ai-feature-icon">
+                                    <i class="fas fa-calendar-week"></i>
+                                </div>
+                                <h5>Seasonal Advisor</h5>
+                                <p>Get optimal timing and seasonal travel advice</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="ai-feature-card" onclick="useAIFeature('cultural-planner')">
+                                <div class="ai-feature-icon">
+                                    <i class="fas fa-landmark"></i>
+                                </div>
+                                <h5>Cultural Planner</h5>
+                                <p>Plan deep cultural experiences and local immersion</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="ai-feature-card" onclick="useAIFeature('risk-advisor')">
+                                <div class="ai-feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h5>Risk Assessment</h5>
+                                <p>Assess travel risks and safety recommendations</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-more-features">
+                        <p><strong>Plus 6 more features:</strong> Sustainability Planner, Accessibility Planner, Events Curator, Multi-Destination Optimizer, Companion Matcher, Real-time Concierge</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- SUBMIT -->
             <div class="submit-section">
                 <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -632,6 +797,344 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // CITY AUTOCOMPLETE AND AI ASSISTANT FUNCTIONALITY
+        let availableCities = [];
+        
+        // Load cities on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCities();
+            setupAIAssistantToggle();
+        });
+        
+        // Load cities from API
+        async function loadCities() {
+            try {
+                const response = await fetch('/api/cities');
+                const cities = await response.json();
+                availableCities = cities;
+                
+                populateCitySelects(cities);
+                
+                // Set default values
+                document.getElementById('start_city').value = 'aix-en-provence';
+                document.getElementById('end_city').value = 'venice';
+                
+            } catch (error) {
+                console.error('Failed to load cities:', error);
+                // Fallback cities if API fails
+                const fallbackCities = [
+                    {value: 'aix-en-provence', label: 'Aix En Provence', country: 'France'},
+                    {value: 'venice', label: 'Venice', country: 'Italy'},
+                    {value: 'barcelona', label: 'Barcelona', country: 'Spain'},
+                    {value: 'paris', label: 'Paris', country: 'France'},
+                    {value: 'rome', label: 'Rome', country: 'Italy'}
+                ];
+                populateCitySelects(fallbackCities);
+            }
+        }
+        
+        // Populate city select elements
+        function populateCitySelects(cities) {
+            const startSelect = document.getElementById('start_city');
+            const endSelect = document.getElementById('end_city');
+            
+            cities.forEach(city => {
+                const option1 = new Option(`${city.label} (${city.country})`, city.value);
+                const option2 = new Option(`${city.label} (${city.country})`, city.value);
+                
+                startSelect.add(option1);
+                endSelect.add(option2);
+            });
+        }
+        
+        // Setup AI Assistant toggle based on API key
+        function setupAIAssistantToggle() {
+            const apiKeyInput = document.getElementById('claude_api_key');
+            const aiAssistantSection = document.getElementById('aiAssistantSection');
+            
+            apiKeyInput.addEventListener('input', function() {
+                if (this.value.trim().length > 10) {
+                    aiAssistantSection.style.display = 'block';
+                } else {
+                    aiAssistantSection.style.display = 'none';
+                }
+            });
+        }
+        
+        // AI Feature functionality
+        function useAIFeature(featureType) {
+            const apiKey = document.getElementById('claude_api_key').value.trim();
+            
+            if (!apiKey) {
+                alert('Please enter your Claude API key first to use AI features.');
+                document.getElementById('claude_api_key').focus();
+                return;
+            }
+            
+            // Show feature-specific modal or interface
+            showAIFeatureModal(featureType, apiKey);
+        }
+        
+        // Show AI feature modal
+        function showAIFeatureModal(featureType, apiKey) {
+            const featureNames = {
+                'destination-finder': 'Intelligent Destination Finder',
+                'itinerary-creator': 'Personalized Itinerary Creator',
+                'budget-optimizer': 'Smart Budget Optimizer',
+                'seasonal-advisor': 'Seasonal Travel Advisor',
+                'cultural-planner': 'Cultural Immersion Planner',
+                'risk-advisor': 'Risk Assessment Advisor'
+            };
+            
+            const featureName = featureNames[featureType] || 'AI Feature';
+            
+            // Create simple modal interface
+            const modalHTML = `
+                <div class="modal fade" id="aiFeatureModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${featureName}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="aiFeatureForm">
+                                    ${getFeatureForm(featureType)}
+                                </div>
+                                <div id="aiFeatureResults" style="display: none;">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Processing...</span>
+                                        </div>
+                                        <p class="mt-2">AI is analyzing your request...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="processAIFeature('${featureType}', '${apiKey}')">
+                                    <i class="fas fa-robot"></i> Use AI Feature
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal
+            const existingModal = document.getElementById('aiFeatureModal');
+            if (existingModal) existingModal.remove();
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('aiFeatureModal'));
+            modal.show();
+        }
+        
+        // Get feature-specific form
+        function getFeatureForm(featureType) {
+            switch(featureType) {
+                case 'destination-finder':
+                    return `
+                        <div class="mb-3">
+                            <label class="form-label">Travel Reason</label>
+                            <input type="text" class="form-control" id="travel_reason" placeholder="e.g., romantic getaway, family vacation, adventure trip">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Budget Level</label>
+                            <select class="form-control" id="budget_level">
+                                <option value="budget">Budget</option>
+                                <option value="mid_range" selected>Mid Range</option>
+                                <option value="luxury">Luxury</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration (days)</label>
+                            <input type="number" class="form-control" id="duration" min="1" max="30" value="7">
+                        </div>
+                    `;
+                case 'itinerary-creator':
+                    return `
+                        <div class="mb-3">
+                            <label class="form-label">Destination</label>
+                            <select class="form-control" id="destination">
+                                ${availableCities.map(city => `<option value="${city.value}">${city.label} (${city.country})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration (days)</label>
+                            <input type="number" class="form-control" id="itinerary_duration" min="1" max="14" value="4">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Interests (comma-separated)</label>
+                            <input type="text" class="form-control" id="interests" placeholder="culture, food, art, history, adventure">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Travel Style</label>
+                            <select class="form-control" id="travel_style">
+                                <option value="budget">Budget</option>
+                                <option value="mid_range" selected>Mid Range</option>
+                                <option value="luxury">Luxury</option>
+                            </select>
+                        </div>
+                    `;
+                case 'budget-optimizer':
+                    return `
+                        <div class="mb-3">
+                            <label class="form-label">Total Budget (€)</label>
+                            <input type="number" class="form-control" id="total_budget" min="100" max="10000" value="1000">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Destination</label>
+                            <select class="form-control" id="budget_destination">
+                                ${availableCities.map(city => `<option value="${city.value}">${city.label} (${city.country})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration (days)</label>
+                            <input type="number" class="form-control" id="budget_duration" min="1" max="14" value="5">
+                        </div>
+                    `;
+                default:
+                    return `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            This AI feature is ready to provide personalized insights. Click "Use AI Feature" to continue.
+                        </div>
+                    `;
+            }
+        }
+        
+        // Process AI feature request
+        async function processAIFeature(featureType, apiKey) {
+            const resultsDiv = document.getElementById('aiFeatureResults');
+            const formDiv = document.getElementById('aiFeatureForm');
+            
+            // Hide form, show loading
+            formDiv.style.display = 'none';
+            resultsDiv.style.display = 'block';
+            
+            try {
+                let requestData = { claude_api_key: apiKey };
+                
+                // Collect form data based on feature type
+                switch(featureType) {
+                    case 'destination-finder':
+                        requestData.travel_reason = document.getElementById('travel_reason').value;
+                        requestData.preferences = {
+                            budget_level: document.getElementById('budget_level').value,
+                            duration: parseInt(document.getElementById('duration').value)
+                        };
+                        break;
+                    case 'itinerary-creator':
+                        requestData.destination = document.getElementById('destination').value;
+                        requestData.duration = parseInt(document.getElementById('itinerary_duration').value);
+                        requestData.interests = document.getElementById('interests').value.split(',').map(s => s.trim());
+                        requestData.travel_style = document.getElementById('travel_style').value;
+                        break;
+                    case 'budget-optimizer':
+                        requestData.budget = parseFloat(document.getElementById('total_budget').value);
+                        requestData.destination = document.getElementById('budget_destination').value;
+                        requestData.duration = parseInt(document.getElementById('budget_duration').value);
+                        requestData.preferences = { luxury_level: 'medium' };
+                        break;
+                }
+                
+                // Make API call
+                const endpoint = `/api/ai-${featureType.replace('-', '-')}`;
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                // Display results
+                resultsDiv.innerHTML = formatAIResults(result, featureType);
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Error: ${error.message || 'Failed to process AI request'}
+                    </div>
+                `;
+            }
+        }
+        
+        // Format AI results for display
+        function formatAIResults(result, featureType) {
+            if (result.error) {
+                return `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ${result.error}</div>`;
+            }
+            
+            if (!result.success) {
+                return `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> No results available</div>`;
+            }
+            
+            let html = '<div class="ai-results">';
+            
+            switch(featureType) {
+                case 'destination-finder':
+                    html += '<h6><i class="fas fa-map-marked-alt"></i> Recommended Destinations</h6>';
+                    if (result.recommended_destinations) {
+                        result.recommended_destinations.slice(0, 5).forEach((dest, index) => {
+                            html += `
+                                <div class="mb-2 p-2 border rounded">
+                                    <strong>${index + 1}. ${dest.name}</strong> (${dest.country})
+                                    <br><small class="text-muted">${dest.why_perfect}</small>
+                                </div>
+                            `;
+                        });
+                    }
+                    break;
+                    
+                case 'itinerary-creator':
+                    html += `<h6><i class="fas fa-calendar-alt"></i> ${result.duration_days}-Day Itinerary</h6>`;
+                    html += `<p><strong>Destination:</strong> ${result.destination}</p>`;
+                    html += `<p><strong>Estimated Budget:</strong> €${result.estimated_budget?.total_estimated_cost || 'N/A'}</p>`;
+                    if (result.daily_itinerary) {
+                        Object.entries(result.daily_itinerary).forEach(([day, details]) => {
+                            html += `
+                                <div class="mb-3 p-2 border rounded">
+                                    <h6>${day.replace('_', ' ').toUpperCase()}</h6>
+                                    <ul class="mb-0">
+                                        ${details.activities?.map(activity => `<li>${activity}</li>`).join('') || ''}
+                                    </ul>
+                                </div>
+                            `;
+                        });
+                    }
+                    break;
+                    
+                case 'budget-optimizer':
+                    html += '<h6><i class="fas fa-dollar-sign"></i> Budget Optimization</h6>';
+                    html += `<p><strong>Target Budget:</strong> €${result.target_budget}</p>`;
+                    if (result.optimized_plan) {
+                        html += `<p><strong>Status:</strong> ${result.optimized_plan.status}</p>`;
+                        if (result.optimized_plan.tips) {
+                            html += '<h6>Money-Saving Tips:</h6><ul>';
+                            result.optimized_plan.tips.forEach(tip => {
+                                html += `<li>${tip}</li>`;
+                            });
+                            html += '</ul>';
+                        }
+                    }
+                    break;
+                    
+                default:
+                    html += '<div class="alert alert-success"><i class="fas fa-check"></i> AI feature executed successfully!</div>';
+                    html += `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+    </script>
     <script>
         // FORM HANDLING
         document.getElementById('planningForm').addEventListener('submit', function(e) {
