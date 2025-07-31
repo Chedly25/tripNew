@@ -10,44 +10,125 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        /* PROFESSIONAL RESULTS DESIGN */
+        /* MODERN UI DESIGN SYSTEM */
         :root {
-            --primary: #1e40af;
-            --primary-light: #3b82f6;
-            --secondary: #6b7280;
-            --accent: #0891b2;
-            --success: #059669;
-            --warning: #d97706;
-            --danger: #dc2626;
-            --dark: #111827;
-            --light: #f9fafb;
-            --border: #e5e7eb;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            /* Modern Color Palette */
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #64748b;
+            --accent: #06b6d4;
+            --accent-light: #67e8f9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            /* Neutrals */
+            --dark: #0f172a;
+            --dark-alt: #1e293b;
+            --medium: #475569;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            
+            /* Modern Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            
+            /* Modern Gradients */
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 20%, #f1f5f9 100%);
+            
+            /* Modern Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            
+            /* Modern Border Radius */
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            
+            /* Animations */
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background: var(--gradient-bg);
             color: var(--dark);
             line-height: 1.6;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* HEADER */
+        .modern-app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .modern-app::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* MODERN HEADER */
         .header {
-            background: white;
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 0;
-            box-shadow: var(--shadow);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            padding: var(--space-lg) 0;
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .header:hover {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-md);
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 var(--space-xl);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -56,33 +137,59 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: 1.1rem;
-            font-weight: 600;
+            gap: var(--space-md);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
             color: var(--primary);
+            transform: translateY(-1px);
         }
 
         .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 6px;
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .logo:hover .logo-icon {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
         }
 
         .back-button {
-            background: var(--light);
-            border: 1px solid var(--border);
+            background: var(--white);
+            border: 2px solid var(--border);
             color: var(--dark);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-lg);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--space-sm);
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .back-button:hover {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
@@ -143,40 +250,70 @@
             font-weight: 500;
         }
 
-        /* ROUTE NAVIGATION */
+        /* MODERN MAIN CONTAINER */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-xl);
+        }
+
+        /* MODERN ROUTE NAVIGATION */
         .route-navigation {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin: var(--space-2xl) auto;
             max-width: 1200px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .route-navigation:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: var(--shadow-xl);
         }
 
         .nav-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.25rem;
+            font-weight: 700;
             color: var(--dark);
-            margin-bottom: 1rem;
+            margin-bottom: var(--space-lg);
+            text-align: center;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 0.75rem;
+            gap: var(--space-md);
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .nav-button {
-            background: var(--light);
-            border: 1px solid var(--border);
-            color: var(--dark);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            background: var(--gradient-primary);
+            border: none;
+            color: var(--white);
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-lg);
             font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
             text-decoration: none;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            color: var(--white);
+        }
+
+        .nav-button:active {
+            transform: translateY(0);
         }
 
         .nav-button:hover {
@@ -186,36 +323,56 @@
             text-decoration: none;
         }
 
-        /* ROUTE CARDS */
+        /* MODERN ROUTE CARDS */
         .routes-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 var(--space-xl);
         }
 
         .route-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2.5rem;
-            margin: 2rem 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            margin: var(--space-2xl) 0;
             box-shadow: var(--shadow-lg);
-            transition: all 0.2s ease;
+            transition: var(--transition-slow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .route-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: var(--transition);
         }
 
         .route-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            background: rgba(255, 255, 255, 1);
         }
 
-        /* ROUTE HEADER */
+        .route-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* MODERN ROUTE HEADER */
         .route-header {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            margin-bottom: var(--space-2xl);
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: var(--space-lg);
         }
 
         .route-info {
@@ -224,44 +381,60 @@
         }
 
         .route-badge {
-            background: var(--primary);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 4px;
+            background: var(--gradient-accent);
+            color: var(--white);
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--radius-lg);
             font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow);
+            margin-bottom: var(--space-md);
             display: inline-block;
         }
 
         .route-title {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             color: var(--dark);
-            margin-bottom: 0.75rem;
+            margin-bottom: var(--space-md);
+            line-height: 1.2;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--medium) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .route-description {
             color: var(--secondary);
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: var(--space-lg);
+            font-weight: 400;
         }
 
         .route-features {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
         }
 
         .feature-tag {
-            background: rgba(30, 64, 175, 0.1);
+            background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
             font-weight: 500;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: var(--transition);
+        }
+
+        .feature-tag:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateY(-1px);
         }
 
         .focus-indicator {
@@ -545,94 +718,185 @@
             margin-bottom: 2rem;
         }
 
+        /* MODERN ACTION BUTTONS */
         .action-buttons {
             display: flex;
-            gap: 1rem;
+            gap: var(--space-lg);
             justify-content: center;
             flex-wrap: wrap;
+            margin: var(--space-2xl) 0;
         }
 
         .action-button {
-            background: var(--primary);
-            color: white;
+            background: var(--gradient-primary);
+            color: var(--white);
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-weight: 500;
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: var(--transition);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--space-sm);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+            transition: left 0.5s;
+        }
+
+        .action-button:hover::before {
+            left: 100%;
         }
 
         .action-button:hover {
-            background: #1d4ed8;
-            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+            color: var(--white);
             text-decoration: none;
         }
 
         .action-button.secondary {
-            background: var(--light);
+            background: var(--white);
             color: var(--dark);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
         }
 
         .action-button.secondary:hover {
-            background: var(--border);
-            color: var(--dark);
+            background: var(--gradient-accent);
+            color: var(--white);
+            border-color: transparent;
         }
 
-        /* MAP VISUALIZATION */
+        /* MODERN MAP VISUALIZATION */
         .map-section {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: var(--shadow);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            margin: var(--space-2xl) 0;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .map-section:hover {
+            box-shadow: var(--shadow-xl);
+            background: rgba(255, 255, 255, 1);
         }
 
         .map-title {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--dark);
-            margin-bottom: 1.5rem;
+            margin-bottom: var(--space-xl);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--space-sm);
         }
 
         .map-container {
             height: 500px;
-            border-radius: 8px;
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            border: 1px solid var(--border);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-md);
         }
 
         .map-controls {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .map-control-btn {
-            background: var(--light);
-            border: 1px solid var(--border);
+            background: var(--white);
+            border: 2px solid var(--border);
             color: var(--dark);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-lg);
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
+            font-size: 0.875rem;
         }
 
-        .map-control-btn:hover, .map-control-btn.active {
+        .map-control-btn:hover {
             background: var(--primary);
-            color: white;
+            color: var(--white);
             border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .map-control-btn.active {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* MODERN ANIMATIONS */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .route-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .route-card:nth-child(even) {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        /* MODERN SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: var(--radius);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
 
         /* ENHANCED FEATURES */
@@ -793,8 +1057,9 @@
     </style>
 </head>
 <body>
-    <!-- HEADER -->
-    <header class="header">
+    <div class="modern-app">
+        <!-- HEADER -->
+        <header class="header">
         <div class="header-content">
             <div class="logo">
                 <div class="logo-icon">
@@ -1511,16 +1776,39 @@
         }
 
         function hideLoading() {
+            // Hide loading modal
             const loadingModal = document.getElementById('loadingModal');
             if (loadingModal) {
                 const modal = bootstrap.Modal.getInstance(loadingModal);
                 if (modal) {
                     modal.hide();
                 }
+                // Remove modal after a short delay
+                setTimeout(() => {
+                    if (loadingModal && loadingModal.parentNode) {
+                        loadingModal.remove();
+                    }
+                }, 300);
             }
+            
+            // Remove any loading overlays
+            const overlays = document.querySelectorAll('.loading-overlay, .spinner-overlay');
+            overlays.forEach(overlay => overlay.remove());
+            
+            // Re-enable buttons that might have been disabled during loading
+            const buttons = document.querySelectorAll('button[disabled]:not([data-permanent-disabled])');
+            buttons.forEach(button => {
+                button.disabled = false;
+            });
+            
+            // Remove loading classes from body
+            document.body.classList.remove('loading', 'modal-loading');
         }
 
         function showModal(title, content) {
+            // Ensure any loading state is cleared
+            hideLoading();
+            
             // Remove any existing dynamic modal
             const existingModal = document.getElementById('dynamicModal');
             if (existingModal) {
@@ -1548,13 +1836,37 @@
             `;
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            const modal = new bootstrap.Modal(document.getElementById('dynamicModal'));
-            modal.show();
+            const modalElement = document.getElementById('dynamicModal');
+            const modal = new bootstrap.Modal(modalElement);
             
-            // Clean up modal after it's hidden
-            document.getElementById('dynamicModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
+            // Add comprehensive cleanup event listeners
+            modalElement.addEventListener('hide.bs.modal', function () {
+                // Clear any persistent loading states when modal starts closing
+                hideLoading();
+                
+                // Remove any loading overlays that might be stuck
+                const overlays = document.querySelectorAll('.loading-overlay, .spinner-overlay');
+                overlays.forEach(overlay => overlay.remove());
+                
+                // Re-enable any disabled buttons
+                const disabledButtons = document.querySelectorAll('button[disabled]');
+                disabledButtons.forEach(button => {
+                    if (!button.hasAttribute('data-permanent-disabled')) {
+                        button.disabled = false;
+                    }
+                });
             });
+            
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                // Final cleanup after modal is fully hidden
+                this.remove();
+                
+                // Double-check loading state cleanup
+                hideLoading();
+            });
+            
+            modal.show();
+            return modal;
         }
 
         // INITIALIZE MAPS
@@ -2068,40 +2380,6 @@
             return {{ itineraries|tojson|safe }}[routeId - 1];
         }
         
-        function showModal(title, content) {
-            // Create modal dynamically
-            const modalHtml = `
-                <div class="modal fade" id="dynamicModal" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">${title}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                ${content}
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Remove existing modal
-            const existingModal = document.getElementById('dynamicModal');
-            if (existingModal) {
-                existingModal.remove();
-            }
-            
-            // Add new modal to body
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('dynamicModal'));
-            modal.show();
-        }
 
         // 26 ENHANCED FEATURES FUNCTIONS
         async function showRouteAttractions() {
@@ -3817,16 +4095,45 @@
             return content;
         }
 
+        // GLOBAL CLEANUP FUNCTION
+        function globalCleanup() {
+            // Clear any stuck loading states
+            hideLoading();
+            
+            // Remove any orphaned modals
+            const orphanedModals = document.querySelectorAll('.modal:not(#dynamicModal):not(#loadingModal)');
+            orphanedModals.forEach(modal => modal.remove());
+            
+            // Clear any persistent overlays
+            const overlays = document.querySelectorAll('.loading-overlay, .spinner-overlay, .modal-backdrop');
+            overlays.forEach(overlay => overlay.remove());
+            
+            // Reset any stuck button states
+            const buttons = document.querySelectorAll('button[disabled]:not([data-permanent-disabled])');
+            buttons.forEach(button => button.disabled = false);
+            
+            console.log('Global cleanup completed');
+        }
+
         // Initialize maps when page loads
         document.addEventListener('DOMContentLoaded', function() {
             const routeCards = document.querySelectorAll('.route-card');
             console.log(`Found ${routeCards.length} route cards`);
             console.log('All routes data:', {{ itineraries|tojson|safe }});
+            
+            // Perform initial cleanup in case of browser back/forward issues
+            globalCleanup();
+            
+            // Initialize maps
             setTimeout(initializeMaps, 500);
+            
+            // Add window focus cleanup for when user returns to tab
+            window.addEventListener('focus', globalCleanup);
         });
 
-        console.log('Professional Dynamic Results with Maps and ALL FEATURES FULLY IMPLEMENTED');
-        console.log('Interactive maps, advanced travel tools, and missing features now working');
+        console.log('🎨 MODERN UI: Professional Dynamic Results with Beautiful Design');
+        console.log('🚀 ALL FEATURES: Interactive maps, advanced travel tools, and stunning animations');
     </script>
+    </div> <!-- Close modern-app wrapper -->
 </body>
 </html>
