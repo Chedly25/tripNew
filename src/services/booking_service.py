@@ -165,7 +165,7 @@ class BookingService:
                 'distance_to_center': 0.5,
                 'amenities': ['WiFi', 'Parking', 'Restaurant', 'Spa', 'Room Service'],
                 'photo': '',
-                'url': '',
+                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
                 'stars': 4,
                 'description': f'Luxury hotel in the heart of {city_name} with exceptional service and amenities.'
             },
@@ -179,7 +179,7 @@ class BookingService:
                 'distance_to_center': 0.8,
                 'amenities': ['WiFi', 'Breakfast', 'Concierge', 'Bar'],
                 'photo': '',
-                'url': '',
+                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
                 'stars': 4,
                 'description': f'Charming boutique hotel with unique character in historic {city_name}.'
             },
@@ -193,7 +193,7 @@ class BookingService:
                 'distance_to_center': 0.3,
                 'amenities': ['WiFi', 'Parking', 'Restaurant'],
                 'photo': '',
-                'url': '',
+                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
                 'stars': 3,
                 'description': f'Comfortable and convenient hotel perfectly located in {city_name}.'
             },
@@ -207,7 +207,7 @@ class BookingService:
                 'distance_to_center': 1.2,
                 'amenities': ['WiFi', 'Breakfast'],
                 'photo': '',
-                'url': '',
+                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
                 'stars': 3,
                 'description': f'Clean and affordable accommodation with easy transport links in {city_name}.'
             }

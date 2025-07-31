@@ -178,7 +178,7 @@ class FoursquareService:
                 'address': f'City Center, {city_name}',
                 'category': 'Restaurant',
                 'cuisine': 'French',
-                'website': '',
+                'website': f'https://www.lebistro-{city_name.lower().replace(" ", "-")}.com',
                 'hours': '12:00-14:00, 19:00-22:00',
                 'photo': ''
             },
@@ -189,7 +189,7 @@ class FoursquareService:
                 'address': f'Old Town, {city_name}',
                 'category': 'Restaurant',
                 'cuisine': 'Italian',
-                'website': '',
+                'website': f'https://www.osteria-{city_name.lower().replace(" ", "-")}.com',
                 'hours': '18:00-23:00',
                 'photo': ''
             },

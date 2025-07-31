@@ -629,8 +629,8 @@
         }
 
         function fetchTripData(route) {
-            // Prepare cities data for API call
-            const cities = [route.start_city, ...route.intermediate_cities, route.end_city];
+            // Prepare cities data for API call - exclude start city since user is starting from home
+            const cities = [...route.intermediate_cities, route.end_city];
             const citiesData = cities.map(city => ({
                 name: city.name,
                 coordinates: Array.isArray(city.coordinates) 
@@ -666,8 +666,8 @@
             })
             .catch(error => {
                 console.error('Error fetching trip data:', error);
-                // Fallback to default content
-                const cities = [route.start_city, ...route.intermediate_cities, route.end_city];
+                // Fallback to default content - exclude start city since user is starting from home
+                const cities = [...route.intermediate_cities, route.end_city];
                 populateHotelsFallback(cities);
                 populateRestaurantsFallback(cities);
                 populateActivitiesFallback(cities);
