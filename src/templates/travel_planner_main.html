@@ -572,9 +572,9 @@
                         console.log('⏳ Loading overlay shown');
                     }
                     
-                    // Basic form validation
-                    const startCity = document.querySelector('input[placeholder*="Paris"]');
-                    const endCity = document.querySelector('input[placeholder*="Venice"]');
+                    // Basic form validation - fix selectors
+                    const startCity = document.querySelector('input[name="start_city"]');
+                    const endCity = document.querySelector('input[name="end_city"]');
                     
                     if (!startCity?.value || !endCity?.value) {
                         alert('Please enter both starting and destination cities');
@@ -600,9 +600,12 @@
                     if (result.success) {
                         // Store result and redirect to results page
                         sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
+                        console.log('✅ Results stored, redirecting to results page');
                         window.location.href = '/results';
                     } else {
+                        console.error('❌ API Error:', result.error);
                         alert('Error: ' + (result.error || 'Failed to generate travel plan'));
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
                     }
                     
                 } catch (error) {

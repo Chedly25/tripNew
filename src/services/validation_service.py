@@ -183,13 +183,10 @@ class ValidationService:
     def sanitize_output(self, data: Any) -> Any:
         """Sanitize data for output to prevent XSS and handle JSON serialization."""
         if isinstance(data, str):
-            # Basic HTML escaping
+            # Only escape dangerous characters, not all HTML entities for JSON API responses
             return (data
-                   .replace('&', '&amp;')
                    .replace('<', '&lt;')
-                   .replace('>', '&gt;')
-                   .replace('"', '&quot;')
-                   .replace("'", '&#x27;'))
+                   .replace('>', '&gt;'))
         
         elif isinstance(data, Enum):
             # Convert enums to their string values

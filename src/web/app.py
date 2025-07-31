@@ -132,6 +132,31 @@ def create_app() -> Flask:
             logger.error("Results template rendering failed", error=str(e))
             return "Service temporarily unavailable", 500
     
+    @app.route('/test')
+    def test_frontend():
+        """Test frontend functionality."""
+        try:
+            return render_template('../../../test_frontend.html')
+        except Exception:
+            # Return inline HTML if template fails
+            return """
+            <!DOCTYPE html>
+            <html><head><title>Test</title></head>
+            <body>
+                <h1>App is running!</h1>
+                <p>Backend is working. Form test:</p>
+                <form action="/plan" method="post">
+                    <input name="start_city" value="Aix-en-Provence" placeholder="Start">
+                    <input name="end_city" value="Venice" placeholder="End">
+                    <input type="hidden" name="travel_days" value="5">
+                    <input type="hidden" name="nights_at_destination" value="2">
+                    <input type="hidden" name="season" value="summer">
+                    <input type="hidden" name="trip_type" value="home">
+                    <button type="submit">Test</button>
+                </form>
+            </body></html>
+            """
+    
     @app.route('/plan', methods=['POST'])
     def plan_trip():
         """Main trip planning endpoint."""
@@ -157,6 +182,7 @@ def create_app() -> Flask:
             # Sanitize output data
             response_data = validation_service.sanitize_output(routes_result.data)
             
+            # For testing, let's also render directly to results page
             return jsonify({
                 'success': True,
                 'data': response_data

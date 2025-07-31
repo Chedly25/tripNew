@@ -446,17 +446,23 @@
             let itineraries = [];
             try {
                 const storedData = sessionStorage.getItem('travelPlanResult');
+                console.log('Stored data:', storedData);
                 if (storedData) {
                     const data = JSON.parse(storedData);
+                    console.log('Parsed data:', data);
                     itineraries = data.data?.routes || [];
+                    console.log('Extracted routes:', itineraries);
                 }
             } catch (e) {
-                console.log('No stored data found, using sample data');
+                console.error('Error loading stored data:', e);
             }
             
             // Use sample data if no real data available
             if (itineraries.length === 0) {
+                console.log('No real data found, using sample data');
                 itineraries = sampleItineraries;
+            } else {
+                console.log('Using real data from API');
             }
             
             // Update summary
@@ -476,14 +482,21 @@
         function createItineraryCard(itinerary, index) {
             const config = routeTypeConfig[itinerary.route_type] || routeTypeConfig['scenic'];
             
-            const citiesBadges = itinerary.intermediate_cities
-                .map(city => `<div class="city-badge">
-                    <i class="fas fa-map-marker-alt"></i>
-                    ${city.name}
-                </div>`)
+            // Handle both API format and sample format
+            const intermediateCities = itinerary.intermediate_cities || [];
+            const citiesBadges = intermediateCities
+                .map(city => {
+                    const cityName = typeof city === 'string' ? city : (city.name || 'Unknown City');
+                    return `<div class="city-badge">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${cityName}
+                    </div>`;
+                })
                 .join('');
             
-            const highlightItems = itinerary.highlights
+            // Handle highlights safely
+            const highlights = itinerary.highlights || [];
+            const highlightItems = highlights
                 .map(highlight => `<div class="highlight-item">${highlight}</div>`)
                 .join('');
             
@@ -591,12 +604,25 @@
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
             
-            // Create route coordinates
-            const routeCoords = [
-                itinerary.start_city.coordinates,
-                ...itinerary.intermediate_cities.map(city => city.coordinates),
-                itinerary.end_city.coordinates
-            ];
+            // Create route coordinates - handle different data formats
+            const startCoords = Array.isArray(itinerary.start_city.coordinates) 
+                ? itinerary.start_city.coordinates 
+                : [itinerary.start_city.coordinates.latitude, itinerary.start_city.coordinates.longitude];
+            
+            const endCoords = Array.isArray(itinerary.end_city.coordinates)
+                ? itinerary.end_city.coordinates
+                : [itinerary.end_city.coordinates.latitude, itinerary.end_city.coordinates.longitude];
+            
+            const intermediateCoords = (itinerary.intermediate_cities || []).map(city => {
+                if (typeof city === 'string') return null; // Skip string cities
+                if (Array.isArray(city.coordinates)) return city.coordinates;
+                if (city.coordinates && city.coordinates.latitude) {
+                    return [city.coordinates.latitude, city.coordinates.longitude];
+                }
+                return null;
+            }).filter(coord => coord !== null);
+            
+            const routeCoords = [startCoords, ...intermediateCoords, endCoords];
             
             // Add route line
             const config = routeTypeConfig[itinerary.route_type] || routeTypeConfig['scenic'];
@@ -626,19 +652,31 @@
             });
             
             // Add start marker
-            L.marker(itinerary.start_city.coordinates, {icon: startIcon})
+            L.marker(startCoords, {icon: startIcon})
                 .addTo(map)
                 .bindPopup(`<b>Start:</b> ${itinerary.start_city.name}`);
             
             // Add intermediate markers
-            itinerary.intermediate_cities.forEach(city => {
-                L.marker(city.coordinates, {icon: wayIcon})
+            (itinerary.intermediate_cities || []).forEach(city => {
+                if (typeof city === 'string') return; // Skip string cities
+                
+                let cityCoords;
+                if (Array.isArray(city.coordinates)) {
+                    cityCoords = city.coordinates;
+                } else if (city.coordinates && city.coordinates.latitude) {
+                    cityCoords = [city.coordinates.latitude, city.coordinates.longitude];
+                } else {
+                    return; // Skip if no valid coordinates
+                }
+                
+                const cityTypes = city.types ? city.types.join(', ') : 'Intermediate stop';
+                L.marker(cityCoords, {icon: wayIcon})
                     .addTo(map)
-                    .bindPopup(`<b>${city.name}</b><br/>${city.types.join(', ')}`);
+                    .bindPopup(`<b>${city.name}</b><br/>${cityTypes}`);
             });
             
             // Add end marker
-            L.marker(itinerary.end_city.coordinates, {icon: endIcon})
+            L.marker(endCoords, {icon: endIcon})
                 .addTo(map)
                 .bindPopup(`<b>Destination:</b> ${itinerary.end_city.name}`);
             
