@@ -24,8 +24,8 @@ try:
         'TESTING': False
     })
 
-except Exception as e:
-    print(f"WSGI startup error: {e}")
+except Exception as startup_error:
+    print(f"WSGI startup error: {startup_error}")
     import traceback
     traceback.print_exc()
     
@@ -35,7 +35,7 @@ except Exception as e:
     
     @application.route('/')
     def error():
-        return f"App failed to start: {str(e)}", 500
+        return f"App failed to start: {str(startup_error)}", 500
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

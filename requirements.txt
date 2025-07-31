@@ -9,5 +9,6 @@ structlog==23.1.0
 tenacity==8.2.2
 redis==4.5.4
 geopy==2.4.1
+sqlalchemy==2.0.23
 # Heroku-compatible versions
 psycopg2-binary==2.9.6
