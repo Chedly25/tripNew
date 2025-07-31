@@ -110,7 +110,7 @@ def index():
 
 
 @app.route('/api/plan-complete', methods=['POST'])
-async def plan_complete_trip():
+def plan_complete_trip():
     """Complete travel planning with all real data sources."""
     try:
         logger.info("Complete travel plan requested")
@@ -127,8 +127,17 @@ async def plan_complete_trip():
         
         trip_request = validation_result.data
         
-        # Generate complete travel plan with real APIs
-        plan_result = await travel_service.generate_complete_travel_plan(trip_request)
+        # Generate complete travel plan with real APIs (run async in sync context)
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+        plan_result = loop.run_until_complete(
+            travel_service.generate_complete_travel_plan(trip_request)
+        )
         
         if not plan_result.success:
             logger.error("Travel plan generation failed", 
