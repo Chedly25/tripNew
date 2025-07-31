@@ -7,6 +7,7 @@ from datetime import datetime
 import structlog
 from ..core.models import City, ServiceResult, TripRequest
 from ..core.exceptions import TravelPlannerException
+from .real_places_service import RealPlacesService
 
 logger = structlog.get_logger(__name__)
 
@@ -15,7 +16,7 @@ class TravelAmenitiesService:
     """Service for managing travel amenities like hotels, restaurants, and fuel."""
     
     def __init__(self):
-        pass
+        self.places_service = RealPlacesService()
     
     async def get_comprehensive_accommodations(self, cities: List[City], 
                                              trip_request: TripRequest) -> ServiceResult:

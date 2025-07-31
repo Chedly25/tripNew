@@ -225,54 +225,23 @@ class AccommodationService:
     
     def _generate_fallback_accommodations(self, city: str, check_in: datetime,
                                         check_out: datetime, guests: int, budget_level: str) -> List[Dict]:
-        """Generate realistic fallback accommodations when scraping fails"""
-        import random
+        """DEPRECATED: This method generates fake data and should not be used in production."""
+        logger.error("🚨 CRITICAL: Fake accommodation generation called! This creates misleading fake hotel data.")
+        logger.error("❌ This method generates fake hotels like 'Venice Hotel A' which don't exist!")
+        logger.error("✅ Solution: Use RealPlacesService with Google Places API for authentic hotel data")
         
-        accommodations = []
-        nights = (check_out - check_in).days
-        
-        # Base prices by budget level and city size
-        city_size_multiplier = self._get_city_size_multiplier(city)
-        
-        budget_ranges = {
-            'budget': (20, 60),
-            'mid_range': (60, 150),
-            'luxury': (150, 400)
-        }
-        
-        price_range = budget_ranges.get(budget_level, budget_ranges['mid_range'])
-        
-        # Generate different types of accommodations
-        accommodation_types = [
-            ('hotel', 'Hotel', ['WiFi', 'Breakfast', 'Reception']),
-            ('hostel', 'Hostel', ['WiFi', 'Kitchen', 'Lounge']),
-            ('boutique', 'Boutique Hotel', ['WiFi', 'Premium Breakfast', 'Concierge']),
-            ('apartment', 'Apartment', ['WiFi', 'Kitchen', 'Living Room']),
-            ('b&b', 'Bed & Breakfast', ['WiFi', 'Breakfast', 'Garden'])
-        ]
-        
-        for i, (acc_type, type_name, amenities) in enumerate(accommodation_types):
-            base_price = random.randint(price_range[0], price_range[1])
-            adjusted_price = int(base_price * city_size_multiplier)
-            
-            accommodations.append({
-                'name': f"{city} {type_name} {chr(65 + i)}",  # A, B, C, etc.
-                'type': acc_type,
-                'price_per_night': adjusted_price,
-                'total_price': adjusted_price * nights,
-                'rating': round(random.uniform(7.0, 9.5), 1),
-                'rating_count': random.randint(50, 500),
-                'location': f"{random.choice(['City Center', 'Historic District', 'Near Station'])}, {city}",
-                'amenities': amenities + random.sample(['Pool', 'Gym', 'Spa', 'Restaurant', 'Bar', 'Parking'], 
-                                                     random.randint(0, 3)),
-                'cancellation': random.choice(['Free cancellation', 'Non-refundable', 'Flexible']),
-                'distance_from_center': round(random.uniform(0.2, 3.0), 1),
-                'source': 'generated',
-                'url': '',
-                'available': True
-            })
-        
-        return accommodations
+        # Return minimal fallback without fake names
+        return [{
+            'name': f'Hotels in {city}',
+            'type': 'accommodation',
+            'price_per_night': 'N/A', 
+            'rating': 'N/A',
+            'location': f'{city} area',
+            'amenities': [],
+            'source': 'fallback',
+            'note': 'Real hotel data requires Google Places API integration - see REAL_DATA_SETUP.md',
+            'warning': 'This service generates fake hotel data and should be replaced'
+        }]
     
     def _get_city_size_multiplier(self, city: str) -> float:
         """Get price multiplier based on city size and popularity"""
