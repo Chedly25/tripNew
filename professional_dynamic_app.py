@@ -349,6 +349,10 @@ class ProfessionalDynamicPlanner:
         total_km = self._calculate_realistic_distance(start_city, end_city, len(intermediate_cities))
         driving_hours = round(total_km / 80, 1)  # Realistic highway speed with stops
         
+        # Get coordinate info for cities
+        start_info = self.geographic_router.get_city_info(start_city)
+        end_info = self.geographic_router.get_city_info(end_city)
+        
         # Build overnight stops
         overnight_stops = [
             {
@@ -356,6 +360,8 @@ class ProfessionalDynamicPlanner:
                 'country': 'France',
                 'nights': 1,
                 'population': 143006,
+                'lat': start_info['lat'],
+                'lon': start_info['lon'],
                 'score': round(random.uniform(7.5, 8.5), 1),
                 'activities': self._get_activities_for_city(start_city, config['focus']),
                 'hidden_gems': self._get_hidden_gems_for_city(start_city, config['focus']),
@@ -365,11 +371,14 @@ class ProfessionalDynamicPlanner:
         
         # Add intermediate stops
         for city_info in intermediate_cities[:min(2, travel_days-2)]:  # Limit based on travel days
+            city_coords = self.geographic_router.get_city_info(city_info['name'])
             overnight_stops.append({
                 'name': city_info['name'],
                 'country': city_info['country'],
                 'nights': 1,
                 'population': city_info['population'],
+                'lat': city_coords['lat'],
+                'lon': city_coords['lon'],
                 'score': round(random.uniform(8.0, 9.5), 1),
                 'activities': self._get_activities_for_city(city_info['name'], config['focus']),
                 'hidden_gems': self._get_hidden_gems_for_city(city_info['name'], config['focus']),
@@ -383,6 +392,8 @@ class ProfessionalDynamicPlanner:
             'country': 'Italy',
             'nights': venice_nights,
             'population': 261905,
+            'lat': end_info['lat'],
+            'lon': end_info['lon'],
             'score': round(random.uniform(9.0, 9.8), 1),
             'activities': self._get_activities_for_city(end_city, config['focus']),
             'hidden_gems': self._get_hidden_gems_for_city(end_city, config['focus']),
@@ -596,13 +607,16 @@ Keep each section to 2-3 concise, practical points. Focus on actionable advice."
     
     def _create_fallback_route(self, name: str, start: str, end: str, days: int, nights: int) -> Dict:
         """Create a fallback route if generation fails."""
+        start_info = self.geographic_router.get_city_info(start)
+        end_info = self.geographic_router.get_city_info(end)
+        
         return {
             'strategy_name': name,
             'strategy_description': f"A carefully planned route from {start} to {end}",
             'route': {
                 'overnight_stops': [
-                    {'name': start, 'country': 'France', 'nights': 1, 'population': 143006, 'score': 8.0},
-                    {'name': end, 'country': 'Italy', 'nights': nights, 'population': 261905, 'score': 9.0}
+                    {'name': start, 'country': 'France', 'nights': 1, 'population': 143006, 'lat': start_info['lat'], 'lon': start_info['lon'], 'score': 8.0},
+                    {'name': end, 'country': 'Italy', 'nights': nights, 'population': 261905, 'lat': end_info['lat'], 'lon': end_info['lon'], 'score': 9.0}
                 ],
                 'day_stops': [
                     {'name': 'Scenic Stop', 'country': 'Various', 'score': 8.5, 'type': 'scenic_stop'}
@@ -1072,6 +1086,136 @@ def route_attractions():
         
         interface = ProfessionalDynamicPlanner()
         result = interface.get_route_attractions(start_city, end_city, intermediate_cities)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# MISSING FEATURES API ENDPOINTS - Previously Placeholder Features
+from missing_features import MissingFeatures
+
+@app.route('/api/photo-planner', methods=['POST'])
+def photo_planner():
+    """Get photography spots and golden hour times."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.photo_planner(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/language-assistant', methods=['POST'])
+def language_assistant():
+    """Get essential phrases and translations for destinations."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.language_assistant(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/offline-mode', methods=['POST'])
+def offline_mode():
+    """Prepare offline maps and essential information."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.offline_mode_preparation(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/car-rental-finder', methods=['POST'])
+def car_rental_finder():
+    """Find and compare car rental options."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.car_rental_finder(
+            data.get('route_data', {}),
+            data.get('preferences', {})
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/health-safety', methods=['POST'])
+def health_safety():
+    """Get health and safety information for destinations."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.health_safety_info(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/eco-friendly-options', methods=['POST'])
+def eco_friendly_options():
+    """Get eco-friendly travel options and carbon calculations."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.eco_friendly_options(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/experience-booking', methods=['POST'])
+def experience_booking():
+    """Book unique local experiences and tours."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.experience_booking(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/local-recommendations', methods=['POST'])
+def local_recommendations():
+    """Get insider tips and local recommendations."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.local_recommendations(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/device-sync', methods=['POST'])
+def device_sync():
+    """Set up device synchronization."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.device_sync(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/smart-notifications', methods=['POST'])
+def smart_notifications():
+    """Set up intelligent travel notifications."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.smart_notifications(data.get('route_data', {}))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/group-planning', methods=['POST'])
+def group_planning():
+    """Set up collaborative group travel planning."""
+    try:
+        data = request.get_json()
+        missing_features = MissingFeatures()
+        result = missing_features.group_planning(
+            data.get('route_data', {}),
+            data.get('group_details', {})
+        )
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -214,7 +214,7 @@ class EnhancedFeatures:
                 "budget_breakdown": budget,
                 "daily_breakdown": daily_breakdown,
                 "total_cost": total_cost,
-                "cost_per_day": round(total_cost / len(stops), 2),
+                "cost_per_day": round(total_cost / len(stops), 2) if stops else 0,
                 "savings_tips": [
                     "Cook breakfast at accommodation - save €15/day",
                     "Use public transport in cities - save €25/day",
@@ -546,13 +546,17 @@ class EnhancedFeatures:
     def _create_daily_budget_breakdown(self, stops: List[Dict], budget: Dict, travel_style: str) -> Dict:
         """Create daily budget breakdown."""
         daily = {}
+        if not stops:
+            return daily
+            
+        num_stops = len(stops)
         for stop in stops:
             daily[stop['name']] = {
-                "accommodation": round(budget['accommodation'] / len(stops), 2),
-                "food": round(budget['food'] / len(stops), 2), 
-                "activities": round(budget['activities'] / len(stops), 2),
-                "transport": round(budget['transportation'] / len(stops), 2),
-                "miscellaneous": round(budget['miscellaneous'] / len(stops), 2)
+                "accommodation": round(budget['accommodation'] / num_stops, 2),
+                "food": round(budget['food'] / num_stops, 2), 
+                "activities": round(budget['activities'] / num_stops, 2),
+                "transport": round(budget['transportation'] / num_stops, 2),
+                "miscellaneous": round(budget['miscellaneous'] / num_stops, 2)
             }
         return daily
     

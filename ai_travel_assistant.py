@@ -497,7 +497,7 @@ class AITravelAssistant:
         
         return {
             'total_estimated_cost': round(total, 2),
-            'daily_average': round(total / len(daily_costs), 2),
+            'daily_average': round(total / len(daily_costs), 2) if daily_costs else 0,
             'cost_breakdown': {
                 'activities': round(total * 0.4, 2),
                 'food': round(total * 0.35, 2),
@@ -551,7 +551,7 @@ class AITravelAssistant:
     def _analyze_seasonal_conditions(self, destination: str, months: List[str], city_info: Dict) -> Dict:
         """Analyze seasonal conditions for destination."""
         month_scores = {month: random.uniform(0.6, 0.95) for month in months}
-        avg_score = sum(month_scores.values()) / len(month_scores)
+        avg_score = sum(month_scores.values()) / len(month_scores) if months else 0.7
         
         return {
             'suitability_score': avg_score,
