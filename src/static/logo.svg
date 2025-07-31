@@ -1,0 +1,20 @@
+<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="30" cy="30" r="28" fill="url(#logoGradient)" stroke="white" stroke-width="2"/>
+  
+  <!-- Route/path icon -->
+  <path d="M15 25 Q30 15 45 25 Q30 35 15 25" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M15 35 Q30 25 45 35" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  
+  <!-- Location markers -->
+  <circle cx="15" cy="25" r="3" fill="white"/>
+  <circle cx="45" cy="25" r="3" fill="white"/>
+  <circle cx="30" cy="30" r="2" fill="white" opacity="0.8"/>
+</svg>

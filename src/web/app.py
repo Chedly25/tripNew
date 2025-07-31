@@ -80,10 +80,12 @@ def create_app() -> Flask:
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; "
-            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; "
-            "img-src 'self' data: https:; "
-            "connect-src 'self'"
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com unpkg.com fonts.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com unpkg.com fonts.googleapis.com; "
+            "font-src 'self' fonts.gstatic.com cdnjs.cloudflare.com; "
+            "img-src 'self' data: https: http: *.tile.openstreetmap.org *.googleapis.com; "
+            "connect-src 'self' https: *.tile.openstreetmap.org api.openrouteservice.org; "
+            "frame-src 'none'"
         )
         return response
     
