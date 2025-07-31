@@ -22,6 +22,8 @@ from src.infrastructure.cache import CacheService
 from src.services.city_service import CityService
 from src.services.validation_service import ValidationService
 from src.services.production_travel_service import ProductionTravelService
+from src.services.hidden_gems_service import HiddenGemsService
+from src.services.itinerary_generator import ItineraryGenerator
 from src.core.models import TripRequest, Season, ServiceResult
 from src.core.exceptions import TravelPlannerException, ValidationError
 
@@ -43,6 +45,8 @@ cache_service = CacheService(redis_url=os.getenv('REDIS_URL'))
 city_service = CityService(None)  # Using in-memory for demo
 validation_service = ValidationService()
 travel_service = ProductionTravelService(config_service, cache_service, city_service)
+hidden_gems_service = HiddenGemsService(city_service)
+itinerary_generator = ItineraryGenerator(city_service, hidden_gems_service)
 
 logger.info("Production Travel Planner initialized", 
            services_available=travel_service.api_manager.get_available_services())
@@ -101,9 +105,9 @@ def handle_unexpected_error(e):
 
 @app.route('/')
 def index():
-    """Production landing page."""
+    """Enhanced production landing page."""
     try:
-        return render_template('production_app.html')
+        return render_template('enhanced_travel_planner.html')
     except Exception as e:
         logger.error("Template rendering failed", error=str(e))
         return "Service temporarily unavailable", 500
@@ -164,6 +168,115 @@ def plan_complete_trip():
         
     except Exception as e:
         logger.error("Complete travel planning failed", error=str(e))
+        return jsonify({
+            'success': False,
+            'error': 'Service temporarily unavailable'
+        }), 500
+
+
+@app.route('/api/plan-complete-enhanced', methods=['POST'])
+def plan_complete_enhanced_trip():
+    """Enhanced complete travel planning with hidden gems and detailed itineraries."""
+    try:
+        logger.info("Enhanced travel plan requested")
+        
+        # Validate request data
+        form_data = request.form.to_dict()
+        validation_result = validation_service.validate_trip_request(form_data)
+        
+        if not validation_result.success:
+            return jsonify({
+                'success': False, 
+                'error': validation_result.error_message
+            }), 400
+        
+        trip_request = validation_result.data
+        
+        # Get cities with validation
+        start_city = city_service.get_city_by_name(trip_request.start_city)
+        end_city = city_service.get_city_by_name(trip_request.end_city)
+        
+        if not start_city or not end_city:
+            return jsonify({
+                'success': False,
+                'error': f"Cities not found: {trip_request.start_city}, {trip_request.end_city}"
+            }), 400
+        
+        logger.info("Generating enhanced travel plan", 
+                   start=start_city.name, end=end_city.name)
+        
+        # Generate complete travel plan with real APIs (run async in sync context)
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        # Generate basic travel plan
+        plan_result = loop.run_until_complete(
+            travel_service.generate_complete_travel_plan(trip_request)
+        )
+        
+        # Generate comprehensive itinerary with hidden gems
+        itinerary_result = loop.run_until_complete(
+            itinerary_generator.generate_complete_itinerary(
+                start_city, end_city, trip_request
+            )
+        )
+        
+        if not plan_result.success:
+            logger.error("Travel plan generation failed", 
+                        error=plan_result.error_message)
+            return jsonify({
+                'success': False,
+                'error': 'Unable to generate complete travel plan'
+            }), 500
+        
+        # Combine all results
+        enhanced_data = plan_result.data.copy()
+        
+        if itinerary_result.success:
+            # Add enhanced features
+            enhanced_data.update({
+                'daily_itinerary': itinerary_result.data.get('daily_itinerary', []),
+                'intermediate_cities': itinerary_result.data.get('intermediate_cities', []),
+                'night_distribution': itinerary_result.data.get('night_distribution', {}),
+                'timeline': itinerary_result.data.get('timeline', {}),
+                'packing_suggestions': itinerary_result.data.get('packing_suggestions', {}),
+                'budget_breakdown': itinerary_result.data.get('budget_breakdown', {}),
+                'travel_tips': itinerary_result.data.get('travel_tips', {}),
+                'trip_summary': itinerary_result.data.get('trip_summary', {})
+            })
+        
+        # Sanitize and prepare response
+        response_data = validation_service.sanitize_output(enhanced_data)
+        
+        logger.info("Enhanced travel plan generated successfully",
+                   start=trip_request.start_city,
+                   end=trip_request.end_city,
+                   routes_count=len(response_data.get('routes', [])),
+                   intermediate_cities=len(response_data.get('intermediate_cities', [])),
+                   daily_itinerary_days=len(response_data.get('daily_itinerary', [])))
+        
+        return jsonify({
+            'success': True,
+            'data': response_data,
+            'generated_at': datetime.utcnow().isoformat(),
+            'version': '3.0.0-enhanced',
+            'features': {
+                'hidden_gems': True,
+                'daily_itinerary': True,
+                'night_distribution': True,
+                'budget_breakdown': True,
+                'packing_suggestions': True,
+                'travel_tips': True,
+                'real_apis': True
+            }
+        })
+        
+    except Exception as e:
+        logger.error("Enhanced travel planning failed", error=str(e))
         return jsonify({
             'success': False,
             'error': 'Service temporarily unavailable'
