@@ -1,67 +1,8 @@
-# Core Flask and Web Framework
+# Simplified requirements for deployment compatibility
 Flask==3.0.0
-Werkzeug==3.0.1
-Jinja2==3.1.3
-MarkupSafe==2.1.5
-itsdangerous==2.1.2
-click==8.1.7
-blinker==1.7.0
 gunicorn==21.2.0
-
-# HTTP Requests and APIs
 requests==2.31.0
-urllib3==2.1.0
-
-# Database and ORM
-sqlalchemy==2.0.23
-flask-sqlalchemy==3.1.1
-alembic==1.13.1
-
-# Data Processing
-pandas==2.1.4
-numpy==1.25.2
 geopy==2.4.1
-
-# Web Scraping
-beautifulsoup4==4.12.2
-selenium==4.16.0
-lxml==4.9.3
-
-# Date and Time
-python-dateutil==2.8.2
-pytz==2023.3
-
-# Caching
-flask-caching==2.1.0
-
-# Environment Variables
+anthropic==0.25.1
 python-dotenv==1.0.0
-
-# API Rate Limiting
-flask-limiter==3.5.0
-
-# JSON and Data Validation
-jsonschema==4.20.0
-
-# Logging
-structlog==23.2.0
-
-# HTTP Client with retry logic
-tenacity==8.2.3
-
-# Geographic calculations
-haversine==2.8.0
-
-# Claude AI
-anthropic==0.7.8
-
-# OpenRoute Service client
-openrouteservice==2.3.3
-
-# Weather data
-pyowm==3.3.0
-
-# Development tools
-pytest==7.4.3
-black==23.11.0
-flake8==6.1.0
+structlog==23.1.0
