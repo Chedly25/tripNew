@@ -12,8 +12,9 @@ class RouteType(Enum):
     SCENIC = "scenic"
     CULTURAL = "cultural"
     CULINARY = "culinary"
-    BUDGET = "budget"
     ADVENTURE = "adventure"
+    ROMANTIC = "romantic"
+    BUDGET = "budget"
     WELLNESS = "wellness"
     HIDDEN_GEMS = "hidden_gems"
 

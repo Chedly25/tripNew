@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Perfect European Road Trip</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .hero-header {
+            background: var(--gradient);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .itinerary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .itinerary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .itinerary-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .itinerary-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .itinerary-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .itinerary-subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        
+        .route-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .stat-text {
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .route-map {
+            height: 300px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .cities-list {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .city-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .highlights-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .highlights-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .highlight-item {
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .cost-estimate {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #bae6fd;
+        }
+        
+        .cost-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .cost-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .cost-item {
+            text-align: center;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e0f2fe;
+        }
+        
+        .cost-amount {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .cost-label {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .select-route-btn {
+            background: var(--gradient);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .select-route-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .back-btn {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .back-btn:hover {
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .itinerary-card {
+                padding: 1.5rem;
+            }
+            
+            .route-stats {
+                gap: 1rem;
+            }
+            
+            .cities-list {
+                gap: 0.5rem;
+            }
+            
+            .city-badge {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+        
+        .leaflet-container {
+            border-radius: 12px;
+        }
+        
+        .route-type-scenic { --route-color: #10b981; }
+        .route-type-cultural { --route-color: #8b5cf6; }
+        .route-type-adventure { --route-color: #f59e0b; }
+        .route-type-culinary { --route-color: #ef4444; }
+        .route-type-romantic { --route-color: #ec4899; }
+        
+        .itinerary-card[data-route-type="scenic"] .itinerary-icon,
+        .itinerary-card[data-route-type="scenic"] .stat-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .itinerary-card[data-route-type="cultural"] .itinerary-icon,
+        .itinerary-card[data-route-type="cultural"] .stat-icon {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .itinerary-card[data-route-type="adventure"] .itinerary-icon,
+        .itinerary-card[data-route-type="adventure"] .stat-icon {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .itinerary-card[data-route-type="culinary"] .itinerary-icon,
+        .itinerary-card[data-route-type="culinary"] .stat-icon {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .itinerary-card[data-route-type="romantic"] .itinerary-icon,
+        .itinerary-card[data-route-type="romantic"] .stat-icon {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-header">
+        <div class="container">
+            <h1 class="hero-title">
+                <i class="fas fa-route me-2"></i>
+                Your Perfect European Road Trip
+            </h1>
+            <p class="hero-subtitle">
+                <span id="route-summary">5 amazing itineraries crafted just for you</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Plan Another Trip
+        </a>
+
+        <div id="itineraries-container">
+            <!-- Itineraries will be loaded here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Route type configurations
+        const routeTypeConfig = {
+            'scenic': {
+                icon: 'fa-mountain',
+                color: '#10b981',
+                mapColor: '#10b981'
+            },
+            'cultural': {
+                icon: 'fa-monument',
+                color: '#8b5cf6',
+                mapColor: '#8b5cf6'
+            },
+            'adventure': {
+                icon: 'fa-hiking',
+                color: '#f59e0b',
+                mapColor: '#f59e0b'
+            },
+            'culinary': {
+                icon: 'fa-utensils',
+                color: '#ef4444',
+                mapColor: '#ef4444'
+            },
+            'romantic': {
+                icon: 'fa-heart',
+                color: '#ec4899',
+                mapColor: '#ec4899'
+            }
+        };
+
+        // Sample data structure - will be replaced with actual data
+        const sampleItineraries = [
+            {
+                route_type: 'scenic',
+                name: 'Scenic Mountain & Lakes Route',
+                description: 'Journey through breathtaking Alpine landscapes, pristine lakes, and mountain vistas. Perfect for nature lovers and photographers.',
+                total_distance_km: 587.3,
+                total_duration_hours: 8.2,
+                start_city: {name: 'Aix-en-Provence', coordinates: [43.5297, 5.4474]},
+                end_city: {name: 'Venice', coordinates: [45.4408, 12.3155]},
+                intermediate_cities: [
+                    {name: 'Annecy', coordinates: [45.8992, 6.1294], types: ['scenic', 'alpine']},
+                    {name: 'Lake Como', coordinates: [45.8081, 9.0852], types: ['scenic', 'romantic']},
+                    {name: 'Verona', coordinates: [45.4384, 10.9916], types: ['romantic', 'historic']}
+                ],
+                highlights: ['Alpine mountain passes', 'Pristine lake views', 'Scenic overlooks', 'Mountain villages'],
+                ideal_for: 'Nature enthusiasts, photographers, romantic getaways',
+                estimated_cost: {
+                    fuel_estimate: 117.46,
+                    accommodation_estimate: 400.00,
+                    total_estimate: 517.46
+                }
+            },
+            {
+                route_type: 'cultural',
+                name: 'Cultural Heritage Route',
+                description: 'Explore UNESCO World Heritage sites, historic city centers, and cultural landmarks spanning centuries of European history.',
+                total_distance_km: 623.8,
+                total_duration_hours: 9.1,
+                start_city: {name: 'Aix-en-Provence', coordinates: [43.5297, 5.4474]},
+                end_city: {name: 'Venice', coordinates: [45.4408, 12.3155]},
+                intermediate_cities: [
+                    {name: 'Avignon', coordinates: [43.9493, 4.8055], types: ['historic', 'unesco']},
+                    {name: 'Florence', coordinates: [43.7696, 11.2558], types: ['cultural', 'renaissance']},
+                    {name: 'Bologna', coordinates: [44.4949, 11.3426], types: ['cultural', 'university']}
+                ],
+                highlights: ['UNESCO World Heritage sites', 'Renaissance art', 'Historic city centers', 'Medieval architecture'],
+                ideal_for: 'History buffs, art lovers, cultural explorers',
+                estimated_cost: {
+                    fuel_estimate: 124.76,
+                    accommodation_estimate: 400.00,
+                    total_estimate: 524.76
+                }
+            }
+        ];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadItineraries();
+        });
+
+        function loadItineraries() {
+            const container = document.getElementById('itineraries-container');
+            const routeSummary = document.getElementById('route-summary');
+            
+            // Try to get data from sessionStorage (from form submission)
+            let itineraries = [];
+            try {
+                const storedData = sessionStorage.getItem('travelPlanResult');
+                if (storedData) {
+                    const data = JSON.parse(storedData);
+                    itineraries = data.data?.routes || [];
+                }
+            } catch (e) {
+                console.log('No stored data found, using sample data');
+            }
+            
+            // Use sample data if no real data available
+            if (itineraries.length === 0) {
+                itineraries = sampleItineraries;
+            }
+            
+            // Update summary
+            routeSummary.textContent = `${itineraries.length} amazing itineraries crafted just for you`;
+            
+            // Render each itinerary
+            container.innerHTML = '';
+            itineraries.forEach((itinerary, index) => {
+                const itineraryHtml = createItineraryCard(itinerary, index);
+                container.insertAdjacentHTML('beforeend', itineraryHtml);
+                
+                // Initialize map for this itinerary
+                setTimeout(() => initializeMap(itinerary, index), 100);
+            });
+        }
+
+        function createItineraryCard(itinerary, index) {
+            const config = routeTypeConfig[itinerary.route_type] || routeTypeConfig['scenic'];
+            
+            const citiesBadges = itinerary.intermediate_cities
+                .map(city => `<div class="city-badge">
+                    <i class="fas fa-map-marker-alt"></i>
+                    ${city.name}
+                </div>`)
+                .join('');
+            
+            const highlightItems = itinerary.highlights
+                .map(highlight => `<div class="highlight-item">${highlight}</div>`)
+                .join('');
+            
+            return `
+                <div class="itinerary-card" data-route-type="${itinerary.route_type}">
+                    <div class="itinerary-header">
+                        <div class="itinerary-icon">
+                            <i class="fas ${config.icon}"></i>
+                        </div>
+                        <div>
+                            <h3 class="itinerary-title">${itinerary.name}</h3>
+                            <p class="itinerary-subtitle">${itinerary.description}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="route-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-route"></i>
+                            </div>
+                            <div class="stat-text">${itinerary.total_distance_km} km</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-text">${itinerary.total_duration_hours}h driving</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="stat-text">${itinerary.intermediate_cities.length + 2} stops</div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-map" id="map-${index}"></div>
+                    
+                    <div class="cities-list">
+                        <div class="city-badge">
+                            <i class="fas fa-play"></i>
+                            ${itinerary.start_city.name}
+                        </div>
+                        ${citiesBadges}
+                        <div class="city-badge">
+                            <i class="fas fa-flag-checkered"></i>
+                            ${itinerary.end_city.name}
+                        </div>
+                    </div>
+                    
+                    <div class="highlights-section">
+                        <h5 class="highlights-title">
+                            <i class="fas fa-star"></i>
+                            Route Highlights
+                        </h5>
+                        ${highlightItems}
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>
+                                Ideal for: ${itinerary.ideal_for}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-estimate">
+                        <h5 class="cost-title">
+                            <i class="fas fa-euro-sign"></i>
+                            Estimated Costs
+                        </h5>
+                        <div class="cost-breakdown">
+                            <div class="cost-item">
+                                <div class="cost-amount">€${itinerary.estimated_cost.fuel_estimate}</div>
+                                <div class="cost-label">Fuel</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-amount">€${itinerary.estimated_cost.accommodation_estimate}</div>
+                                <div class="cost-label">Accommodation</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-amount">€${itinerary.estimated_cost.total_estimate}</div>
+                                <div class="cost-label">Total Estimate</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="select-route-btn" onclick="selectRoute(${index})">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Select This Route
+                    </button>
+                </div>
+            `;
+        }
+
+        function initializeMap(itinerary, index) {
+            const mapId = `map-${index}`;
+            const mapElement = document.getElementById(mapId);
+            
+            if (!mapElement) return;
+            
+            // Create map
+            const map = L.map(mapId).setView([45.0, 7.0], 6);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Create route coordinates
+            const routeCoords = [
+                itinerary.start_city.coordinates,
+                ...itinerary.intermediate_cities.map(city => city.coordinates),
+                itinerary.end_city.coordinates
+            ];
+            
+            // Add route line
+            const config = routeTypeConfig[itinerary.route_type] || routeTypeConfig['scenic'];
+            const routeLine = L.polyline(routeCoords, {
+                color: config.mapColor,
+                weight: 4,
+                opacity: 0.8
+            }).addTo(map);
+            
+            // Add markers
+            const startIcon = L.divIcon({
+                html: '<i class="fas fa-play" style="color: #10b981;"></i>',
+                iconSize: [20, 20],
+                className: 'custom-div-icon'
+            });
+            
+            const endIcon = L.divIcon({
+                html: '<i class="fas fa-flag-checkered" style="color: #ef4444;"></i>',
+                iconSize: [20, 20],
+                className: 'custom-div-icon'
+            });
+            
+            const wayIcon = L.divIcon({
+                html: '<i class="fas fa-map-marker-alt" style="color: ' + config.mapColor + ';"></i>',
+                iconSize: [20, 20],
+                className: 'custom-div-icon'
+            });
+            
+            // Add start marker
+            L.marker(itinerary.start_city.coordinates, {icon: startIcon})
+                .addTo(map)
+                .bindPopup(`<b>Start:</b> ${itinerary.start_city.name}`);
+            
+            // Add intermediate markers
+            itinerary.intermediate_cities.forEach(city => {
+                L.marker(city.coordinates, {icon: wayIcon})
+                    .addTo(map)
+                    .bindPopup(`<b>${city.name}</b><br/>${city.types.join(', ')}`);
+            });
+            
+            // Add end marker
+            L.marker(itinerary.end_city.coordinates, {icon: endIcon})
+                .addTo(map)
+                .bindPopup(`<b>Destination:</b> ${itinerary.end_city.name}`);
+            
+            // Fit map to route
+            map.fitBounds(routeLine.getBounds(), {padding: [20, 20]});
+        }
+
+        function selectRoute(index) {
+            alert(`Route ${index + 1} selected! In a real app, this would proceed to detailed planning.`);
+        }
+
+        // Add custom CSS for map icons
+        const style = document.createElement('style');
+        style.textContent = `
+            .custom-div-icon {
+                background: transparent !important;
+                border: none !important;
+                font-size: 16px;
+                text-align: center;
+                line-height: 20px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -4,6 +4,7 @@ Input validation service with comprehensive security checks.
 import re
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
+from enum import Enum
 import structlog
 from ..core.models import TripRequest, Season, ServiceResult
 from ..core.exceptions import ValidationError
@@ -180,7 +181,7 @@ class ValidationService:
         return True
     
     def sanitize_output(self, data: Any) -> Any:
-        """Sanitize data for output to prevent XSS."""
+        """Sanitize data for output to prevent XSS and handle JSON serialization."""
         if isinstance(data, str):
             # Basic HTML escaping
             return (data
@@ -190,11 +191,27 @@ class ValidationService:
                    .replace('"', '&quot;')
                    .replace("'", '&#x27;'))
         
+        elif isinstance(data, Enum):
+            # Convert enums to their string values
+            return data.value
+        
+        elif hasattr(data, '__dict__'):
+            # Handle dataclass and other objects with __dict__
+            result = {}
+            for key, value in data.__dict__.items():
+                if not key.startswith('_'):  # Skip private attributes
+                    result[key] = self.sanitize_output(value)
+            return result
+        
         elif isinstance(data, dict):
             return {k: self.sanitize_output(v) for k, v in data.items()}
         
         elif isinstance(data, list):
             return [self.sanitize_output(item) for item in data]
+        
+        elif isinstance(data, (datetime, timedelta)):
+            # Convert datetime objects to ISO strings
+            return data.isoformat() if hasattr(data, 'isoformat') else str(data)
         
         return data
     

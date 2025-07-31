@@ -8,7 +8,7 @@ import structlog
 from ..infrastructure.config import SecureConfigurationService
 from ..infrastructure.database import DatabaseManager
 from ..infrastructure.logging import configure_logging, SecurityLogger
-from ..services.city_service import CityService
+from ..services.google_places_city_service import GooglePlacesCityService
 from ..services.route_service import ProductionRouteService
 from ..services.validation_service import ValidationService
 from ..services.travel_planner import TravelPlannerServiceImpl
@@ -28,7 +28,7 @@ security_logger = SecurityLogger()
 def create_app() -> Flask:
     """Application factory with dependency injection."""
     # Set template folder to the original location
-    app = Flask(__name__, template_folder='../../templates')
+    app = Flask(__name__, template_folder='../templates')
     
     # Security configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32))
@@ -52,7 +52,7 @@ def create_app() -> Flask:
     logger.info("Running in demo mode without database")
     
     # Initialize services with dependency injection
-    city_service = CityService(db_manager)  # Works without database in demo mode
+    city_service = GooglePlacesCityService()  # Uses Google Places API for dynamic discovery
     route_service = ProductionRouteService(config_service)
     validation_service = ValidationService()
     
@@ -118,9 +118,18 @@ def create_app() -> Flask:
     def index():
         """Landing page."""
         try:
-            return render_template('professional_dynamic.html')
+            return render_template('travel_planner_main.html')
         except Exception as e:
             logger.error("Template rendering failed", error=str(e))
+            return "Service temporarily unavailable", 500
+    
+    @app.route('/results')
+    def results():
+        """Results page for displaying travel plans."""
+        try:
+            return render_template('travel_results_enhanced.html')
+        except Exception as e:
+            logger.error("Results template rendering failed", error=str(e))
             return "Service temporarily unavailable", 500
     
     @app.route('/plan', methods=['POST'])
