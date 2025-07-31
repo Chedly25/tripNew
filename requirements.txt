@@ -1,5 +1,6 @@
-# Minimal requirements for Railway deployment
+# Requirements for Heroku Python deployment
 Flask==3.0.0
+gunicorn==21.2.0
 requests==2.31.0
 geopy==2.4.1
 anthropic==0.25.1
