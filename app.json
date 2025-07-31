@@ -1,0 +1,32 @@
+{
+  "name": "European Travel Planner",
+  "description": "Production-ready European travel planning with AI integration",
+  "repository": "https://github.com/Chedly25/trip",
+  "logo": "https://img.shields.io/badge/Travel-Planner-blue",
+  "keywords": ["travel", "ai", "europe", "flask", "production"],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for Flask sessions",
+      "generator": "secret"
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Claude AI API key for travel insights",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}

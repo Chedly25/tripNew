@@ -1,0 +1,11 @@
+# Railway.app deployment without Docker
+[build]
+  builder = "nixpacks"
+
+[deploy]
+  healthcheckPath = "/api/health"
+  healthcheckTimeout = 60
+  restartPolicyType = "always"
+
+[variables]
+  PYTHONPATH = "/app/src"
