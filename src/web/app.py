@@ -134,6 +134,82 @@ def create_app() -> Flask:
             logger.error("Results template rendering failed", error=str(e))
             return "Service temporarily unavailable", 500
     
+    @app.route('/trip-details')
+    def trip_details():
+        """Detailed trip preparation page."""
+        try:
+            return render_template('trip_details.html')
+        except Exception as e:
+            logger.error("Trip details template rendering failed", error=str(e))
+            return "Service temporarily unavailable", 500
+    
+    @app.route('/api/trip-data', methods=['POST'])
+    def get_trip_data():
+        """Get detailed trip data including hotels, restaurants, and activities."""
+        try:
+            import asyncio
+            from ..services.foursquare_service import FoursquareService
+            from ..services.booking_service import BookingService
+            
+            data = request.get_json()
+            if not data or 'cities' not in data:
+                return jsonify({'error': 'Cities data required'}), 400
+            
+            cities = data['cities']
+            
+            async def fetch_trip_data():
+                # Initialize services
+                foursquare = FoursquareService()
+                booking = BookingService()
+                
+                trip_data = {
+                    'hotels': {},
+                    'restaurants': {},
+                    'activities': {}
+                }
+                
+                # Get data for each city
+                for city in cities:
+                    city_name = city.get('name')
+                    coordinates = city.get('coordinates')
+                    
+                    if not city_name or not coordinates:
+                        continue
+                    
+                    from ..core.models import Coordinates
+                    coord_obj = Coordinates(latitude=coordinates[0], longitude=coordinates[1])
+                    
+                    # Get hotels, restaurants, and activities concurrently
+                    hotels_task = booking.find_hotels(coord_obj, city_name, limit=4)
+                    restaurants_task = foursquare.find_restaurants(coord_obj, city_name, limit=6)
+                    activities_task = foursquare.find_activities(coord_obj, city_name, limit=6)
+                    
+                    hotels, restaurants, activities = await asyncio.gather(
+                        hotels_task, restaurants_task, activities_task
+                    )
+                    
+                    trip_data['hotels'][city_name] = hotels
+                    trip_data['restaurants'][city_name] = restaurants
+                    trip_data['activities'][city_name] = activities
+                
+                # Close sessions
+                await foursquare.close()
+                await booking.close()
+                
+                return trip_data
+            
+            # Run the async function
+            trip_data = asyncio.run(fetch_trip_data())
+            
+            return jsonify({
+                'success': True,
+                'data': trip_data
+            })
+            
+        except Exception as e:
+            logger.error("Trip data retrieval failed", error=str(e))
+            return jsonify({'error': 'Failed to retrieve trip data'}), 500
+    
     @app.route('/test')
     def test_frontend():
         """Test frontend functionality."""

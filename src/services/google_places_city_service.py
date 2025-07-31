@@ -59,11 +59,11 @@ class GooglePlacesCityService:
             return self._get_fallback_city(name)
     
     async def find_cities_near_route(self, start: Coordinates, end: Coordinates, 
-                                   max_deviation_km: float = 100) -> List[City]:
+                                   max_deviation_km: float = 100, route_type: str = None) -> List[City]:
         """Find interesting cities near the route using Google Places API."""
         if not self.google_api_key:
             logger.warning("No Google API key - using fallback route cities")
-            return self._get_fallback_route_cities(start, end, max_deviation_km)
+            return self._get_fallback_route_cities(start, end, max_deviation_km, route_type)
         
         try:
             # Calculate midpoint and search radius
@@ -428,37 +428,39 @@ class GooglePlacesCityService:
         return None
     
     def _get_fallback_route_cities(self, start: Coordinates, end: Coordinates, 
-                                 max_deviation_km: float) -> List[City]:
-        """Get fallback cities for route when API is unavailable."""
-        # Use all known cities and filter by distance to route
-        all_cities = []
+                                 max_deviation_km: float, route_type: str = None) -> List[City]:
+        """Get fallback cities for route when API is unavailable, filtered by route type."""
+        # Comprehensive city database with detailed type information
         known_cities = {
-            'annecy': {'lat': 45.8992, 'lon': 6.1294, 'country': 'France', 'types': ['scenic', 'alpine', 'romantic']},
-            'chamonix': {'lat': 45.9237, 'lon': 6.8694, 'country': 'France', 'types': ['alpine', 'adventure', 'skiing']},
-            'grenoble': {'lat': 45.1885, 'lon': 5.7245, 'country': 'France', 'types': ['alpine', 'adventure']},
-            'avignon': {'lat': 43.9493, 'lon': 4.8055, 'country': 'France', 'types': ['historic', 'unesco']},
-            'marseille': {'lat': 43.2965, 'lon': 5.3698, 'country': 'France', 'types': ['coastal', 'culinary']},
-            'nice': {'lat': 43.7102, 'lon': 7.2620, 'country': 'France', 'types': ['coastal', 'scenic']},
-            'cannes': {'lat': 43.5528, 'lon': 7.0174, 'country': 'France', 'types': ['luxury', 'coastal']},
-            'monaco': {'lat': 43.7384, 'lon': 7.4246, 'country': 'Monaco', 'types': ['luxury', 'coastal']},
-            'lyon': {'lat': 45.7640, 'lon': 4.8357, 'country': 'France', 'types': ['culinary', 'cultural']},
-            'geneva': {'lat': 46.2044, 'lon': 6.1432, 'country': 'Switzerland', 'types': ['scenic', 'expensive']},
-            'turin': {'lat': 45.0703, 'lon': 7.6869, 'country': 'Italy', 'types': ['cultural', 'historic']},
-            'milan': {'lat': 45.4642, 'lon': 9.1900, 'country': 'Italy', 'types': ['fashion', 'business', 'cultural']},
-            'como': {'lat': 45.8081, 'lon': 9.0852, 'country': 'Italy', 'types': ['scenic', 'lakes', 'romantic']},
-            'bergamo': {'lat': 45.6983, 'lon': 9.6773, 'country': 'Italy', 'types': ['historic', 'medieval']},
-            'brescia': {'lat': 45.5416, 'lon': 10.2118, 'country': 'Italy', 'types': ['historic', 'cultural']},
-            'verona': {'lat': 45.4384, 'lon': 10.9916, 'country': 'Italy', 'types': ['romantic', 'historic']},
-            'vicenza': {'lat': 45.5455, 'lon': 11.5353, 'country': 'Italy', 'types': ['historic', 'architectural']},
-            'padua': {'lat': 45.4064, 'lon': 11.8768, 'country': 'Italy', 'types': ['historic', 'university']},
-            'florence': {'lat': 43.7696, 'lon': 11.2558, 'country': 'Italy', 'types': ['cultural', 'renaissance', 'artistic']},
-            'pisa': {'lat': 43.7228, 'lon': 10.4017, 'country': 'Italy', 'types': ['historic', 'iconic']},
-            'genoa': {'lat': 44.4056, 'lon': 8.9463, 'country': 'Italy', 'types': ['coastal', 'historic']},
-            'bologna': {'lat': 44.4949, 'lon': 11.3426, 'country': 'Italy', 'types': ['culinary', 'cultural']},
-            'parma': {'lat': 44.8015, 'lon': 10.3279, 'country': 'Italy', 'types': ['culinary', 'cultural']},
-            'modena': {'lat': 44.6471, 'lon': 10.9252, 'country': 'Italy', 'types': ['culinary', 'automotive']},
-            'innsbruck': {'lat': 47.2692, 'lon': 11.4041, 'country': 'Austria', 'types': ['alpine', 'adventure']},
-            'salzburg': {'lat': 47.8095, 'lon': 13.0550, 'country': 'Austria', 'types': ['cultural', 'music', 'historic']}
+            'annecy': {'lat': 45.8992, 'lon': 6.1294, 'country': 'France', 'types': ['scenic', 'alpine', 'romantic', 'lakes']},
+            'chamonix': {'lat': 45.9237, 'lon': 6.8694, 'country': 'France', 'types': ['alpine', 'adventure', 'skiing', 'nature']},
+            'grenoble': {'lat': 45.1885, 'lon': 5.7245, 'country': 'France', 'types': ['alpine', 'adventure', 'outdoor']},
+            'avignon': {'lat': 43.9493, 'lon': 4.8055, 'country': 'France', 'types': ['historic', 'unesco', 'cultural', 'medieval']},
+            'marseille': {'lat': 43.2965, 'lon': 5.3698, 'country': 'France', 'types': ['coastal', 'culinary', 'mediterranean']},
+            'nice': {'lat': 43.7102, 'lon': 7.2620, 'country': 'France', 'types': ['coastal', 'scenic', 'luxury', 'resort']},
+            'cannes': {'lat': 43.5528, 'lon': 7.0174, 'country': 'France', 'types': ['luxury', 'coastal', 'glamour', 'festivals']},
+            'monaco': {'lat': 43.7384, 'lon': 7.4246, 'country': 'Monaco', 'types': ['luxury', 'coastal', 'casinos', 'glamour']},
+            'lyon': {'lat': 45.7640, 'lon': 4.8357, 'country': 'France', 'types': ['culinary', 'cultural', 'gastronomy', 'unesco']},
+            'geneva': {'lat': 46.2044, 'lon': 6.1432, 'country': 'Switzerland', 'types': ['scenic', 'lakes', 'diplomatic', 'luxury']},
+            'turin': {'lat': 45.0703, 'lon': 7.6869, 'country': 'Italy', 'types': ['cultural', 'historic', 'royal', 'chocolate']},
+            'milan': {'lat': 45.4642, 'lon': 9.1900, 'country': 'Italy', 'types': ['fashion', 'business', 'cultural', 'shopping']},
+            'como': {'lat': 45.8081, 'lon': 9.0852, 'country': 'Italy', 'types': ['scenic', 'lakes', 'romantic', 'luxury']},
+            'bergamo': {'lat': 45.6983, 'lon': 9.6773, 'country': 'Italy', 'types': ['historic', 'medieval', 'cultural']},
+            'brescia': {'lat': 45.5416, 'lon': 10.2118, 'country': 'Italy', 'types': ['historic', 'cultural', 'roman']},
+            'verona': {'lat': 45.4384, 'lon': 10.9916, 'country': 'Italy', 'types': ['romantic', 'historic', 'shakespeare', 'unesco']},
+            'vicenza': {'lat': 45.5455, 'lon': 11.5353, 'country': 'Italy', 'types': ['historic', 'architectural', 'palladio', 'unesco']},
+            'padua': {'lat': 45.4064, 'lon': 11.8768, 'country': 'Italy', 'types': ['historic', 'university', 'cultural', 'pilgrimage']},
+            'florence': {'lat': 43.7696, 'lon': 11.2558, 'country': 'Italy', 'types': ['cultural', 'renaissance', 'artistic', 'unesco']},
+            'pisa': {'lat': 43.7228, 'lon': 10.4017, 'country': 'Italy', 'types': ['historic', 'iconic', 'university', 'architectural']},
+            'genoa': {'lat': 44.4056, 'lon': 8.9463, 'country': 'Italy', 'types': ['coastal', 'historic', 'maritime', 'cultural']},
+            'bologna': {'lat': 44.4949, 'lon': 11.3426, 'country': 'Italy', 'types': ['culinary', 'cultural', 'university', 'gastronomy']},
+            'parma': {'lat': 44.8015, 'lon': 10.3279, 'country': 'Italy', 'types': ['culinary', 'cultural', 'ham', 'cheese']},
+            'modena': {'lat': 44.6471, 'lon': 10.9252, 'country': 'Italy', 'types': ['culinary', 'automotive', 'balsamic', 'ferrari']},
+            'innsbruck': {'lat': 47.2692, 'lon': 11.4041, 'country': 'Austria', 'types': ['alpine', 'adventure', 'skiing', 'mountains']},
+            'salzburg': {'lat': 47.8095, 'lon': 13.0550, 'country': 'Austria', 'types': ['cultural', 'music', 'historic', 'mozart']},
+            'siena': {'lat': 43.3188, 'lon': 11.3307, 'country': 'Italy', 'types': ['historic', 'medieval', 'unesco', 'cultural']},
+            'rimini': {'lat': 44.0678, 'lon': 12.5695, 'country': 'Italy', 'types': ['coastal', 'resort', 'beach', 'nightlife']},
+            'ravenna': {'lat': 44.4184, 'lon': 12.2035, 'country': 'Italy', 'types': ['historic', 'byzantine', 'unesco', 'mosaics']}
         }
         
         # Create city objects and filter by distance to route
@@ -473,6 +475,23 @@ class GooglePlacesCityService:
                     types=data['types']
                 )
                 candidates.append(city)
+        
+        # Filter by route type if specified
+        if route_type:
+            type_filters = {
+                'scenic': ['scenic', 'alpine', 'lakes', 'romantic', 'resort', 'luxury'],
+                'cultural': ['cultural', 'historic', 'unesco', 'artistic', 'renaissance', 'medieval', 'roman'],
+                'adventure': ['adventure', 'alpine', 'skiing', 'nature', 'outdoor', 'mountains'],
+                'culinary': ['culinary', 'gastronomy', 'wine', 'food', 'ham', 'cheese', 'balsamic'],
+                'romantic': ['romantic', 'scenic', 'lakes', 'luxury', 'shakespeare', 'glamour']
+            }
+            
+            if route_type in type_filters:
+                target_types = type_filters[route_type]
+                # Prioritize cities that match the route type
+                typed_candidates = [c for c in candidates if any(t in c.types for t in target_types)]
+                if len(typed_candidates) >= 2:
+                    candidates = typed_candidates
         
         # Sort by distance from start point
         from geopy.distance import geodesic

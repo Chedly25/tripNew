@@ -813,7 +813,33 @@
         }
 
         function selectRoute(index) {
-            alert(`Route ${index + 1} selected! In a real app, this would proceed to detailed planning.`);
+            // Get the selected route data
+            let itineraries = [];
+            try {
+                const storedData = sessionStorage.getItem('travelPlanResult');
+                if (storedData) {
+                    const data = JSON.parse(storedData);
+                    itineraries = data.data?.routes || [];
+                }
+            } catch (e) {
+                console.error('Error loading stored data:', e);
+            }
+            
+            // Use sample data if no real data available
+            if (itineraries.length === 0) {
+                itineraries = sampleItineraries;
+            }
+            
+            if (itineraries[index]) {
+                // Store the selected route in sessionStorage
+                const selectedRoute = itineraries[index];
+                sessionStorage.setItem('selectedRoute', JSON.stringify(selectedRoute));
+                
+                // Navigate to trip details page
+                window.location.href = '/trip-details';
+            } else {
+                alert('Route data not found. Please try again.');
+            }
         }
 
         // Add custom CSS for map icons

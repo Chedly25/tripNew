@@ -224,9 +224,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         """Find intermediate cities based on route strategy using async Google Places API."""
         strategy_type = strategy['type']
         
-        # Get cities near the route using async API calls
+        # Get cities near the route using async API calls, filtered by route type
         nearby_cities = await self.city_service.find_cities_near_route(
-            start_city.coordinates, end_city.coordinates, max_deviation_km=120
+            start_city.coordinates, end_city.coordinates, max_deviation_km=120, route_type=strategy_type
         )
         
         if strategy_type == 'scenic':
