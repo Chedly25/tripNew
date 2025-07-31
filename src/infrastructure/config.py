@@ -43,7 +43,7 @@ class SecureConfigurationService(ConfigurationService):
         self._api_keys = {
             'anthropic': os.getenv('ANTHROPIC_API_KEY'),
             'openweather': os.getenv('OPENWEATHER_API_KEY'),
-            'google_maps': os.getenv('GOOGLE_MAPS_API_KEY'),
+            'google_maps': os.getenv('GOOGLE_PLACES_API_KEY'),  # Using GOOGLE_PLACES_API_KEY from Heroku
             'openroute': os.getenv('OPENROUTE_API_KEY')
         }
         
