@@ -20,4 +20,5 @@ application.config.update({
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 8000))
-    application.run(host='0.0.0.0', port=port)
+    print(f"Starting Flask server on port {port}")
+    application.run(host='0.0.0.0', port=port, debug=False)
