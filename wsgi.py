@@ -13,8 +13,8 @@ sys.path.insert(0, str(src_path))
 # Set production environment
 os.environ.setdefault('FLASK_ENV', 'production')
 
-# Import the REAL production application with APIs
-from production_app import app as application
+# Import the working production application  
+from working_app import app as application
 
 # Configure for production
 application.config.update({
