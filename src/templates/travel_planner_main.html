@@ -122,16 +122,24 @@
         
         .trip-type-option {
             background: rgba(255, 255, 255, 0.1);
-            border: 2px solid transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 12px;
             padding: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 0.5rem;
+            user-select: none;
+            text-align: center;
+            color: white;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .trip-type-option:hover {
             background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
         .trip-type-option.selected {
@@ -388,118 +396,252 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Font Awesome Detection and Fallback -->
+    <!-- Enhanced Font Awesome Detection and Comprehensive Debugging -->
     <script>
-        // Check if Font Awesome loaded properly
+        console.log('🚀 Travel Planner Debug: Script loading started');
+        
+        // Enhanced Font Awesome Detection
         function checkFontAwesome() {
-            // Create a test element with Font Awesome icon
-            const testElement = document.createElement('i');
-            testElement.className = 'fas fa-heart';
-            testElement.style.position = 'absolute';
-            testElement.style.left = '-9999px';
-            testElement.style.fontSize = '16px';
-            document.body.appendChild(testElement);
+            console.log('🔍 Checking Font Awesome loading...');
             
-            // Check if Font Awesome loaded by measuring width
-            const computedStyle = window.getComputedStyle(testElement, '::before');
-            const fontFamily = computedStyle.getPropertyValue('font-family');
-            
-            // Clean up test element
-            document.body.removeChild(testElement);
-            
-            // If Font Awesome didn't load, add fallback class
-            if (!fontFamily.includes('Font Awesome')) {
-                console.warn('Font Awesome failed to load - using emoji fallbacks');
-                document.body.classList.add('fa-fallback');
+            try {
+                // Create test element
+                const testElement = document.createElement('i');
+                testElement.className = 'fas fa-heart';
+                testElement.style.position = 'absolute';
+                testElement.style.left = '-9999px';
+                testElement.style.fontSize = '16px';
+                document.body.appendChild(testElement);
                 
-                // Update specific icons with better fallbacks
-                document.querySelectorAll('.fas.fa-gem').forEach(el => el.textContent = '💎');
-                document.querySelectorAll('.fas.fa-route').forEach(el => el.textContent = '🛣️');
-                document.querySelectorAll('.fas.fa-hotel').forEach(el => el.textContent = '🏨');
-                document.querySelectorAll('.fas.fa-calculator').forEach(el => el.textContent = '🧮');
-            } else {
-                console.log('Font Awesome loaded successfully');
+                // Check computed styles
+                const computedStyle = window.getComputedStyle(testElement, '::before');
+                const fontFamily = computedStyle.getPropertyValue('font-family');
+                const content = computedStyle.getPropertyValue('content');
+                
+                console.log('Font Family:', fontFamily);
+                console.log('Content:', content);
+                
+                // Clean up
+                document.body.removeChild(testElement);
+                
+                // Apply fallbacks if needed
+                if (!fontFamily.includes('Font Awesome') || content === 'none' || content === '""') {
+                    console.warn('❌ Font Awesome failed to load - applying fallbacks');
+                    applyFontAwesomeFallbacks();
+                } else {
+                    console.log('✅ Font Awesome loaded successfully');
+                }
+            } catch (error) {
+                console.error('❌ Font Awesome check failed:', error);
+                applyFontAwesomeFallbacks();
             }
         }
         
-        // Check Font Awesome after page loads
-        window.addEventListener('load', checkFontAwesome);
-        
-        // Backup check after delay
-        setTimeout(checkFontAwesome, 2000);
-    </script>
-    
-    <script>
-        // Trip type selection
-        document.querySelectorAll('.trip-type-option').forEach(option => {
-            option.addEventListener('click', function() {
-                // Remove selected class from all options
-                document.querySelectorAll('.trip-type-option').forEach(o => o.classList.remove('selected'));
-                // Add selected class to clicked option
-                this.classList.add('selected');
-                // Update hidden input
-                document.getElementById('tripType').value = this.dataset.tripType;
-            });
-        });
-        
-        // Form submission
-        document.getElementById('travelPlanForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        function applyFontAwesomeFallbacks() {
+            console.log('🔧 Applying Font Awesome fallbacks...');
             
-            // Show loading overlay
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            // Map of icon classes to emoji fallbacks
+            const iconFallbacks = {
+                'fa-gem': '💎',
+                'fa-route': '🛣️', 
+                'fa-hotel': '🏨',
+                'fa-calculator': '🧮',
+                'fa-home': '🏠',
+                'fa-plane': '✈️',
+                'fa-map-marker-alt': '📍',
+                'fa-map-marked-alt': '🗺️',
+                'fa-calendar-days': '📅',
+                'fa-bed': '🛏️',
+                'fa-leaf': '🍃',
+                'fa-robot': '🤖',
+                'fa-paper-plane': '📨'
+            };
+            
+            // Apply fallbacks
+            Object.entries(iconFallbacks).forEach(([iconClass, emoji]) => {
+                document.querySelectorAll(`.fas.${iconClass}`).forEach(el => {
+                    el.innerHTML = '';
+                    el.textContent = emoji;
+                    el.style.fontFamily = 'Apple Color Emoji, Segoe UI Emoji, sans-serif';
+                    console.log(`🔄 Applied fallback for ${iconClass}: ${emoji}`);
+                });
+            });
+            
+            document.body.classList.add('fa-fallback');
+        }
+        
+        // Enhanced page initialization
+        function initializePage() {
+            console.log('🎯 Initializing page components...');
             
             try {
-                const formData = new FormData(this);
-                const response = await fetch('/api/plan-complete-enhanced', {
-                    method: 'POST',
-                    body: formData
+                // Initialize trip type selection
+                initializeTripTypeSelection();
+                
+                // Initialize form validation
+                initializeFormValidation();
+                
+                // Initialize dynamic form updates
+                initializeDynamicUpdates();
+                
+                console.log('✅ Page initialization completed');
+            } catch (error) {
+                console.error('❌ Page initialization failed:', error);
+            }
+        }
+        
+        function initializeTripTypeSelection() {
+            console.log('🎛️ Setting up trip type selection...');
+            
+            const tripTypeOptions = document.querySelectorAll('.trip-type-option');
+            console.log(`Found ${tripTypeOptions.length} trip type options`);
+            
+            tripTypeOptions.forEach((option, index) => {
+                console.log(`Setting up option ${index}:`, option.dataset.tripType);
+                
+                option.addEventListener('click', function(e) {
+                    console.log('🖱️ Trip type clicked:', this.dataset.tripType);
+                    
+                    try {
+                        // Remove selected class from all options
+                        tripTypeOptions.forEach(o => o.classList.remove('selected'));
+                        
+                        // Add selected class to clicked option
+                        this.classList.add('selected');
+                        
+                        // Update hidden input
+                        const tripTypeInput = document.getElementById('tripType');
+                        if (tripTypeInput) {
+                            tripTypeInput.value = this.dataset.tripType;
+                            console.log('✅ Trip type updated to:', tripTypeInput.value);
+                        } else {
+                            console.error('❌ Trip type input not found');
+                        }
+                    } catch (error) {
+                        console.error('❌ Trip type selection failed:', error);
+                    }
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
+                // Add visual feedback
+                option.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'scale(1.02)';
+                        this.style.transition = 'transform 0.2s ease';
+                    }
+                });
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Store result in sessionStorage and redirect to results page
-                    sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
-                    window.location.href = '/results';
-                } else {
-                    alert('Error: ' + (result.error || 'Failed to generate travel plan'));
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Network error: ' + error.message);
-            } finally {
-                // Hide loading overlay
-                document.getElementById('loadingOverlay').style.display = 'none';
+                option.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        }
+        
+        function initializeFormValidation() {
+            console.log('📝 Setting up form validation...');
+            
+            const form = document.getElementById('travelPlanForm');
+            if (!form) {
+                console.error('❌ Travel plan form not found');
+                return;
             }
+            
+            form.addEventListener('submit', async function(e) {
+                console.log('📤 Form submission started');
+                e.preventDefault();
+                
+                try {
+                    // Show loading overlay
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'flex';
+                        console.log('⏳ Loading overlay shown');
+                    }
+                    
+                    // Basic form validation
+                    const startCity = document.querySelector('input[placeholder*="Paris"]');
+                    const endCity = document.querySelector('input[placeholder*="Venice"]');
+                    
+                    if (!startCity?.value || !endCity?.value) {
+                        alert('Please enter both starting and destination cities');
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        return;
+                    }
+                    
+                    console.log('📍 Cities:', startCity.value, '→', endCity.value);
+                    
+                    // Submit form to API endpoint
+                    const formData = new FormData(this);
+                    const response = await fetch('/api/plan-complete-enhanced', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Store result and redirect to results page
+                        sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
+                        window.location.href = '/results';
+                    } else {
+                        alert('Error: ' + (result.error || 'Failed to generate travel plan'));
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Form submission failed:', error);
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
+                }
+            });
+        }
+        
+        function initializeDynamicUpdates() {
+            console.log('🔄 Setting up dynamic form updates...');
+            
+            // Days/nights synchronization
+            const travelDaysSelect = document.getElementById('travelDays');
+            const nightsSelect = document.getElementById('nightsDestination');
+            
+            if (travelDaysSelect && nightsSelect) {
+                travelDaysSelect.addEventListener('change', function() {
+                    const totalDays = parseInt(this.value);
+                    const maxNights = Math.max(1, totalDays - 1);
+                    
+                    console.log(`🗓️ Total days changed to ${totalDays}, max nights: ${maxNights}`);
+                    
+                    // Update nights options
+                    nightsSelect.innerHTML = '';
+                    for (let i = 1; i <= Math.min(maxNights, 5); i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = `${i} night${i > 1 ? 's' : ''}`;
+                        if (i === Math.min(2, maxNights)) option.selected = true;
+                        nightsSelect.appendChild(option);
+                    }
+                });
+            }
+        }
+        
+        // Initialize everything when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM Content Loaded - starting initialization');
+            initializePage();
         });
         
-        // Update nights destination based on total days
-        document.getElementById('travelDays').addEventListener('change', function() {
-            const totalDays = parseInt(this.value);
-            const nightsSelect = document.getElementById('nightsDestination');
-            const currentNights = parseInt(nightsSelect.value);
-            
-            // Clear existing options
-            nightsSelect.innerHTML = '';
-            
-            // Add appropriate options (can't spend more nights than total days - 1)
-            const maxNights = Math.max(1, totalDays - 1);
-            for (let i = 1; i <= Math.min(maxNights, 5); i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `${i} night${i > 1 ? 's' : ''}`;
-                if (i === Math.min(currentNights, maxNights)) {
-                    option.selected = true;
-                }
-                nightsSelect.appendChild(option);
-            }
+        // Check Font Awesome after page loads
+        window.addEventListener('load', function() {
+            console.log('🌐 Window loaded - checking Font Awesome');
+            checkFontAwesome();
         });
+        
+        // Backup checks
+        setTimeout(checkFontAwesome, 1000);
+        setTimeout(initializePage, 2000);
+        
+        console.log('🎉 Debug script setup completed');
     </script>
 </body>
 </html>
