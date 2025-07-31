@@ -7,15 +7,16 @@ import sys
 from pathlib import Path
 
 try:
-    # Add src to path for imports
-    src_path = Path(__file__).parent / 'src'
-    sys.path.insert(0, str(src_path))
+    # Add project root to path for imports
+    project_root = Path(__file__).parent
+    sys.path.insert(0, str(project_root))
 
     # Set production environment
     os.environ.setdefault('FLASK_ENV', 'production')
 
     # Import the REAL production application with ALL features
-    from production_app import app as application
+    from src.web.app import create_app
+    application = create_app()
 
     # Configure for production
     application.config.update({
