@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "python3 start.py"
+startCommand = "node index.js"
