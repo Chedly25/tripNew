@@ -358,6 +358,14 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        // Utility function to format numbers to 2 decimal places
+        function formatNumber(num) {
+            if (typeof num === 'number') {
+                return Number(num.toFixed(2));
+            }
+            return num;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             loadTripDetails();
             initializeMap();
@@ -418,7 +426,7 @@
                 
                 <div class="row mb-3">
                     <div class="col-sm-6">
-                        <strong><i class="fas fa-route me-2"></i>Distance:</strong> ${route.total_distance_km} km
+                        <strong><i class="fas fa-route me-2"></i>Distance:</strong> ${formatNumber(route.total_distance_km)} km
                     </div>
                     <div class="col-sm-6">
                         <strong><i class="fas fa-clock me-2"></i>Driving Time:</strong> ${route.total_duration_hours}h
@@ -489,8 +497,8 @@
                             <div class="activity-type">Hotel - ${cityName}</div>
                             <div class="activity-name">${hotel.name}</div>
                             <div class="activity-details">
-                                ${stars} ${hotel.rating}/5 (${hotel.review_count} reviews)<br>
-                                <i class="fas fa-euro-sign me-1"></i>${hotel.price_per_night} per night<br>
+                                ${stars} ${formatNumber(hotel.rating)}/5 (${hotel.review_count} reviews)<br>
+                                <i class="fas fa-euro-sign me-1"></i>${formatNumber(hotel.price_per_night)} per night<br>
                                 <i class="fas fa-map-marker-alt me-1"></i>${hotel.address}<br>
                                 <small>${amenities}</small>${websiteLink}
                             </div>
@@ -523,7 +531,7 @@
                             <div class="activity-type">Restaurant - ${cityName}</div>
                             <div class="activity-name">${restaurant.name}</div>
                             <div class="activity-details">
-                                ${stars} ${restaurant.rating}/5<br>
+                                ${stars} ${formatNumber(restaurant.rating)}/5<br>
                                 <i class="fas fa-utensils me-1"></i>${restaurant.cuisine}<br>
                                 <i class="fas fa-euro-sign me-1"></i>${priceLevel}<br>
                                 <i class="fas fa-map-marker-alt me-1"></i>${restaurant.address}<br>
@@ -558,7 +566,7 @@
                             <div class="activity-type">${activity.category} - ${cityName}</div>
                             <div class="activity-name">${activity.name}</div>
                             <div class="activity-details">
-                                ${stars} ${activity.rating}/5<br>
+                                ${stars} ${formatNumber(activity.rating)}/5<br>
                                 <i class="fas fa-euro-sign me-1"></i>${priceLevel}<br>
                                 <i class="fas fa-map-marker-alt me-1"></i>${activity.address}<br>
                                 <i class="fas fa-clock me-1"></i>${activity.hours}${websiteLink}
@@ -586,7 +594,7 @@
                         <h5><i class="fas fa-euro-sign me-2"></i>Budget</h5>
                         <ul>
                             <li>Daily budget: €80-150 per person</li>
-                            <li>Fuel cost: ~€${Math.round(route.total_distance_km * 0.15)}</li>
+                            <li>Fuel cost: ~€${formatNumber(route.total_distance_km * 0.15)}</li>
                             <li>Tolls: €20-40 total</li>
                         </ul>
                     </div>

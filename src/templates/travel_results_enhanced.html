@@ -572,6 +572,14 @@
             }
         ];
 
+        // Utility function to format numbers to 2 decimal places
+        function formatNumber(num) {
+            if (typeof num === 'number') {
+                return Number(num.toFixed(2));
+            }
+            return num;
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             loadItineraries();
@@ -656,13 +664,13 @@
                             <div class="stat-icon">
                                 <i class="fas fa-route"></i>
                             </div>
-                            <div class="stat-text">${itinerary.total_distance_km} km</div>
+                            <div class="stat-text">${formatNumber(itinerary.total_distance_km)} km</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-icon">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <div class="stat-text">${itinerary.total_duration_hours}h driving</div>
+                            <div class="stat-text">${formatNumber(itinerary.total_duration_hours)}h driving</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-icon">
@@ -707,15 +715,15 @@
                         </h5>
                         <div class="cost-breakdown">
                             <div class="cost-item">
-                                <div class="cost-amount">€${itinerary.estimated_cost.fuel_estimate}</div>
+                                <div class="cost-amount">€${formatNumber(itinerary.estimated_cost.fuel_estimate)}</div>
                                 <div class="cost-label">Fuel</div>
                             </div>
                             <div class="cost-item">
-                                <div class="cost-amount">€${itinerary.estimated_cost.accommodation_estimate}</div>
+                                <div class="cost-amount">€${formatNumber(itinerary.estimated_cost.accommodation_estimate)}</div>
                                 <div class="cost-label">Accommodation</div>
                             </div>
                             <div class="cost-item">
-                                <div class="cost-amount">€${itinerary.estimated_cost.total_estimate}</div>
+                                <div class="cost-amount">€${formatNumber(itinerary.estimated_cost.total_estimate)}</div>
                                 <div class="cost-label">Total Estimate</div>
                             </div>
                         </div>
