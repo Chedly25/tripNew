@@ -21,7 +21,7 @@ class ItineraryGenerator:
         self.hidden_gems_service = hidden_gems_service
     
     async def generate_complete_itinerary(self, start_city: City, end_city: City,
-                                        trip_request: TripRequest) -> ServiceResult:
+                                        trip_request: TripRequest, trip_type: str = "home") -> ServiceResult:
         """Generate a complete day-by-day itinerary."""
         try:
             logger.info("Generating complete itinerary",
@@ -30,7 +30,7 @@ class ItineraryGenerator:
             
             # Get intermediate cities and night distribution
             intermediate_result = await self.hidden_gems_service.suggest_intermediate_cities(
-                start_city, end_city, trip_request
+                start_city, end_city, trip_request, trip_type
             )
             
             if not intermediate_result.success:

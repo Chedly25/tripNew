@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>European Travel Planner - Your Perfect Journey</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            padding: 4rem 0;
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        .planning-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .trip-type-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .trip-type-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+        
+        .trip-type-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .trip-type-option.selected {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dark);
+            border-color: white;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .planning-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h4>Planning Your Perfect Journey</h4>
+            <p>Discovering routes, hidden gems, and creating your itinerary...</p>
+        </div>
+    </div>
+
+    <div class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h1 class="hero-title">
+                        <i class="fas fa-map-marked-alt me-3"></i>
+                        European Travel Planner
+                    </h1>
+                    <p class="hero-subtitle">
+                        Plan the perfect European road trip with intelligent routing, hidden gems discovery, 
+                        and comprehensive travel planning
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Features Grid -->
+            <div class="row mt-4">
+                <div class="col-md-3 col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h6>Hidden Gems</h6>
+                        <small>Discover authentic local experiences</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <h6>Smart Routes</h6>
+                        <small>Optimized paths with perfect stops</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-hotel"></i>
+                        </div>
+                        <h6>Hotels & Dining</h6>
+                        <small>Curated accommodations and restaurants</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h6>Cost Analysis</h6>
+                        <small>Detailed budgets and comparisons</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Planning Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="planning-card">
+                        <h3 class="text-center mb-4">
+                            <i class="fas fa-magic text-primary me-2"></i>
+                            Plan Your Journey
+                        </h3>
+                        
+                        <form id="travelPlanForm">
+                            <!-- Trip Type Selection -->
+                            <div class="trip-type-selector">
+                                <h6 class="text-white mb-3">
+                                    <i class="fas fa-home me-2"></i>
+                                    Is this trip starting from your home?
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="trip-type-option selected" data-trip-type="home">
+                                            <i class="fas fa-home me-2"></i>
+                                            <strong>From Home</strong><br>
+                                            <small>Starting from my home base</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="trip-type-option" data-trip-type="away">
+                                            <i class="fas fa-plane me-2"></i>
+                                            <strong>Away Trip</strong><br>
+                                            <small>Starting from another location</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="trip_type" id="tripType" value="home">
+                            </div>
+                            
+                            <!-- Basic Trip Details -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                        Starting Point
+                                    </label>
+                                    <input type="text" class="form-control" name="start_city" placeholder="e.g., Paris, Aix-en-Provence" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        <i class="fas fa-flag-checkered text-danger me-2"></i>
+                                        Main Destination
+                                    </label>
+                                    <input type="text" class="form-control" name="end_city" placeholder="e.g., Venice, Rome" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar-days me-2"></i>
+                                        Total Trip Days
+                                    </label>
+                                    <select class="form-select" name="travel_days" id="travelDays">
+                                        <option value="3" selected>3 days</option>
+                                        <option value="4">4 days</option>
+                                        <option value="5">5 days</option>
+                                        <option value="7">7 days</option>
+                                        <option value="10">10 days</option>
+                                        <option value="14">14 days</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-bed me-2"></i>
+                                        Nights at Destination
+                                    </label>
+                                    <select class="form-select" name="nights_at_destination" id="nightsDestination">
+                                        <option value="1">1 night</option>
+                                        <option value="2" selected>2 nights</option>
+                                        <option value="3">3 nights</option>
+                                        <option value="4">4 nights</option>
+                                        <option value="5">5 nights</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-leaf me-2"></i>
+                                        Season
+                                    </label>
+                                    <select class="form-select" name="season">
+                                        <option value="spring">🌸 Spring</option>
+                                        <option value="summer" selected>☀️ Summer</option>
+                                        <option value="autumn">🍂 Autumn</option>
+                                        <option value="winter">❄️ Winter</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Optional API Key -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-robot me-2"></i>
+                                    Claude API Key (Optional for AI insights)
+                                </label>
+                                <input type="password" class="form-control" name="claude_api_key" placeholder="Leave empty for default features">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Enhance your experience with personalized AI recommendations
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-rocket me-2"></i>
+                                Create My Perfect Journey
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Trip type selection
+        document.querySelectorAll('.trip-type-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                document.querySelectorAll('.trip-type-option').forEach(o => o.classList.remove('selected'));
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                // Update hidden input
+                document.getElementById('tripType').value = this.dataset.tripType;
+            });
+        });
+        
+        // Form submission
+        document.getElementById('travelPlanForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('/api/plan-complete-enhanced', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Store result in sessionStorage and redirect to results page
+                    sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
+                    window.location.href = '/results';
+                } else {
+                    alert('Error: ' + (result.error || 'Failed to generate travel plan'));
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Network error: ' + error.message);
+            } finally {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        });
+        
+        // Update nights destination based on total days
+        document.getElementById('travelDays').addEventListener('change', function() {
+            const totalDays = parseInt(this.value);
+            const nightsSelect = document.getElementById('nightsDestination');
+            const currentNights = parseInt(nightsSelect.value);
+            
+            // Clear existing options
+            nightsSelect.innerHTML = '';
+            
+            // Add appropriate options (can't spend more nights than total days - 1)
+            const maxNights = Math.max(1, totalDays - 1);
+            for (let i = 1; i <= Math.min(maxNights, 5); i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} night${i > 1 ? 's' : ''}`;
+                if (i === Math.min(currentNights, maxNights)) {
+                    option.selected = true;
+                }
+                nightsSelect.appendChild(option);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -24,6 +24,7 @@ from src.services.validation_service import ValidationService
 from src.services.production_travel_service import ProductionTravelService
 from src.services.hidden_gems_service import HiddenGemsService
 from src.services.itinerary_generator import ItineraryGenerator
+from src.services.travel_amenities_service import TravelAmenitiesService
 from src.core.models import TripRequest, Season, ServiceResult
 from src.core.exceptions import TravelPlannerException, ValidationError
 
@@ -47,6 +48,7 @@ validation_service = ValidationService()
 travel_service = ProductionTravelService(config_service, cache_service, city_service)
 hidden_gems_service = HiddenGemsService(city_service)
 itinerary_generator = ItineraryGenerator(city_service, hidden_gems_service)
+amenities_service = TravelAmenitiesService()
 
 logger.info("Production Travel Planner initialized", 
            services_available=travel_service.api_manager.get_available_services())
@@ -105,12 +107,22 @@ def handle_unexpected_error(e):
 
 @app.route('/')
 def index():
-    """Enhanced production landing page."""
+    """Main travel planning page."""
     try:
-        return render_template('enhanced_travel_planner.html')
+        return render_template('travel_planner_main.html')
     except Exception as e:
         logger.error("Template rendering failed", error=str(e))
         return "Service temporarily unavailable", 500
+
+
+@app.route('/results')
+def results():
+    """Travel planning results page."""
+    try:
+        return render_template('travel_results.html')
+    except Exception as e:
+        logger.error("Results template rendering failed", error=str(e))
+        return "Results page temporarily unavailable", 500
 
 
 @app.route('/api/plan-complete', methods=['POST'])
@@ -218,10 +230,13 @@ def plan_complete_enhanced_trip():
             travel_service.generate_complete_travel_plan(trip_request)
         )
         
+        # Get trip type from form data
+        trip_type = form_data.get('trip_type', 'home')
+        
         # Generate comprehensive itinerary with hidden gems
         itinerary_result = loop.run_until_complete(
             itinerary_generator.generate_complete_itinerary(
-                start_city, end_city, trip_request
+                start_city, end_city, trip_request, trip_type
             )
         )
         
@@ -232,6 +247,35 @@ def plan_complete_enhanced_trip():
                 'success': False,
                 'error': 'Unable to generate complete travel plan'
             }), 500
+        
+        # Get all cities involved in the trip
+        all_cities = [start_city, end_city]
+        if itinerary_result.success:
+            intermediate_cities_data = itinerary_result.data.get('intermediate_cities', [])
+            for city_data in intermediate_cities_data:
+                city_coords = city_data['city']['coordinates']
+                city_obj = type(start_city)(
+                    name=city_data['city']['name'],
+                    coordinates=type(start_city.coordinates)(city_coords[0], city_coords[1]),
+                    country=city_data['city']['country'],
+                    population=city_data['city'].get('population'),
+                    region=city_data['city'].get('region'),
+                    types=city_data['city'].get('types', [])
+                )
+                all_cities.append(city_obj)
+        
+        # Get enhanced amenities data
+        accommodations_result = loop.run_until_complete(
+            amenities_service.get_comprehensive_accommodations(all_cities, trip_request)
+        )
+        
+        restaurants_result = loop.run_until_complete(
+            amenities_service.get_comprehensive_restaurants(all_cities, trip_request)
+        )
+        
+        fuel_result = loop.run_until_complete(
+            amenities_service.calculate_fuel_consumption(plan_result.data.get('routes', []), trip_request)
+        )
         
         # Combine all results
         enhanced_data = plan_result.data.copy()
@@ -248,6 +292,16 @@ def plan_complete_enhanced_trip():
                 'travel_tips': itinerary_result.data.get('travel_tips', {}),
                 'trip_summary': itinerary_result.data.get('trip_summary', {})
             })
+        
+        # Add amenities data
+        if accommodations_result.success:
+            enhanced_data['accommodations'] = accommodations_result.data
+        
+        if restaurants_result.success:
+            enhanced_data['restaurants'] = restaurants_result.data
+        
+        if fuel_result.success:
+            enhanced_data['fuel_analysis'] = fuel_result.data
         
         # Sanitize and prepare response
         response_data = validation_service.sanitize_output(enhanced_data)

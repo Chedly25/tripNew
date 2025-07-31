@@ -20,27 +20,40 @@ class HiddenGemsService:
         self.city_service = city_service
     
     async def suggest_intermediate_cities(self, start_city: City, end_city: City, 
-                                        trip_request: TripRequest) -> ServiceResult:
+                                        trip_request: TripRequest, trip_type: str = "home") -> ServiceResult:
         """
         Suggest intermediate cities based on travel days and nights distribution.
         
-        For a 3-night trip with 2 nights at destination:
-        - Suggest 1 intermediate city for 1 night
+        For HOME trips:
+        - 3-day trip with 2 nights at destination: 1st night should be at intermediate city
+        - Must return home, so intermediate stops are en route
         
-        For longer trips:
-        - Distribute nights optimally between route and destination
+        For AWAY trips:
+        - Standard distribution based on total days and destination nights
+        - No requirement to return to starting point
         """
         try:
             logger.info("Suggesting intermediate cities", 
                        start=start_city.name, end=end_city.name,
-                       total_days=trip_request.travel_days)
+                       total_days=trip_request.travel_days, trip_type=trip_type)
             
             # Calculate available nights for intermediate stops
             nights_at_destination = getattr(trip_request, 'nights_at_destination', 2)
             total_travel_days = trip_request.travel_days
             
-            # Calculate intermediate nights
-            intermediate_nights = max(0, total_travel_days - nights_at_destination - 1)  # -1 for travel day
+            # Calculate intermediate nights based on trip type
+            if trip_type == "home":
+                # For home trips, we need to account for return journey
+                # Available nights = total_days - nights_at_destination - 1 (return day)
+                intermediate_nights = max(0, total_travel_days - nights_at_destination - 1)
+                
+                # For 3-day trips from home with 2 nights at destination, force 1 intermediate night
+                if total_travel_days == 3 and nights_at_destination == 2:
+                    intermediate_nights = 1
+                    logger.info("Home trip: forcing 1 intermediate night for 3-day/2-destination-night trip")
+            else:
+                # For away trips, standard calculation
+                intermediate_nights = max(0, total_travel_days - nights_at_destination - 1)  # -1 for travel day
             
             if intermediate_nights <= 0:
                 return ServiceResult.success_result({
