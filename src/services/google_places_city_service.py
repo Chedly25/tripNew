@@ -96,11 +96,19 @@ class GooglePlacesCityService:
                 if city and city.name not in [c.name for c in cities]:
                     cities.append(city)
             
-            return cities[:10]  # Return top 10 cities
+            # If Google API returned cities, use them
+            if len(cities) > 0:
+                return cities[:10]  # Return top 10 cities
+            
+            # If Google API returned no cities, fall back to our comprehensive system
+            logger.warning("Google Places API returned no cities - using fallback system")
+            return self._get_fallback_route_cities(start, end, max_deviation_km, route_type)
             
         except Exception as e:
             logger.error(f"Failed to find cities near route: {e}")
-            return []
+            # Always fall back to our comprehensive system instead of returning empty
+            logger.warning("Google Places API failed - using fallback system")
+            return self._get_fallback_route_cities(start, end, max_deviation_km, route_type)
     
     async def find_cities_by_type(self, city_type: str) -> List[City]:
         """Find cities by type using Google Places API."""

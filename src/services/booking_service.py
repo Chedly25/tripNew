@@ -17,9 +17,9 @@ class BookingService:
     """Service for finding hotels using Booking.com API."""
     
     def __init__(self):
-        # Using RapidAPI's Booking.com endpoint (free tier available)
+        # Using RapidAPI's Booking.com endpoint (correct subscribed endpoint)
         self.api_key = os.getenv('RAPIDAPI_KEY')  # RapidAPI key for Booking.com
-        self.base_url = "https://booking-com.p.rapidapi.com/v1"
+        self.base_url = "https://booking-com15.p.rapidapi.com/v1"
         self.session = None
         
         if not self.api_key:
@@ -67,7 +67,7 @@ class BookingService:
             
             headers = {
                 'X-RapidAPI-Key': self.api_key,
-                'X-RapidAPI-Host': 'booking-com.p.rapidapi.com'
+                'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com'
             }
             
             async with self.session.get(url, params=params, headers=headers) as response:
@@ -93,7 +93,7 @@ class BookingService:
             
             headers = {
                 'X-RapidAPI-Key': self.api_key,
-                'X-RapidAPI-Host': 'booking-com.p.rapidapi.com'
+                'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com'
             }
             
             async with self.session.get(url, params=params, headers=headers) as response:
