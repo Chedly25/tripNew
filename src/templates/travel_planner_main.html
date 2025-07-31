@@ -7,8 +7,11 @@
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome - Multiple CDN sources for reliability -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" crossorigin="anonymous">
+    <!-- Fallback Font Awesome from unpkg -->
+    <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" crossorigin="anonymous">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -176,6 +179,25 @@
             .planning-card {
                 padding: 1.5rem;
             }
+        }
+        
+        /* Font Awesome Fallbacks - Unicode characters if FA doesn't load */
+        .fas.fa-gem::before { content: "💎"; }
+        .fas.fa-route::before { content: "🛣️"; }
+        .fas.fa-hotel::before { content: "🏨"; }
+        .fas.fa-calculator::before { content: "🧮"; }
+        .fas.fa-calendar-days::before { content: "📅"; }
+        .fas.fa-bed::before { content: "🛏️"; }
+        .fas.fa-leaf::before { content: "🍃"; }
+        .fas.fa-robot::before { content: "🤖"; }
+        .fas.fa-paper-plane::before { content: "✈️"; }
+        .fas.fa-route::before { content: "🗺️"; }
+        
+        /* Ensure fallback characters are visible */
+        .fas::before {
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+            font-size: 1.2em;
+            display: inline-block;
         }
     </style>
 </head>
@@ -365,6 +387,47 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Font Awesome Detection and Fallback -->
+    <script>
+        // Check if Font Awesome loaded properly
+        function checkFontAwesome() {
+            // Create a test element with Font Awesome icon
+            const testElement = document.createElement('i');
+            testElement.className = 'fas fa-heart';
+            testElement.style.position = 'absolute';
+            testElement.style.left = '-9999px';
+            testElement.style.fontSize = '16px';
+            document.body.appendChild(testElement);
+            
+            // Check if Font Awesome loaded by measuring width
+            const computedStyle = window.getComputedStyle(testElement, '::before');
+            const fontFamily = computedStyle.getPropertyValue('font-family');
+            
+            // Clean up test element
+            document.body.removeChild(testElement);
+            
+            // If Font Awesome didn't load, add fallback class
+            if (!fontFamily.includes('Font Awesome')) {
+                console.warn('Font Awesome failed to load - using emoji fallbacks');
+                document.body.classList.add('fa-fallback');
+                
+                // Update specific icons with better fallbacks
+                document.querySelectorAll('.fas.fa-gem').forEach(el => el.textContent = '💎');
+                document.querySelectorAll('.fas.fa-route').forEach(el => el.textContent = '🛣️');
+                document.querySelectorAll('.fas.fa-hotel').forEach(el => el.textContent = '🏨');
+                document.querySelectorAll('.fas.fa-calculator').forEach(el => el.textContent = '🧮');
+            } else {
+                console.log('Font Awesome loaded successfully');
+            }
+        }
+        
+        // Check Font Awesome after page loads
+        window.addEventListener('load', checkFontAwesome);
+        
+        // Backup check after delay
+        setTimeout(checkFontAwesome, 2000);
+    </script>
     
     <script>
         // Trip type selection
