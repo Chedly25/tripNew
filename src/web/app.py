@@ -134,6 +134,26 @@ def create_app() -> Flask:
             logger.error("Results template rendering failed", error=str(e))
             return "Service temporarily unavailable", 500
     
+    @app.route('/debug-map')
+    def debug_map():
+        """Debug page for testing map rendering with intermediate cities."""
+        try:
+            with open('debug_map_rendering.html', 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            logger.error("Debug map page failed", error=str(e))
+            return "Debug page not available", 500
+    
+    @app.route('/test-frontend')
+    def test_frontend():
+        """Test page to simulate real API data in sessionStorage."""
+        try:
+            with open('test_frontend_with_real_data.html', 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            logger.error("Test frontend page failed", error=str(e))
+            return "Test page not available", 500
+
     @app.route('/trip-details')
     def trip_details():
         """Detailed trip preparation page."""
@@ -211,7 +231,7 @@ def create_app() -> Flask:
             return jsonify({'error': 'Failed to retrieve trip data'}), 500
     
     @app.route('/test')
-    def test_frontend():
+    def test_route():
         """Test frontend functionality."""
         try:
             return render_template('../../../test_frontend.html')
