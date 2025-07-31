@@ -28,7 +28,7 @@ security_logger = SecurityLogger()
 def create_app() -> Flask:
     """Application factory with dependency injection."""
     # Set template folder to the original location
-    app = Flask(__name__, template_folder='../templates')
+    app = Flask(__name__, template_folder='../templates', static_folder='../static')
     
     # Security configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32))
