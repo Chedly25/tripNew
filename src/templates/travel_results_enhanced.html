@@ -430,6 +430,7 @@
         .route-type-adventure { --route-color: #f59e0b; }
         .route-type-culinary { --route-color: #ef4444; }
         .route-type-romantic { --route-color: #ec4899; }
+        .route-type-hidden_gems { --route-color: #6366f1; }
         
         .itinerary-card[data-route-type="scenic"] .itinerary-icon,
         .itinerary-card[data-route-type="scenic"] .stat-icon {
@@ -454,6 +455,11 @@
         .itinerary-card[data-route-type="romantic"] .itinerary-icon,
         .itinerary-card[data-route-type="romantic"] .stat-icon {
             background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+        
+        .itinerary-card[data-route-type="hidden_gems"] .itinerary-icon,
+        .itinerary-card[data-route-type="hidden_gems"] .stat-icon {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
         }
     </style>
 </head>
@@ -512,6 +518,11 @@
                 icon: 'fa-heart',
                 color: '#ec4899',
                 mapColor: '#ec4899'
+            },
+            'hidden_gems': {
+                icon: 'fa-gem',
+                color: '#6366f1',
+                mapColor: '#6366f1'
             }
         };
 

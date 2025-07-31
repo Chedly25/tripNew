@@ -481,6 +481,8 @@
                 hotels.forEach(hotel => {
                     const stars = Array(Math.floor(hotel.rating || 4)).fill('★').join('');
                     const amenities = hotel.amenities ? hotel.amenities.slice(0, 3).join(', ') : 'WiFi, Parking';
+                    const websiteLink = hotel.website || hotel.url ? 
+                        `<br><a href="${hotel.website || hotel.url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Visit Website</a>` : '';
                     
                     hotelHTML += `
                         <div class="activity-card">
@@ -490,7 +492,7 @@
                                 ${stars} ${hotel.rating}/5 (${hotel.review_count} reviews)<br>
                                 <i class="fas fa-euro-sign me-1"></i>${hotel.price_per_night} per night<br>
                                 <i class="fas fa-map-marker-alt me-1"></i>${hotel.address}<br>
-                                <small>${amenities}</small>
+                                <small>${amenities}</small>${websiteLink}
                             </div>
                         </div>
                     `;
@@ -513,6 +515,8 @@
                 restaurants.forEach(restaurant => {
                     const stars = Array(Math.floor(restaurant.rating || 4)).fill('★').join('');
                     const priceLevel = '€'.repeat(restaurant.price_level || 2);
+                    const websiteLink = restaurant.website || restaurant.url ? 
+                        `<br><a href="${restaurant.website || restaurant.url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Visit Website</a>` : '';
                     
                     restaurantHTML += `
                         <div class="activity-card">
@@ -523,7 +527,7 @@
                                 <i class="fas fa-utensils me-1"></i>${restaurant.cuisine}<br>
                                 <i class="fas fa-euro-sign me-1"></i>${priceLevel}<br>
                                 <i class="fas fa-map-marker-alt me-1"></i>${restaurant.address}<br>
-                                <i class="fas fa-clock me-1"></i>${restaurant.hours}
+                                <i class="fas fa-clock me-1"></i>${restaurant.hours}${websiteLink}
                             </div>
                         </div>
                     `;
@@ -546,6 +550,8 @@
                 activities.forEach(activity => {
                     const stars = Array(Math.floor(activity.rating || 4)).fill('★').join('');
                     const priceLevel = activity.price_level ? '€'.repeat(activity.price_level) : 'Free';
+                    const websiteLink = activity.website || activity.url ? 
+                        `<br><a href="${activity.website || activity.url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Visit Website</a>` : '';
                     
                     activityHTML += `
                         <div class="activity-card">
@@ -555,7 +561,7 @@
                                 ${stars} ${activity.rating}/5<br>
                                 <i class="fas fa-euro-sign me-1"></i>${priceLevel}<br>
                                 <i class="fas fa-map-marker-alt me-1"></i>${activity.address}<br>
-                                <i class="fas fa-clock me-1"></i>${activity.hours}
+                                <i class="fas fa-clock me-1"></i>${activity.hours}${websiteLink}
                             </div>
                         </div>
                     `;

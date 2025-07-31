@@ -113,6 +113,12 @@ class BookingService:
         formatted = []
         for hotel in results:
             try:
+                # Get the booking URL if available
+                booking_url = hotel.get('url', '')
+                if not booking_url and hotel.get('hotel_id'):
+                    # Construct booking.com URL if we have hotel ID
+                    booking_url = f"https://www.booking.com/hotel/{hotel.get('hotel_id')}.html"
+                
                 formatted.append({
                     'name': hotel.get('hotel_name', 'Unknown Hotel'),
                     'rating': hotel.get('review_score', 0) / 2,  # Convert from 10-point to 5-point scale
@@ -123,7 +129,8 @@ class BookingService:
                     'distance_to_center': hotel.get('distance', 0),
                     'amenities': self._extract_amenities(hotel.get('hotel_facilities', [])),
                     'photo': hotel.get('main_photo_url', ''),
-                    'url': hotel.get('url', ''),
+                    'url': booking_url,
+                    'website': booking_url,  # Add website field for frontend
                     'stars': hotel.get('class', 0),
                     'description': hotel.get('hotel_description', '')[:200] + '...' if hotel.get('hotel_description') else ''
                 })

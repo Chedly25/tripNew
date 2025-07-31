@@ -27,8 +27,15 @@ class TravelPlannerServiceImpl(TravelPlannerService):
     def generate_routes(self, request: TripRequest) -> ServiceResult:
         """Generate multiple route options for the trip request."""
         try:
-            # Run async route generation in sync context
-            return asyncio.run(self._generate_routes_async(request))
+            # Check if we're already in an event loop
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an event loop, need to use different approach
+                logger.info("Already in event loop, using sync fallback for route generation")
+                return self._generate_routes_sync(request)
+            except RuntimeError:
+                # No running loop, can use asyncio.run
+                return asyncio.run(self._generate_routes_async(request))
         except Exception as e:
             logger.error("Route generation failed", error=str(e))
             return ServiceResult.error_result(f"Route generation failed: {e}")
@@ -87,6 +94,57 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             
         except Exception as e:
             logger.error("Async route generation failed", error=str(e))
+            return ServiceResult.error_result(f"Route generation failed: {e}")
+    
+    def _generate_routes_sync(self, request: TripRequest) -> ServiceResult:
+        """Sync route generation using fallback city service."""
+        try:
+            logger.info("Generating routes synchronously", 
+                       start=request.start_city, 
+                       end=request.end_city,
+                       days=request.travel_days)
+            
+            # Get start and end cities using sync fallback
+            start_city = self.city_service._get_fallback_city(request.start_city)
+            if not start_city:
+                return ServiceResult.error_result(f"Start city not found: {request.start_city}")
+            
+            end_city = self.city_service._get_fallback_city(request.end_city)
+            if not end_city:
+                return ServiceResult.error_result(f"End city not found: {request.end_city}")
+            
+            # Generate routes for different strategies
+            routes = []
+            for strategy in self._route_strategies:
+                try:
+                    route_result = self._generate_route_for_strategy(
+                        strategy, start_city, end_city, request
+                    )
+                    
+                    if route_result.success:
+                        routes.append(route_result.data)
+                    else:
+                        logger.warning("Route generation failed", 
+                                     strategy=strategy['name'],
+                                     error=route_result.error_message)
+                
+                except Exception as e:
+                    logger.error(f"Route generation failed for {strategy['name']}", 
+                               error=str(e))
+                    continue
+            
+            if not routes:
+                return ServiceResult.error_result("No routes could be generated")
+            
+            return ServiceResult.success_result({
+                'routes': routes,
+                'request': request,
+                'start_city': start_city,
+                'end_city': end_city
+            })
+            
+        except Exception as e:
+            logger.error("Sync route generation failed", error=str(e))
             return ServiceResult.error_result(f"Route generation failed: {e}")
     
     def get_route_details(self, route_id: str) -> ServiceResult:
@@ -176,9 +234,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         """Find intermediate cities based on route strategy."""
         strategy_type = strategy['type']
         
-        # Get cities near the route for all strategies
-        nearby_cities = self.city_service.find_cities_near_route(
-            start_city.coordinates, end_city.coordinates, max_deviation_km=120
+        # Get cities near the route using sync fallback method, filtered by route type
+        nearby_cities = self.city_service._get_fallback_route_cities(
+            start_city.coordinates, end_city.coordinates, max_deviation_km=120, route_type=strategy_type
         )
         
         if strategy_type == 'scenic':
@@ -214,6 +272,17 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             romantic_types = ['romantic', 'scenic', 'lakes', 'coastal', 'luxury', 'historic']
             candidates = [c for c in nearby_cities if any(t in c.types for t in romantic_types)]
             return self._select_diverse_cities(candidates, max_cities=2)
+        
+        elif strategy_type == 'hidden_gems':
+            # Find lesser-known, authentic destinations
+            hidden_gem_types = ['hidden', 'local', 'authentic', 'village', 'traditional', 'offbeat']
+            candidates = [c for c in nearby_cities if any(t in c.types for t in hidden_gem_types)]
+            # If not enough hidden gems, look for smaller towns and medieval places
+            if len(candidates) < 2:
+                small_town_types = ['medieval', 'village', 'traditional', 'rural', 'authentic']
+                more_candidates = [c for c in nearby_cities if any(t in c.types for t in small_town_types)]
+                candidates.extend(more_candidates[:3])
+            return self._select_diverse_cities(candidates, max_cities=3)
         
         else:
             # Default: select diverse cities near route
@@ -262,6 +331,17 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             romantic_types = ['romantic', 'scenic', 'lakes', 'coastal', 'luxury', 'historic']
             candidates = [c for c in nearby_cities if any(t in c.types for t in romantic_types)]
             return self._select_diverse_cities(candidates, max_cities=2)
+        
+        elif strategy_type == 'hidden_gems':
+            # Find lesser-known, authentic destinations
+            hidden_gem_types = ['hidden', 'local', 'authentic', 'village', 'traditional', 'offbeat']
+            candidates = [c for c in nearby_cities if any(t in c.types for t in hidden_gem_types)]
+            # If not enough hidden gems, look for smaller towns and medieval places
+            if len(candidates) < 2:
+                small_town_types = ['medieval', 'village', 'traditional', 'rural', 'authentic']
+                more_candidates = [c for c in nearby_cities if any(t in c.types for t in small_town_types)]
+                candidates.extend(more_candidates[:3])
+            return self._select_diverse_cities(candidates, max_cities=3)
         
         else:
             # Default: select diverse cities near route
@@ -428,5 +508,12 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 'description': 'Intimate journey through Europe\'s most romantic destinations, perfect for couples seeking enchanting experiences.',
                 'highlights': ['Romantic settings', 'Intimate venues', 'Sunset views', 'Couple activities'],
                 'ideal_for': 'Couples, honeymoons, romantic getaways'
+            },
+            {
+                'name': 'Hidden Gems Route',
+                'type': 'hidden_gems',
+                'description': 'Discover Europe\'s best-kept secrets and off-the-beaten-path destinations that most tourists never see.',
+                'highlights': ['Lesser-known towns', 'Local secrets', 'Unique experiences', 'Authentic culture'],
+                'ideal_for': 'Adventurous explorers, authentic travel seekers, curious wanderers'
             }
         ]

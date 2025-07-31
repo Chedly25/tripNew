@@ -98,6 +98,8 @@ class FoursquareService:
         formatted = []
         for place in results:
             try:
+                website_url = place.get('website', '')
+                
                 formatted.append({
                     'name': place.get('name', 'Unknown Restaurant'),
                     'rating': place.get('rating', 0) / 2,  # Convert from 10-point to 5-point scale
@@ -105,7 +107,8 @@ class FoursquareService:
                     'address': place.get('location', {}).get('formatted_address', ''),
                     'category': 'Restaurant',
                     'cuisine': self._extract_cuisine(place.get('categories', [])),
-                    'website': place.get('website', ''),
+                    'website': website_url,
+                    'url': website_url,  # Add url field for consistency
                     'hours': place.get('hours', {}).get('display', 'Hours not available'),
                     'photo': self._extract_photo(place.get('photos', []))
                 })
@@ -119,13 +122,16 @@ class FoursquareService:
         formatted = []
         for place in results:
             try:
+                website_url = place.get('website', '')
+                
                 formatted.append({
                     'name': place.get('name', 'Unknown Activity'),
                     'rating': place.get('rating', 0) / 2,  # Convert from 10-point to 5-point scale
                     'price_level': len(place.get('price', '') or ''),
                     'address': place.get('location', {}).get('formatted_address', ''),
                     'category': self._extract_activity_type(place.get('categories', [])),
-                    'website': place.get('website', ''),
+                    'website': website_url,
+                    'url': website_url,  # Add url field for consistency
                     'hours': place.get('hours', {}).get('display', 'Hours not available'),
                     'photo': self._extract_photo(place.get('photos', []))
                 })

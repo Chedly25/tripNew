@@ -460,7 +460,18 @@ class GooglePlacesCityService:
             'salzburg': {'lat': 47.8095, 'lon': 13.0550, 'country': 'Austria', 'types': ['cultural', 'music', 'historic', 'mozart']},
             'siena': {'lat': 43.3188, 'lon': 11.3307, 'country': 'Italy', 'types': ['historic', 'medieval', 'unesco', 'cultural']},
             'rimini': {'lat': 44.0678, 'lon': 12.5695, 'country': 'Italy', 'types': ['coastal', 'resort', 'beach', 'nightlife']},
-            'ravenna': {'lat': 44.4184, 'lon': 12.2035, 'country': 'Italy', 'types': ['historic', 'byzantine', 'unesco', 'mosaics']}
+            'ravenna': {'lat': 44.4184, 'lon': 12.2035, 'country': 'Italy', 'types': ['historic', 'byzantine', 'unesco', 'mosaics']},
+            # Hidden gems - lesser-known authentic destinations
+            'san_gimignano': {'lat': 43.4674, 'lon': 11.0431, 'country': 'Italy', 'types': ['hidden', 'medieval', 'village', 'towers', 'authentic']},
+            'civita_di_bagnoregio': {'lat': 42.6274, 'lon': 12.0992, 'country': 'Italy', 'types': ['hidden', 'village', 'authentic', 'cliff', 'unique']},
+            'colmar': {'lat': 48.0794, 'lon': 7.3581, 'country': 'France', 'types': ['hidden', 'village', 'authentic', 'fairytale', 'canals']},
+            'riquewihr': {'lat': 48.1667, 'lon': 7.2989, 'country': 'France', 'types': ['hidden', 'village', 'wine', 'medieval', 'authentic']},
+            'rothenburg': {'lat': 49.3779, 'lon': 10.1803, 'country': 'Germany', 'types': ['hidden', 'medieval', 'village', 'walls', 'authentic']},
+            'cesky_krumlov': {'lat': 49.3174, 'lon': 14.3175, 'country': 'Czech Republic', 'types': ['hidden', 'medieval', 'unesco', 'village', 'authentic']},
+            'bled': {'lat': 46.3683, 'lon': 14.1147, 'country': 'Slovenia', 'types': ['hidden', 'lakes', 'romantic', 'village', 'authentic']},
+            'hallstatt': {'lat': 47.5622, 'lon': 13.6493, 'country': 'Austria', 'types': ['hidden', 'lakes', 'village', 'authentic', 'fairytale']},
+            'giethoorn': {'lat': 52.7386, 'lon': 6.0809, 'country': 'Netherlands', 'types': ['hidden', 'village', 'canals', 'authentic', 'unique']},
+            'sintra': {'lat': 38.7979, 'lon': -9.3902, 'country': 'Portugal', 'types': ['hidden', 'romantic', 'palaces', 'village', 'authentic']}
         }
         
         # Create city objects and filter by distance to route
@@ -483,7 +494,8 @@ class GooglePlacesCityService:
                 'cultural': ['cultural', 'historic', 'unesco', 'artistic', 'renaissance', 'medieval', 'roman'],
                 'adventure': ['adventure', 'alpine', 'skiing', 'nature', 'outdoor', 'mountains'],
                 'culinary': ['culinary', 'gastronomy', 'wine', 'food', 'ham', 'cheese', 'balsamic'],
-                'romantic': ['romantic', 'scenic', 'lakes', 'luxury', 'shakespeare', 'glamour']
+                'romantic': ['romantic', 'scenic', 'lakes', 'luxury', 'shakespeare', 'glamour'],
+                'hidden_gems': ['hidden', 'village', 'authentic', 'medieval', 'unique', 'fairytale']
             }
             
             if route_type in type_filters:
