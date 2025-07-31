@@ -4,21 +4,16 @@ Simple WSGI entry point for production deployment.
 """
 import os
 import sys
-from pathlib import Path
-
-# Add src to path
-src_path = Path(__file__).parent / 'src'
-sys.path.insert(0, str(src_path))
 
 # Set production environment
 os.environ.setdefault('FLASK_ENV', 'production')
 
-# Import the working application
+# Import the working application directly
 from app_runner import app as application
 
 # Configure for production
 application.config.update({
-    'SECRET_KEY': os.environ.get('SECRET_KEY', os.urandom(32)),
+    'SECRET_KEY': os.environ.get('SECRET_KEY', 'fallback-production-key-12345'),
     'DEBUG': False,
     'TESTING': False
 })
