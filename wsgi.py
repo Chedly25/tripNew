@@ -6,22 +6,36 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to path for imports
-src_path = Path(__file__).parent / 'src'
-sys.path.insert(0, str(src_path))
+try:
+    # Add src to path for imports
+    src_path = Path(__file__).parent / 'src'
+    sys.path.insert(0, str(src_path))
 
-# Set production environment
-os.environ.setdefault('FLASK_ENV', 'production')
+    # Set production environment
+    os.environ.setdefault('FLASK_ENV', 'production')
 
-# Import the REAL production application with ALL features
-from production_app import app as application
+    # Import the REAL production application with ALL features
+    from production_app import app as application
 
-# Configure for production
-application.config.update({
-    'SECRET_KEY': os.environ.get('SECRET_KEY', os.urandom(32)),
-    'DEBUG': False,
-    'TESTING': False
-})
+    # Configure for production
+    application.config.update({
+        'SECRET_KEY': os.environ.get('SECRET_KEY', os.urandom(32).hex()),
+        'DEBUG': False,
+        'TESTING': False
+    })
+
+except Exception as e:
+    print(f"WSGI startup error: {e}")
+    import traceback
+    traceback.print_exc()
+    
+    # Create minimal fallback Flask app
+    from flask import Flask
+    application = Flask(__name__)
+    
+    @application.route('/')
+    def error():
+        return f"App failed to start: {str(e)}", 500
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
