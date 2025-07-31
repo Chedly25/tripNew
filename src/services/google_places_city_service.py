@@ -19,7 +19,8 @@ class GooglePlacesCityService:
     
     def __init__(self):
         self.google_api_key = os.getenv('GOOGLE_PLACES_API_KEY')
-        self.base_url = "https://maps.googleapis.com/maps/api/place"
+        # Use the new Places API endpoint
+        self.base_url = "https://places.googleapis.com/v1/places"
         self.session = None
         self._city_cache: Dict[str, City] = {}
         
@@ -145,24 +146,33 @@ class GooglePlacesCityService:
             return []
     
     async def _search_cities(self, query: str) -> List[Dict]:
-        """Search for cities using Google Places text search."""
+        """Search for cities using Google Places API (New)."""
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
             
-            url = f"{self.base_url}/textsearch/json"
-            params = {
-                'query': f"{query} city Europe",
-                'type': 'locality',
-                'key': self.google_api_key
+            # Use the new Places API searchText endpoint
+            url = f"{self.base_url}:searchText"
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': self.google_api_key,
+                'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.formattedAddress,places.rating'
             }
             
-            async with self.session.get(url, params=params) as response:
+            payload = {
+                'textQuery': f"{query} city Europe",
+                'includedType': 'locality',
+                'maxResultCount': 10
+            }
+            
+            async with self.session.post(url, json=payload, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()
-                    return data.get('results', [])
+                    return data.get('places', [])
                 else:
-                    logger.error(f"Places API error: {response.status}")
+                    response_text = await response.text()
+                    logger.error(f"Places API error: {response.status} - {response_text}")
                     return []
                     
         except Exception as e:
@@ -170,23 +180,31 @@ class GooglePlacesCityService:
             return []
     
     async def _text_search(self, query: str) -> List[Dict]:
-        """General text search using Google Places API."""
+        """General text search using Google Places API (New)."""
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
             
-            url = f"{self.base_url}/textsearch/json"
-            params = {
-                'query': query,
-                'key': self.google_api_key
+            url = f"{self.base_url}:searchText"
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': self.google_api_key,
+                'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.formattedAddress,places.rating'
             }
             
-            async with self.session.get(url, params=params) as response:
+            payload = {
+                'textQuery': query,
+                'maxResultCount': 20
+            }
+            
+            async with self.session.post(url, json=payload, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()
-                    return data.get('results', [])
+                    return data.get('places', [])
                 else:
-                    logger.error(f"Text search API error: {response.status}")
+                    response_text = await response.text()
+                    logger.error(f"Text search API error: {response.status} - {response_text}")
                     return []
                     
         except Exception as e:
@@ -196,12 +214,21 @@ class GooglePlacesCityService:
     async def _search_places_along_route(self, center_lat: float, center_lng: float,
                                        radius: int, route_start: Coordinates, 
                                        route_end: Coordinates, max_deviation_km: float) -> List[Dict]:
-        """Search for interesting places along a route."""
+        """Search for interesting places along a route using Places API (New)."""
         try:
             if not self.session:
                 self.session = aiohttp.ClientSession()
             
-            # Search for different types of attractions
+            # Use searchNearby endpoint for the new API
+            url = f"{self.base_url}:searchNearby"
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': self.google_api_key,
+                'X-Goog-FieldMask': 'places.displayName,places.location,places.types,places.formattedAddress,places.rating'
+            }
+            
+            # Search for different types of places along the route
             search_types = [
                 'tourist_attraction',
                 'locality',
@@ -212,23 +239,32 @@ class GooglePlacesCityService:
             all_places = []
             
             for place_type in search_types:
-                url = f"{self.base_url}/nearbysearch/json"
-                params = {
-                    'location': f"{center_lat},{center_lng}",
-                    'radius': radius,
-                    'type': place_type,
-                    'key': self.google_api_key
+                payload = {
+                    'includedTypes': [place_type],
+                    'maxResultCount': 20,
+                    'locationRestriction': {
+                        'circle': {
+                            'center': {
+                                'latitude': center_lat,
+                                'longitude': center_lng
+                            },
+                            'radius': radius
+                        }
+                    }
                 }
                 
-                async with self.session.get(url, params=params) as response:
+                async with self.session.post(url, json=payload, headers=headers) as response:
                     if response.status == 200:
                         data = await response.json()
-                        places = data.get('results', [])
+                        places = data.get('places', [])
                         
                         # Filter places that are reasonably close to the route
                         for place in places:
-                            if self._is_place_near_route(place, route_start, route_end, max_deviation_km):
+                            if self._is_place_near_route_new_api(place, route_start, route_end, max_deviation_km):
                                 all_places.append(place)
+                    else:
+                        response_text = await response.text()
+                        logger.warning(f"Route search failed for {place_type}: {response.status} - {response_text}")
             
             return all_places[:20]  # Return top 20 places
             
@@ -272,17 +308,54 @@ class GooglePlacesCityService:
         except Exception:
             return False
     
-    async def _create_city_from_place(self, place: Dict) -> Optional[City]:
-        """Create a City object from Google Places data."""
+    def _is_place_near_route_new_api(self, place: Dict, route_start: Coordinates, 
+                                   route_end: Coordinates, max_deviation_km: float) -> bool:
+        """Check if a place is reasonably close to the route (for new API format)."""
         try:
-            name = place.get('name', '')
+            location = place.get('location', {})
+            place_lat = location.get('latitude')
+            place_lng = location.get('longitude')
+            
+            if not place_lat or not place_lng:
+                return False
+            
+            # Calculate distance from place to route line (simplified)
+            start_dist = geodesic(
+                (place_lat, place_lng),
+                (route_start.latitude, route_start.longitude)
+            ).kilometers
+            
+            end_dist = geodesic(
+                (place_lat, place_lng),
+                (route_end.latitude, route_end.longitude)
+            ).kilometers
+            
+            route_dist = geodesic(
+                (route_start.latitude, route_start.longitude),
+                (route_end.latitude, route_end.longitude)
+            ).kilometers
+            
+            # If the place forms a reasonable triangle with start/end, it's likely on route
+            deviation = abs(start_dist + end_dist - route_dist)
+            return deviation <= max_deviation_km
+            
+        except Exception:
+            return False
+    
+    async def _create_city_from_place(self, place: Dict) -> Optional[City]:
+        """Create a City object from Google Places data (New API format)."""
+        try:
+            # New API uses displayName instead of name
+            display_name = place.get('displayName', {})
+            name = display_name.get('text', '') if isinstance(display_name, dict) else str(place.get('displayName', ''))
+            
             if not name:
                 return None
             
-            # Extract coordinates
-            location = place.get('geometry', {}).get('location', {})
-            lat = location.get('lat')
-            lng = location.get('lng')
+            # Extract coordinates (new API format)
+            location = place.get('location', {})
+            lat = location.get('latitude')
+            lng = location.get('longitude')
             
             if not lat or not lng:
                 return None
@@ -294,7 +367,7 @@ class GooglePlacesCityService:
             city_types = self._map_place_types_to_city_types(place_types)
             
             # Extract address components for country/region
-            formatted_address = place.get('formatted_address', '')
+            formatted_address = place.get('formattedAddress', '')
             country = self._extract_country_from_address(formatted_address)
             region = self._extract_region_from_address(formatted_address)
             
