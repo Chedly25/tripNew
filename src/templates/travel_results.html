@@ -853,7 +853,7 @@
                 const city = cityData.city;
                 return `
                     <div class="hidden-gem">
-                        <div class="gem-score">⭐ ${cityData.recommendation_score?.toFixed(1) || 'N/A'}/10</div>
+                        <div class="gem-score"><i class="fas fa-star me-1"></i>${cityData.recommendation_score?.toFixed(1) || 'N/A'}/10</div>
                         <h5><i class="fas fa-gem me-2"></i>${city.name}, ${city.country}</h5>
                         <p><strong>Region:</strong> ${city.region}</p>
                         <p><strong>Why Visit:</strong> ${(cityData.why_visit || []).join(', ')}</p>
