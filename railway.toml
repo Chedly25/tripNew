@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "python wsgi.py"
+startCommand = "/opt/venv/bin/python wsgi.py"

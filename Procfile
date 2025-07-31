@@ -1,1 +1,1 @@
-web: python wsgi.py
+web: /opt/venv/bin/python wsgi.py
