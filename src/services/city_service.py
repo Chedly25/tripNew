@@ -53,22 +53,65 @@ class CityService(CityRepository):
             raise DatabaseError(f"City data initialization failed: {e}")
     
     def get_city_by_name(self, name: str) -> Optional[City]:
-        """Get city by name with fuzzy matching."""
+        """Get city by name with fuzzy matching and multilingual support."""
         if not name or not name.strip():
             return None
         
-        name_key = name.lower().strip()
+        name_key = name.lower().strip().replace('-', ' ').replace('_', ' ')
         
         # Direct match
         if name_key in self._city_cache:
             return self._city_cache[name_key]
         
-        # Try partial matching
+        # Try matching with city name variations
+        city_aliases = self._get_city_aliases()
+        if name_key in city_aliases:
+            canonical_name = city_aliases[name_key]
+            if canonical_name in self._city_cache:
+                return self._city_cache[canonical_name]
+        
+        # Try partial matching with normalized names
         for cached_name, city in self._city_cache.items():
-            if name_key in cached_name or cached_name in name_key:
+            cached_normalized = cached_name.replace('-', ' ').replace('_', ' ')
+            if (name_key in cached_normalized or 
+                cached_normalized in name_key or
+                name_key.replace(' ', '') in cached_normalized.replace(' ', '')):
                 return city
         
+        # Try matching just the first part of compound names
+        name_parts = name_key.split()
+        if len(name_parts) > 1:
+            for cached_name, city in self._city_cache.items():
+                if name_parts[0] in cached_name.lower():
+                    return city
+        
         return None
+    
+    def _get_city_aliases(self) -> Dict[str, str]:
+        """Get mapping of alternative city names to canonical names."""
+        return {
+            # French/Italian name variations
+            'venise': 'venice',
+            'venezia': 'venice',
+            'venedig': 'venice',
+            'aix en provence': 'aix-en-provence',
+            'aixen provence': 'aix-en-provence',
+            'aix': 'aix-en-provence',
+            'milano': 'milan',
+            'milano': 'milan',
+            'torino': 'turin',
+            'geneve': 'geneva',
+            'genève': 'geneva',
+            'ginevra': 'geneva',
+            'nizza': 'nice',
+            'nizza': 'nice',
+            'monte carlo': 'monaco',
+            'montecarlo': 'monaco',
+            'padova': 'padua',
+            'verona': 'verona',
+            'lione': 'lyon',
+            'lyon': 'lyon'
+        }
     
     def find_cities_by_type(self, city_type: str) -> List[City]:
         """Find cities by type (cultural, scenic, etc.)."""
