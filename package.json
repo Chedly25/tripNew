@@ -4,10 +4,10 @@
   "description": "Production-ready European travel planning application with real APIs and AI integration",
   "main": "production_wsgi.py",
   "scripts": {
-    "start": "gunicorn production_wsgi:application",
+    "start": "gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2",
     "dev": "python app_runner.py",
     "test": "python -m pytest tests/",
-    "build": "docker build -t european-travel-planner .",
+    "build": "echo 'No build step needed for Python app'",
     "deploy": "./deploy.sh"
   },
   "keywords": [
