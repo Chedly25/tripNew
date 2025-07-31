@@ -1,7 +1,12 @@
-# Requirements for Heroku Python deployment
+# REAL Production requirements with APIs
 Flask==3.0.0
 gunicorn==21.2.0
 requests==2.31.0
+aiohttp==3.8.4
 geopy==2.4.1
 anthropic==0.25.1
 python-dotenv==1.0.0
+structlog==23.1.0
+tenacity==8.2.2
+redis==4.5.4
+psycopg2-binary==2.9.6
