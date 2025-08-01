@@ -28,26 +28,26 @@
         }
 
         :root {
-            /* European Travel Inspired Color Palette */
-            --sunset-orange: #FF6B35;
-            --mediterranean-blue: #004E89;
-            --alpine-green: #1A5D1A;
-            --tuscan-gold: #FFD23F;
-            --nordic-teal: #7209B7;
+            /* Use the new global color system */
+            --sunset-orange: #f97316;
+            --mediterranean-blue: #3b82f6;
+            --alpine-green: #22c55e;
+            --tuscan-gold: #eab308;
+            --nordic-teal: #8b5cf6;
             --coastal-mint: #06FFA5;
-            --cobblestone-gray: #4A5568;
-            --vintage-cream: #FFF8E7;
-            --midnight-navy: #1A202C;
+            --cobblestone-gray: #64748b;
+            --vintage-cream: #f8fafc;
+            --midnight-navy: #1e293b;
             
-            /* Gradients */
-            --hero-gradient: linear-gradient(135deg, var(--mediterranean-blue) 0%, var(--nordic-teal) 50%, var(--sunset-orange) 100%);
+            /* Gradients using new colors */
+            --hero-gradient: var(--bg-primary);
             --card-gradient: linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
             --accent-gradient: linear-gradient(90deg, var(--tuscan-gold) 0%, var(--sunset-orange) 100%);
             
             /* Glass morphism */
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.25);
+            --glass-bg: var(--bg-glass);
+            --glass-border: var(--border-glass);
+            --glass-shadow: var(--shadow-glass);
         }
 
         body {
@@ -1981,7 +1981,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 2rem 2.5rem;
-            background: linear-gradient(135deg, var(--coastal-mint), var(--tuscan-gold));
+            background: var(--style-gradient, linear-gradient(135deg, var(--coastal-mint), var(--tuscan-gold)));
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -2968,8 +2968,8 @@
             const routeSummary = document.getElementById('route-summary');
             routeSummary.textContent = `Your Selected Route: ${route.name || `${route.route_type || 'Custom'} Route`}`;
 
-            // Show detailed itinerary
-            showRouteDetails(route, routeIndex);
+            // Route selection complete - user can now click "More Details" to see the detailed page
+            console.log('Route selected:', route);
         }
 
         // New function to show detailed route information in a modal
