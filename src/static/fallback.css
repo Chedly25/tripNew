@@ -19,6 +19,8 @@
 .fa-map-marker-alt::before { content: "📍"; }
 .fa-map-marked-alt::before { content: "🗺️"; }
 .fa-calendar-days::before { content: "📅"; }
+.fa-calendar-day::before { content: "📅"; }
+.fa-calendar-alt::before { content: "📅"; }
 .fa-bed::before { content: "🛏️"; }
 .fa-leaf::before { content: "🍃"; }
 .fa-robot::before { content: "🤖"; }
@@ -38,6 +40,14 @@
 .fa-heart::before { content: "❤️"; }
 .fa-users::before { content: "👥"; }
 .fa-info-circle::before { content: "ℹ️"; }
+.fa-share::before { content: "📤"; }
+.fa-cloud-sun::before { content: "⛅"; }
+.fa-lightbulb::before { content: "💡"; }
+.fa-passport::before { content: "📖"; }
+.fa-suitcase::before { content: "🧳"; }
+.fa-car::before { content: "🚗"; }
+.fa-wifi::before { content: "📶"; }
+.fa-external-link-alt::before { content: "🔗"; }
 
 /* Ensure icons are visible */
 .fas::before, .far::before, .fab::before {

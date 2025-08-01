@@ -7,9 +7,10 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo.svg">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/static/logo.svg">
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/static/logo.svg">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -624,16 +625,121 @@
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // This would be populated with actual route data
-            const sampleRoute = [[43.5297, 5.4474], [45.8992, 6.1294], [45.8081, 9.0852], [45.4384, 10.9916], [45.4408, 12.3155]];
+            // Get the actual selected route data
+            let selectedRoute = null;
+            try {
+                const storedRoute = sessionStorage.getItem('selectedRoute');
+                if (storedRoute) {
+                    selectedRoute = JSON.parse(storedRoute);
+                }
+            } catch (e) {
+                console.error('Error loading selected route for map:', e);
+            }
+
+            if (!selectedRoute) {
+                selectedRoute = getSampleRoute();
+            }
+
+            // Build route coordinates from actual data
+            const startCoords = Array.isArray(selectedRoute.start_city.coordinates) 
+                ? selectedRoute.start_city.coordinates 
+                : [selectedRoute.start_city.coordinates.latitude, selectedRoute.start_city.coordinates.longitude];
             
-            const routeLine = L.polyline(sampleRoute, {
-                color: '#6366f1',
+            const endCoords = Array.isArray(selectedRoute.end_city.coordinates)
+                ? selectedRoute.end_city.coordinates
+                : [selectedRoute.end_city.coordinates.latitude, selectedRoute.end_city.coordinates.longitude];
+            
+            const intermediateCoords = (selectedRoute.intermediate_cities || []).map(city => {
+                if (typeof city === 'string') return null; // Skip string cities
+                if (Array.isArray(city.coordinates)) return city.coordinates;
+                if (city.coordinates && city.coordinates.latitude) {
+                    return [city.coordinates.latitude, city.coordinates.longitude];
+                }
+                return null;
+            }).filter(coord => coord !== null);
+            
+            const routeCoords = [startCoords, ...intermediateCoords, endCoords];
+            
+            // Add route line with route-specific color
+            const routeTypeColors = {
+                'scenic': '#10b981',
+                'cultural': '#8b5cf6', 
+                'adventure': '#f59e0b',
+                'culinary': '#ef4444',
+                'romantic': '#ec4899',
+                'hidden_gems': '#6366f1'
+            };
+            const routeColor = routeTypeColors[selectedRoute.route_type] || '#6366f1';
+            
+            const routeLine = L.polyline(routeCoords, {
+                color: routeColor,
                 weight: 4,
                 opacity: 0.8
             }).addTo(map);
             
+            // Add markers for start, intermediate, and end points
+            const startIcon = L.divIcon({
+                html: '<i class="fas fa-play" style="color: #10b981;"></i>',
+                iconSize: [20, 20],
+                className: 'custom-div-icon'
+            });
+            
+            const endIcon = L.divIcon({
+                html: '<i class="fas fa-flag-checkered" style="color: #ef4444;"></i>',
+                iconSize: [20, 20],
+                className: 'custom-div-icon'
+            });
+            
+            const wayIcon = L.divIcon({
+                html: '<i class="fas fa-map-marker-alt" style="color: ' + routeColor + ';"></i>',
+                iconSize: [20, 20],
+                className: 'custom-div-icon'
+            });
+            
+            // Add start marker
+            L.marker(startCoords, {icon: startIcon})
+                .addTo(map)
+                .bindPopup(`<b>Start:</b> ${selectedRoute.start_city.name}`);
+            
+            // Add intermediate markers
+            (selectedRoute.intermediate_cities || []).forEach(city => {
+                if (typeof city === 'string') return; // Skip string cities
+                
+                let cityCoords;
+                if (Array.isArray(city.coordinates)) {
+                    cityCoords = city.coordinates;
+                } else if (city.coordinates && city.coordinates.latitude) {
+                    cityCoords = [city.coordinates.latitude, city.coordinates.longitude];
+                } else {
+                    return; // Skip if no valid coordinates
+                }
+                
+                const cityTypes = city.types ? city.types.join(', ') : 'Intermediate stop';
+                L.marker(cityCoords, {icon: wayIcon})
+                    .addTo(map)
+                    .bindPopup(`<b>${city.name}</b><br/>${cityTypes}`);
+            });
+            
+            // Add end marker
+            L.marker(endCoords, {icon: endIcon})
+                .addTo(map)
+                .bindPopup(`<b>Destination:</b> ${selectedRoute.end_city.name}`);
+            
+            // Fit map to route
             map.fitBounds(routeLine.getBounds(), {padding: [20, 20]});
+            
+            // Add custom CSS for map icons
+            const style = document.createElement('style');
+            style.textContent = `
+                .custom-div-icon {
+                    background: transparent !important;
+                    border: none !important;
+                    font-size: 16px;
+                    text-align: center;
+                    line-height: 20px;
+                }
+            `;
+            document.head.appendChild(style);
         }
 
         function fetchTripData(route) {
