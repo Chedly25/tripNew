@@ -10,6 +10,8 @@ from ..core.exceptions import TravelPlannerException
 from .google_places_city_service import GooglePlacesCityService
 from .route_service import ProductionRouteService
 from .validation_service import ValidationService
+from .itinerary_generator import ItineraryGenerator
+from .hidden_gems_service import HiddenGemsService
 
 logger = structlog.get_logger(__name__)
 
@@ -22,6 +24,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         self.city_service = city_service
         self.route_service = route_service
         self.validation_service = validation_service
+        # Initialize itinerary generator
+        hidden_gems_service = HiddenGemsService(city_service)
+        self.itinerary_generator = ItineraryGenerator(city_service, hidden_gems_service)
         self._route_strategies = self._initialize_route_strategies()
     
     def generate_routes(self, request: TripRequest) -> ServiceResult:
