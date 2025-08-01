@@ -15,13 +15,13 @@ class ClaudeAIService:
     """Service for integrating Claude AI into travel planning and assistance."""
     
     def __init__(self):
-        self.api_key = os.getenv('CLAUDE_API_KEY')
+        self.api_key = os.getenv('ANTHROPIC_API_KEY')
         self.base_url = "https://api.anthropic.com/v1"
         self.model = "claude-3-sonnet-20240229"
         self.session = None
         
         if not self.api_key:
-            logger.warning("Claude API key not configured - AI features will be limited")
+            logger.warning("Anthropic API key not configured - AI features will be limited")
     
     async def _make_request(self, messages: List[Dict], max_tokens: int = 1000, 
                            system_prompt: str = None) -> Optional[str]:

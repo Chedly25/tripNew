@@ -16,6 +16,14 @@
     "ANTHROPIC_API_KEY": {
       "description": "Claude AI API key for travel insights",
       "required": false
+    },
+    "GOOGLE_CLIENT_ID": {
+      "description": "Google OAuth Client ID for Google Sign-In",
+      "required": false
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "description": "Google OAuth Client Secret for Google Sign-In",
+      "required": false
     }
   },
   "formation": {

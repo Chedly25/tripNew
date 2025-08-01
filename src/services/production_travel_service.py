@@ -1,6 +1,7 @@
 """
 Production travel service integrating all real APIs and caching.
 """
+import os
 import asyncio
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
@@ -72,7 +73,7 @@ class ProductionTravelService:
                 'weather': weather_result.data if isinstance(weather_result, ServiceResult) and weather_result.success else {},
                 'accommodations': accommodations_result.data if isinstance(accommodations_result, ServiceResult) and accommodations_result.success else [],
                 'restaurants': restaurants_result.data if isinstance(restaurants_result, ServiceResult) and restaurants_result.success else [],
-                'ai_insights': await self._get_ai_insights(request) if request.claude_api_key else [],
+                'ai_insights': await self._get_ai_insights(request) if (request.claude_api_key or os.getenv('ANTHROPIC_API_KEY')) else [],
                 'generated_at': datetime.utcnow().isoformat(),
                 'data_sources': self._get_data_sources_used()
             }
@@ -300,11 +301,13 @@ class ProductionTravelService:
     async def _get_ai_insights(self, request: TripRequest) -> List[str]:
         """Get AI-powered travel insights using Claude."""
         try:
-            if not request.claude_api_key:
+            # Use API key from request or environment variable
+            api_key = request.claude_api_key or os.getenv('ANTHROPIC_API_KEY')
+            if not api_key:
                 return []
             
             from anthropic import Anthropic
-            client = Anthropic(api_key=request.claude_api_key)
+            client = Anthropic(api_key=api_key)
             
             prompt = f"""
             Provide 5 specific, actionable travel tips for a {request.travel_days}-day {request.season.value} trip 

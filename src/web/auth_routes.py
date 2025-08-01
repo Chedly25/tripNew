@@ -320,7 +320,7 @@ def get_google_provider_cfg():
 def google_login():
     """Initiate Google OAuth login."""
     if not GOOGLE_CLIENT_ID:
-        flash('Google OAuth is not configured. Please use regular login.', 'warning')
+        flash('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables. Check GOOGLE_OAUTH_SETUP.md for instructions.', 'warning')
         return redirect(url_for('auth.login'))
     
     # Find out what URL to hit for Google login
