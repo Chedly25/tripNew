@@ -349,22 +349,32 @@ class TravelPlannerServiceImpl(TravelPlannerService):
     
     def _select_diverse_cities(self, candidates: List, max_cities: int) -> List:
         """Select diverse cities from candidates to create interesting routes."""
+        import random
+        
         if not candidates:
             return []
         
         if len(candidates) <= max_cities:
             return candidates
         
-        # Sort by rating/popularity if available
+        # Add randomization for variety in route generation
+        # Create pools of high-quality and all candidates
         sorted_candidates = sorted(candidates, 
                                  key=lambda c: getattr(c, 'rating', 0), 
                                  reverse=True)
+        
+        # Take top candidates (e.g., top 75% by rating) for quality selection
+        quality_pool_size = max(max_cities * 2, len(sorted_candidates) // 2)
+        quality_candidates = sorted_candidates[:quality_pool_size]
+        
+        # Shuffle the quality pool for randomization while maintaining quality
+        random.shuffle(quality_candidates)
         
         selected = []
         used_countries = set()
         
         # First, try to get cities from different countries for diversity
-        for city in sorted_candidates:
+        for city in quality_candidates:
             if len(selected) >= max_cities:
                 break
             
@@ -372,11 +382,14 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 selected.append(city)
                 used_countries.add(city.country)
         
-        # If we still need more cities, add highest rated remaining ones
+        # If we still need more cities, randomly select from remaining quality candidates
         remaining_slots = max_cities - len(selected)
         if remaining_slots > 0:
-            remaining_candidates = [c for c in sorted_candidates if c not in selected]
-            selected.extend(remaining_candidates[:remaining_slots])
+            remaining_candidates = [c for c in quality_candidates if c not in selected]
+            if remaining_candidates:
+                # Randomly select from remaining candidates
+                random.shuffle(remaining_candidates)
+                selected.extend(remaining_candidates[:remaining_slots])
         
         return selected
     
