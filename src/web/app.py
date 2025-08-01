@@ -81,38 +81,73 @@ def get_category_from_kinds(kinds: List[str]) -> str:
 def enhance_route_with_calculations(route, start_city, end_city):
     """Enhance route with missing distance, duration, and cost calculations."""
     import math
-    import random
+    
+    # Deterministic distance calculations based on city pairs
+    distance_map = {
+        ('Aix-en-Provence', 'Venice'): 700,
+        ('Venice', 'Aix-en-Provence'): 700,
+        ('Paris', 'Rome'): 1400,
+        ('Rome', 'Paris'): 1400,
+        ('Barcelona', 'Prague'): 1300,
+        ('Prague', 'Barcelona'): 1300,
+        ('Berlin', 'Madrid'): 1900,
+        ('Madrid', 'Berlin'): 1900,
+        ('Amsterdam', 'Vienna'): 1100,
+        ('Vienna', 'Amsterdam'): 1100,
+        ('London', 'Berlin'): 1100,
+        ('Berlin', 'London'): 1100
+    }
     
     # Get or calculate total distance
-    if 'total_distance' not in route or route['total_distance'] is None:
-        # Calculate approximate distance based on stops
-        waypoints = route.get('waypoints', [])
-        if waypoints:
-            # Simple distance calculation (in real app, use proper geocoding)
-            total_distance = 0
-            for i in range(len(waypoints) - 1):
-                # Rough calculation - in reality, use proper distance API
-                total_distance += random.uniform(80, 150)  # km between stops
-            route['total_distance'] = total_distance
+    if 'total_distance' not in route or route['total_distance'] is None or route['total_distance'] == 0:
+        # Try to get distance from our map
+        route_key = (start_city, end_city)
+        reverse_key = (end_city, start_city)
+        
+        if route_key in distance_map:
+            total_distance = distance_map[route_key]
+        elif reverse_key in distance_map:
+            total_distance = distance_map[reverse_key]
         else:
-            # Fallback for Aix-Venice route
-            route['total_distance'] = random.uniform(600, 800)  # Approximate distance
+            # Calculate based on waypoints if available
+            waypoints = route.get('waypoints', [])
+            if waypoints and len(waypoints) > 1:
+                # Estimate 120km per waypoint segment
+                total_distance = (len(waypoints) - 1) * 120
+            else:
+                # Default fallback
+                total_distance = 700
+                
+        route['total_distance'] = total_distance
+    
+    # Ensure distance is a valid number
+    distance = route.get('total_distance', 700)
+    if not isinstance(distance, (int, float)) or distance <= 0:
+        distance = 700
+        route['total_distance'] = distance
     
     # Get or calculate total duration (in minutes)
-    if 'total_duration' not in route or route['total_duration'] is None:
-        distance = route.get('total_distance', 700)
+    if 'total_duration' not in route or route['total_duration'] is None or route['total_duration'] == 0:
         # Assume average speed of 80 km/h for European highways
-        route['total_duration'] = (distance / 80) * 60  # Convert to minutes
+        duration_hours = distance / 80
+        route['total_duration'] = int(duration_hours * 60)  # Convert to minutes
+    
+    # Ensure duration is valid
+    if not isinstance(route['total_duration'], (int, float)) or route['total_duration'] <= 0:
+        route['total_duration'] = int((distance / 80) * 60)
     
     # Get or calculate estimated fuel cost
-    if 'estimated_fuel_cost' not in route or route['estimated_fuel_cost'] is None:
-        distance = route.get('total_distance', 700)
+    if 'estimated_fuel_cost' not in route or route['estimated_fuel_cost'] is None or route['estimated_fuel_cost'] == 0:
         # European fuel costs: ~€1.50/liter, ~7L/100km consumption
         fuel_cost = (distance / 100) * 7 * 1.50
-        route['estimated_fuel_cost'] = fuel_cost
+        route['estimated_fuel_cost'] = int(fuel_cost)
+    
+    # Ensure fuel cost is valid
+    if not isinstance(route['estimated_fuel_cost'], (int, float)) or route['estimated_fuel_cost'] <= 0:
+        route['estimated_fuel_cost'] = int((distance / 100) * 7 * 1.50)
     
     # Ensure route has proper coordinates for map display
-    if 'coordinates' not in route:
+    if 'coordinates' not in route or not route['coordinates']:
         route['coordinates'] = generate_route_coordinates(start_city, end_city)
     
     return route

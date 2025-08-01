@@ -635,12 +635,12 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">🏛️ Starting City</label>
-                            <input type="text" class="form-control" id="start-city" placeholder="Paris, Amsterdam, Berlin..." required>
+                            <input type="text" class="form-control" id="start-city" name="start_city" placeholder="Paris, Amsterdam, Berlin..." required>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">🎯 Destination City</label>
-                            <input type="text" class="form-control" id="end-city" placeholder="Rome, Barcelona, Prague..." required>
+                            <input type="text" class="form-control" id="end-city" name="end_city" placeholder="Rome, Barcelona, Prague..." required>
                         </div>
                         
                         <div class="form-group">
@@ -817,9 +817,18 @@
                 travel_style: selectedStyles || 'scenic'  // Default to scenic if none selected
             };
 
+            // Debug: Log form data
+            console.log('Form data being submitted:', formData);
+            
             // Validate that all required fields are filled
             if (!formData.start_city || !formData.end_city || !formData.duration || !formData.budget) {
                 alert('Please fill in all required fields (cities, duration, and budget)');
+                console.error('Missing required fields:', {
+                    start_city: formData.start_city,
+                    end_city: formData.end_city,
+                    duration: formData.duration,
+                    budget: formData.budget
+                });
                 spinner.style.display = 'none';
                 buttonText.textContent = 'Create My Adventure';
                 button.disabled = false;
@@ -860,9 +869,18 @@
                 }
                 
             } catch (error) {
-                console.error('Error:', error);
-                buttonText.textContent = 'Try Again';
+                console.error('Form submission error:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Show more specific error message
+                buttonText.textContent = 'Connection Error - Try Again';
                 button.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+                
+                // Also show alert with details
+                alert(`Error submitting form: ${error.message}\nPlease check your internet connection and try again.`);
                 
                 setTimeout(() => {
                     buttonText.textContent = 'Create My Adventure';
