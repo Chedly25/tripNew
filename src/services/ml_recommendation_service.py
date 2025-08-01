@@ -139,15 +139,21 @@ class MLRecommendationService:
         return scores.get(tourist_density.lower(), 0.5)
     
     def get_smart_recommendations(self, preferences: TripPreference, 
-                                start_city: str, end_city: str) -> ServiceResult:
-        """Get ML-powered trip recommendations."""
+                                start_city: str, end_city: str, 
+                                exploration_factor: float = 0.3,
+                                session_id: str = None) -> ServiceResult:
+        """Get ML-powered trip recommendations with exploration/exploitation balance."""
+        import random
+        import time
+        
         try:
             logger.info("Generating smart recommendations", 
                        start=start_city, end=end_city, 
                        style=preferences.travel_style,
-                       budget=preferences.budget_range)
+                       budget=preferences.budget_range,
+                       exploration_factor=exploration_factor)
             
-            # Get user preference vector
+            # Get user preference vector with noise injection for exploration
             user_vector = self._create_user_preference_vector(preferences)
             
             # Get candidate cities along the route
@@ -160,61 +166,98 @@ class MLRecommendationService:
             # Find intermediate cities
             candidate_cities = self._find_route_candidates(start_city_obj, end_city_obj)
             
-            # Score cities using ML algorithms
+            # Add session-based randomization seed for consistent but varied results
+            session_seed = hash(session_id) if session_id else int(time.time() * 1000) % 10000
+            random.seed(session_seed)
+            
+            # Score cities using enhanced ML algorithms with exploration
             scored_cities = []
             for city in candidate_cities:
                 if city.name in self.city_features:
                     city_vector = self.city_features[city.name]
                     
-                    # Content-based filtering score
-                    content_score = self._calculate_content_similarity(user_vector, city_vector)
-                    
-                    # Collaborative filtering score (if we have user history)
-                    collab_score = self._calculate_collaborative_score(city.name, preferences)
-                    
-                    # Seasonal adjustment
-                    seasonal_score = self._calculate_seasonal_score(city, preferences.season)
-                    
-                    # Budget compatibility
-                    budget_score = self._calculate_budget_compatibility(city, preferences.budget_range)
-                    
-                    # Route optimization score
-                    route_score = self._calculate_route_optimization_score(
-                        city, start_city_obj, end_city_obj
+                    # Content-based filtering score with noise injection
+                    content_score = self._calculate_content_similarity_with_exploration(
+                        user_vector, city_vector, exploration_factor
                     )
                     
-                    # Combined score with weights
-                    final_score = (
-                        content_score * 0.4 +
+                    # Multi-armed bandit collaborative filtering
+                    collab_score = self._calculate_bandit_collaborative_score(
+                        city.name, preferences, exploration_factor
+                    )
+                    
+                    # Seasonal adjustment with variance
+                    seasonal_score = self._calculate_seasonal_score_with_variance(
+                        city, preferences.season, exploration_factor
+                    )
+                    
+                    # Budget compatibility with flexibility
+                    budget_score = self._calculate_budget_compatibility_flexible(
+                        city, preferences.budget_range, exploration_factor
+                    )
+                    
+                    # Route optimization with exploration bonus
+                    route_score = self._calculate_route_optimization_with_bonus(
+                        city, start_city_obj, end_city_obj, exploration_factor
+                    )
+                    
+                    # Novelty score for exploration
+                    novelty_score = self._calculate_novelty_score(city, preferences)
+                    
+                    # Quality score (exploitation)
+                    quality_score = self._calculate_quality_score(city)
+                    
+                    # Exploration vs Exploitation balance
+                    exploitation_weight = 1.0 - exploration_factor
+                    exploration_weight = exploration_factor
+                    
+                    # Combined score with dynamic weights
+                    base_score = (
+                        content_score * 0.35 +
                         collab_score * 0.2 +
                         seasonal_score * 0.15 +
                         budget_score * 0.15 +
-                        route_score * 0.1
+                        route_score * 0.15
                     )
+                    
+                    # Apply exploration/exploitation balance
+                    final_score = (
+                        base_score * exploitation_weight * quality_score +
+                        novelty_score * exploration_weight
+                    )
+                    
+                    # Add controlled randomness for diversity
+                    random_factor = random.uniform(0.95, 1.05)  # ±5% variance
+                    final_score *= random_factor
                     
                     scored_cities.append({
                         'city': city,
                         'score': final_score,
+                        'exploitation_score': base_score * quality_score,
+                        'exploration_score': novelty_score,
                         'reasons': self._generate_recommendation_reasons(
                             city, preferences, content_score, seasonal_score, budget_score
                         )
                     })
             
-            # Sort by score and select top recommendations
+            # Sort by score with stochastic selection for top candidates
             scored_cities.sort(key=lambda x: x['score'], reverse=True)
             
-            # Select diverse recommendations (avoid clustering)
-            selected_cities = self._select_diverse_recommendations(
-                scored_cities, preferences.duration_days
+            # Apply Thompson Sampling for diverse selection
+            selected_cities = self._thompson_sampling_selection(
+                scored_cities, preferences.duration_days, exploration_factor
             )
             
             return ServiceResult.success_result({
                 'recommendations': selected_cities[:5],  # Top 5
                 'algorithm_info': {
-                    'method': 'hybrid_ml_filtering',
+                    'method': 'ml_exploration_exploitation',
+                    'exploration_factor': exploration_factor,
+                    'session_seed': session_seed,
                     'features_used': len(user_vector),
                     'candidates_evaluated': len(candidate_cities),
-                    'personalization_level': 'high' if self._has_user_history(preferences) else 'medium'
+                    'personalization_level': 'high' if self._has_user_history(preferences) else 'medium',
+                    'diversity_mechanism': 'thompson_sampling'
                 }
             })
             
@@ -587,3 +630,222 @@ class MLRecommendationService:
                         break
         
         return suggestions[:10]  # Top 10 suggestions
+    
+    # ========== ADVANCED ML METHODS FOR EXPLORATION/EXPLOITATION ==========
+    
+    def _calculate_content_similarity_with_exploration(self, user_vector: Dict[str, float], 
+                                                     city_vector: Dict[str, float], 
+                                                     exploration_factor: float) -> float:
+        """Enhanced content similarity with exploration noise."""
+        import random
+        
+        # Base similarity
+        base_similarity = self._calculate_content_similarity(user_vector, city_vector)
+        
+        # Add exploration noise proportional to exploration factor
+        noise = random.uniform(-exploration_factor * 0.2, exploration_factor * 0.2)
+        
+        # Ensure we stay in valid range
+        return max(0.0, min(1.0, base_similarity + noise))
+    
+    def _calculate_bandit_collaborative_score(self, city_name: str, 
+                                            preferences: TripPreference,
+                                            exploration_factor: float) -> float:
+        """Multi-armed bandit approach to collaborative filtering."""
+        import random
+        import math
+        
+        # Get base collaborative score
+        base_score = self._calculate_collaborative_score(city_name, preferences)
+        
+        # Simulate uncertainty/confidence in recommendations
+        # In real implementation, this would be based on actual interaction data
+        recommendation_count = self._get_recommendation_count(city_name)
+        confidence = min(1.0, recommendation_count / 50)  # More confidence with more data
+        
+        # Upper Confidence Bound (UCB) exploration
+        if recommendation_count > 0:
+            ucb_bonus = exploration_factor * math.sqrt(
+                2 * math.log(max(1, self._get_total_recommendations())) / recommendation_count
+            )
+        else:
+            ucb_bonus = exploration_factor  # High exploration for unknown cities
+        
+        # Combine exploitation and exploration
+        return min(1.0, base_score + ucb_bonus * (1.0 - confidence))
+    
+    def _calculate_seasonal_score_with_variance(self, city: City, season: str, 
+                                              exploration_factor: float) -> float:
+        """Seasonal scoring with variance for exploration."""
+        import random
+        
+        base_score = self._calculate_seasonal_score(city, season)
+        
+        # Add seasonal exploration variance
+        variance = exploration_factor * 0.15  # ±15% variance
+        noise = random.uniform(-variance, variance)
+        
+        return max(0.0, min(1.0, base_score + noise))
+    
+    def _calculate_budget_compatibility_flexible(self, city: City, budget_range: str,
+                                               exploration_factor: float) -> float:
+        """Budget compatibility with flexibility for exploration."""
+        import random
+        
+        base_score = self._calculate_budget_compatibility(city, budget_range)
+        
+        # Exploration allows some budget flexibility
+        if exploration_factor > 0.2:
+            flexibility = exploration_factor * 0.2
+            noise = random.uniform(-flexibility, flexibility)
+            base_score = max(0.0, min(1.0, base_score + noise))
+        
+        return base_score
+    
+    def _calculate_route_optimization_with_bonus(self, city: City, start_city: City, 
+                                               end_city: City, exploration_factor: float) -> float:
+        """Route optimization with exploration bonus for off-path cities."""
+        base_score = self._calculate_route_optimization_score(city, start_city, end_city)
+        
+        # Give exploration bonus to slightly off-path cities
+        if base_score < 0.8:  # Cities not perfectly on route
+            exploration_bonus = exploration_factor * 0.3 * (1.0 - base_score)
+            base_score = min(1.0, base_score + exploration_bonus)
+        
+        return base_score
+    
+    def _calculate_novelty_score(self, city: City, preferences: TripPreference) -> float:
+        """Calculate novelty score for exploration."""
+        import random
+        
+        novelty = 0.5  # Base novelty
+        
+        # Higher novelty for less popular destinations
+        tourist_density = getattr(city, 'tourist_density', 'moderate')
+        novelty_bonuses = {
+            'low': 0.9,
+            'moderate': 0.6,
+            'high': 0.4,
+            'very_high': 0.2,
+            'extreme': 0.1
+        }
+        novelty = novelty_bonuses.get(tourist_density, 0.5)
+        
+        # Novelty bonus for hidden gems
+        if city.types and 'hidden' in city.types:
+            novelty += 0.3
+        
+        # Novelty bonus for less common types
+        uncommon_types = ['artisan', 'industrial', 'rural', 'authentic', 'local']
+        if city.types and any(t in uncommon_types for t in city.types):
+            novelty += 0.2
+        
+        # Add randomness for true exploration
+        novelty += random.uniform(-0.1, 0.1)
+        
+        return max(0.0, min(1.0, novelty))
+    
+    def _calculate_quality_score(self, city: City) -> float:
+        """Calculate objective quality score for exploitation."""
+        quality = 0.5  # Base quality
+        
+        # Rating-based quality
+        rating = getattr(city, 'rating', None) or 4.0
+        quality = rating / 5.0
+        
+        # UNESCO bonus
+        if getattr(city, 'unesco', False):
+            quality = min(1.0, quality + 0.2)
+        
+        # Accessibility bonus
+        accessibility = getattr(city, 'accessibility', None)
+        if accessibility in ['excellent', 'good']:
+            quality = min(1.0, quality + 0.1)
+        
+        return quality
+    
+    def _thompson_sampling_selection(self, scored_cities: List[Dict], 
+                                   duration_days: int, exploration_factor: float) -> List[Dict]:
+        """Use Thompson Sampling for diverse city selection."""
+        import random
+        import math
+        
+        if not scored_cities:
+            return []
+        
+        selected = []
+        max_selections = min(8, len(scored_cities))  # Up to 8 cities
+        min_distance_km = max(50, 150 - (duration_days * 5))  # Dynamic spacing
+        
+        # Thompson Sampling parameters
+        alpha_prior = 1.0  # Prior belief about success
+        beta_prior = 1.0   # Prior belief about failure
+        
+        available_cities = scored_cities.copy()
+        
+        while len(selected) < max_selections and available_cities:
+            # Thompson Sampling: sample from Beta distribution for each city
+            sampling_scores = []
+            
+            for candidate in available_cities:
+                city = candidate['city']
+                base_score = candidate['score']
+                
+                # Simulate recommendation success/failure data
+                # In real implementation, this would be based on actual user interactions
+                successes = max(1, int(base_score * 10))  # More successes for higher scores
+                failures = max(1, int((1 - base_score) * 5))  # Some failures
+                
+                # Sample from Beta distribution
+                alpha = alpha_prior + successes
+                beta = beta_prior + failures
+                sampled_score = random.betavariate(alpha, beta)
+                
+                # Add exploration bonus
+                exploration_bonus = exploration_factor * random.random()
+                final_sampling_score = sampled_score + exploration_bonus
+                
+                sampling_scores.append((candidate, final_sampling_score))
+            
+            # Select city with highest sampled score
+            sampling_scores.sort(key=lambda x: x[1], reverse=True)
+            
+            # Find first city that's not too close to already selected ones
+            for candidate, _ in sampling_scores:
+                city = candidate['city']
+                
+                # Check distance from already selected cities
+                too_close = False
+                for selected_item in selected:
+                    selected_city = selected_item['city']
+                    distance = self._calculate_city_distance(city, selected_city)
+                    
+                    if distance < min_distance_km:
+                        too_close = True
+                        break
+                
+                if not too_close:
+                    selected.append(candidate)
+                    available_cities.remove(candidate)
+                    break
+            else:
+                # If all cities are too close, just take the best one
+                if available_cities:
+                    selected.append(sampling_scores[0][0])
+                    available_cities.remove(sampling_scores[0][0])
+        
+        return selected
+    
+    def _get_recommendation_count(self, city_name: str) -> int:
+        """Get number of times this city has been recommended (simulated)."""
+        # In real implementation, this would query actual recommendation logs
+        # For now, simulate based on city popularity
+        popular_cities = {
+            'Paris': 1000, 'Rome': 950, 'Barcelona': 800, 'Florence': 700,
+            'Venice': 650, 'Amsterdam': 600, 'Prague': 550, 'Vienna': 500
+        }
+        return popular_cities.get(city_name, random.randint(10, 100))
+    
+    def _get_total_recommendations(self) -> int:
+        """Get total number of recommendations made (simulated)."""
+        return 10000  # In real implementation, this would be actual count

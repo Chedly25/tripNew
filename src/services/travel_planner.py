@@ -248,19 +248,19 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             # Find scenic cities: alpine, lakes, romantic, resort
             scenic_types = ['scenic', 'alpine', 'lakes', 'romantic', 'resort', 'coastal']
             candidates = [c for c in nearby_cities if any(t in c.types for t in scenic_types)]
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         elif strategy_type == 'cultural':
             # Find cultural/historic cities: unesco, historic, cultural, artistic
             cultural_types = ['cultural', 'historic', 'unesco', 'artistic', 'renaissance', 'medieval', 'roman']
             candidates = [c for c in nearby_cities if any(t in c.types for t in cultural_types)]
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         elif strategy_type == 'adventure':
             # Find adventure cities: alpine, adventure, winter-sports, nature
             adventure_types = ['adventure', 'alpine', 'winter-sports', 'nature', 'skiing', 'outdoor']
             candidates = [c for c in nearby_cities if any(t in c.types for t in adventure_types)]
-            return self._select_diverse_cities(candidates, max_cities=2)
+            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
         
         elif strategy_type == 'culinary':
             # Find culinary destinations
@@ -270,13 +270,13 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             if len(candidates) < 2:
                 cultural_cities = [c for c in nearby_cities if 'cultural' in c.types]
                 candidates.extend(cultural_cities[:2])
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         elif strategy_type == 'romantic':
             # Find romantic destinations
             romantic_types = ['romantic', 'scenic', 'lakes', 'coastal', 'luxury', 'historic']
             candidates = [c for c in nearby_cities if any(t in c.types for t in romantic_types)]
-            return self._select_diverse_cities(candidates, max_cities=2)
+            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
         
         elif strategy_type == 'hidden_gems':
             # Find lesser-known, authentic destinations
@@ -287,11 +287,11 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 small_town_types = ['medieval', 'village', 'traditional', 'rural', 'authentic']
                 more_candidates = [c for c in nearby_cities if any(t in c.types for t in small_town_types)]
                 candidates.extend(more_candidates[:3])
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         else:
             # Default: select diverse cities near route
-            return self._select_diverse_cities(nearby_cities, max_cities=2)
+            return self._select_diverse_cities(nearby_cities, max_cities=2, route_type=strategy_type, request=request)
     
     async def _find_intermediate_cities_async(self, strategy: Dict, start_city, end_city, 
                                             request: TripRequest) -> List:
@@ -307,19 +307,19 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             # Find scenic cities: alpine, lakes, romantic, resort
             scenic_types = ['scenic', 'alpine', 'lakes', 'romantic', 'resort', 'coastal']
             candidates = [c for c in nearby_cities if any(t in c.types for t in scenic_types)]
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         elif strategy_type == 'cultural':
             # Find cultural/historic cities: unesco, historic, cultural, artistic
             cultural_types = ['cultural', 'historic', 'unesco', 'artistic', 'renaissance', 'medieval', 'roman']
             candidates = [c for c in nearby_cities if any(t in c.types for t in cultural_types)]
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         elif strategy_type == 'adventure':
             # Find adventure cities: alpine, adventure, winter-sports, nature
             adventure_types = ['adventure', 'alpine', 'winter-sports', 'nature', 'skiing', 'outdoor']
             candidates = [c for c in nearby_cities if any(t in c.types for t in adventure_types)]
-            return self._select_diverse_cities(candidates, max_cities=2)
+            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
         
         elif strategy_type == 'culinary':
             # Find culinary destinations
@@ -329,13 +329,13 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             if len(candidates) < 2:
                 cultural_cities = [c for c in nearby_cities if 'cultural' in c.types]
                 candidates.extend(cultural_cities[:2])
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         elif strategy_type == 'romantic':
             # Find romantic destinations
             romantic_types = ['romantic', 'scenic', 'lakes', 'coastal', 'luxury', 'historic']
             candidates = [c for c in nearby_cities if any(t in c.types for t in romantic_types)]
-            return self._select_diverse_cities(candidates, max_cities=2)
+            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
         
         elif strategy_type == 'hidden_gems':
             # Find lesser-known, authentic destinations
@@ -346,24 +346,74 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 small_town_types = ['medieval', 'village', 'traditional', 'rural', 'authentic']
                 more_candidates = [c for c in nearby_cities if any(t in c.types for t in small_town_types)]
                 candidates.extend(more_candidates[:3])
-            return self._select_diverse_cities(candidates, max_cities=3)
+            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
         
         else:
             # Default: select diverse cities near route
-            return self._select_diverse_cities(nearby_cities, max_cities=2)
+            return self._select_diverse_cities(nearby_cities, max_cities=2, route_type=strategy_type, request=request)
     
-    def _select_diverse_cities(self, candidates: List, max_cities: int) -> List:
-        """Select diverse cities from candidates to create interesting routes."""
-        import random
-        
+    def _select_diverse_cities(self, candidates: List, max_cities: int, route_type: str = None, 
+                             request = None) -> List:
+        """Select diverse cities using ML recommendations when possible."""
         if not candidates:
             return []
         
         if len(candidates) <= max_cities:
             return candidates
         
-        # Add randomization for variety in route generation
-        # Create pools of high-quality and all candidates
+        # Try to use ML recommendation system for intelligent selection
+        try:
+            from .ml_recommendation_service import MLRecommendationService, TripPreference
+            
+            if hasattr(self, 'ml_service') and self.ml_service:
+                ml_service = self.ml_service
+            else:
+                # Initialize ML service if not available
+                ml_service = MLRecommendationService(self.city_service)
+                self.ml_service = ml_service
+            
+            # If we have request and route_type, use ML recommendations
+            if request and route_type:
+                trip_preferences = TripPreference(
+                    budget_range=getattr(request, 'budget_range', 'mid-range'),
+                    duration_days=getattr(request, 'travel_days', 7),
+                    travel_style=route_type,
+                    season=getattr(request, 'season', 'summer'),
+                    group_size=2,
+                    activity_preferences=getattr(request, 'interests', []),
+                    previous_trips=[]
+                )
+                
+                # Use moderate exploration for general route planning
+                exploration_factor = 0.25
+                
+                # Create a temporary city service with just our candidates
+                temp_service = type(self.city_service)(None)
+                temp_service._city_cache = {city.name: city for city in candidates}
+                temp_ml_service = MLRecommendationService(temp_service)
+                
+                # Get smart recommendations from our candidate pool
+                ml_result = temp_ml_service.get_smart_recommendations(
+                    preferences=trip_preferences,
+                    start_city="dummy_start",  # Won't be used since we're filtering candidates
+                    end_city="dummy_end",      # Won't be used since we're filtering candidates
+                    exploration_factor=exploration_factor
+                )
+                
+                if ml_result.success:
+                    recommendations = ml_result.data['recommendations']
+                    selected = [rec['city'] for rec in recommendations[:max_cities]]
+                    logger.info("Used ML city selection", 
+                               method="ml_diverse_selection",
+                               cities_selected=len(selected))
+                    return selected
+                
+        except Exception as e:
+            logger.warning("ML city selection failed, using fallback", error=str(e))
+        
+        # Fallback to enhanced random selection with quality weighting
+        import random
+        
         # Sort by rating/popularity if available (handle None ratings)
         sorted_candidates = sorted(candidates, 
                                  key=lambda c: getattr(c, 'rating', None) or 0, 

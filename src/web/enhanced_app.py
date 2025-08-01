@@ -301,18 +301,59 @@ def create_enhanced_app() -> Flask:
             if not start_city or not end_city:
                 return jsonify({'error': 'Invalid start or end city'}), 400
             
-            # Find intermediate cities with exclusion and randomization
-            intermediate_cities = await travel_planner_service._find_intermediate_cities_async(
-                strategy, start_city, end_city, trip_request
+            # Use ML recommendation system for intelligent city selection
+            from ..services.ml_recommendation_service import MLRecommendationService, TripPreference
+            
+            # Initialize ML service if not already available
+            if not hasattr(app, 'ml_service'):
+                app.ml_service = MLRecommendationService(city_service)
+            
+            # Create trip preferences from request
+            trip_preferences = TripPreference(
+                budget_range=original_request.get('budget_range', 'mid-range'),
+                duration_days=trip_request.travel_days,
+                travel_style=route_type,
+                season=trip_request.season.value if hasattr(trip_request.season, 'value') else str(trip_request.season),
+                group_size=original_request.get('group_size', 2),
+                activity_preferences=trip_request.interests,
+                previous_trips=exclude_cities  # Use excluded cities as "already seen"
             )
             
-            # Filter out excluded cities and add randomization
-            filtered_cities = [c for c in intermediate_cities if c.name not in exclude_cities]
+            # Get session ID for consistent randomization within session
+            session_id = request.headers.get('X-Session-ID', str(hash(str(data))))
             
-            # If we have more cities than needed, randomly select
-            max_cities = strategy.get('max_cities', 3)
-            if len(filtered_cities) > max_cities:
-                filtered_cities = random.sample(filtered_cities, max_cities)
+            # Use exploration factor based on refresh count or user preference
+            exploration_factor = min(0.6, 0.2 + len(exclude_cities) * 0.1)  # More exploration with more refreshes
+            
+            # Get ML-powered recommendations
+            ml_result = app.ml_service.get_smart_recommendations(
+                preferences=trip_preferences,
+                start_city=trip_request.start_city,
+                end_city=trip_request.end_city,
+                exploration_factor=exploration_factor,
+                session_id=session_id
+            )
+            
+            if not ml_result.success:
+                logger.warning("ML recommendations failed, falling back to simple method")
+                # Fallback to original method
+                intermediate_cities = await travel_planner_service._find_intermediate_cities_async(
+                    strategy, start_city, end_city, trip_request
+                )
+                filtered_cities = [c for c in intermediate_cities if c.name not in exclude_cities]
+                max_cities = strategy.get('max_cities', 3)
+                if len(filtered_cities) > max_cities:
+                    filtered_cities = random.sample(filtered_cities, max_cities)
+            else:
+                # Use ML recommendations
+                recommendations = ml_result.data['recommendations']
+                max_cities = strategy.get('max_cities', 3)
+                filtered_cities = [rec['city'] for rec in recommendations[:max_cities]]
+                
+                logger.info("ML recommendations applied", 
+                           method=ml_result.data['algorithm_info']['method'],
+                           exploration_factor=exploration_factor,
+                           cities_selected=len(filtered_cities))
             
             # Generate the route
             all_cities = [start_city] + filtered_cities + [end_city]
