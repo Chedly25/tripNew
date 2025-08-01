@@ -7,7 +7,13 @@ import asyncio
 from typing import List
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from werkzeug.exceptions import BadRequest, InternalServerError
-import structlog
+try:
+    import structlog
+except ImportError:
+    # Fallback logging
+    import logging as structlog
+    structlog.get_logger = lambda name: logging.getLogger(name)
+
 from datetime import datetime, timedelta
 
 # Import existing services
@@ -31,6 +37,7 @@ from ..services.memory_service import get_memory_service
 from ..services.opentripmap_service import get_opentripmap_service
 from ..services.amadeus_service import get_amadeus_service
 from ..services.eventbrite_service import get_eventbrite_service
+from ..services.ml_recommendation_service import MLRecommendationService, TripPreference
 from ..core.exceptions import TravelPlannerException, ValidationError
 
 # Configure logging
@@ -116,6 +123,9 @@ def create_app() -> Flask:
         city_service, route_service, validation_service
     )
     
+    # Initialize ML recommendation service
+    ml_recommendation_service = MLRecommendationService(city_service)
+    
     # Add user context to templates
     @app.context_processor
     def inject_user():
@@ -179,7 +189,7 @@ def create_app() -> Flask:
                 trip_manager = get_trip_manager()
                 recent_trips = trip_manager.get_user_trips(user['id'], limit=3)
             
-            return render_template('enhanced_main.html', recent_trips=recent_trips)
+            return render_template('travel_planner_main.html', recent_trips=recent_trips)
         except Exception as e:
             logger.error("Template rendering failed", error=str(e))
             return "Service temporarily unavailable", 500
@@ -188,6 +198,158 @@ def create_app() -> Flask:
     def results():
         """Enhanced results page with save functionality."""
         return render_template('travel_results_enhanced.html')
+    
+    @app.route('/plan_trip', methods=['POST'])
+    def plan_trip_enhanced():
+        """Enhanced trip planning endpoint with budget and duration."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Invalid JSON data'}), 400
+            
+            # Parse duration range
+            duration_range = data.get('duration', '7-10')
+            duration_parts = duration_range.split('-')
+            if len(duration_parts) >= 2:
+                min_days = int(duration_parts[0])
+                max_days = int(duration_parts[1].replace('+', ''))
+                travel_days = (min_days + max_days) // 2
+            else:
+                travel_days = 7  # Default
+            
+            # Calculate nights at destination based on travel style
+            travel_style = data.get('travel_style', 'scenic')
+            if travel_style in ['romantic', 'wellness']:
+                nights_ratio = 0.7  # More nights at destination
+            elif travel_style in ['adventure', 'hidden_gems']:
+                nights_ratio = 0.3  # More exploring
+            else:
+                nights_ratio = 0.5  # Balanced
+            
+            nights_at_destination = max(1, int(travel_days * nights_ratio))
+            
+            # Determine season based on current date
+            import calendar
+            current_month = datetime.now().month
+            if current_month in [3, 4, 5]:
+                season = 'spring'
+            elif current_month in [6, 7, 8]:
+                season = 'summer'
+            elif current_month in [9, 10, 11]:
+                season = 'autumn'
+            else:
+                season = 'winter'
+            
+            # Prepare trip request data
+            trip_data = {
+                'start_city': data.get('start_city', ''),
+                'end_city': data.get('end_city', ''),
+                'travel_days': travel_days,
+                'nights_at_destination': nights_at_destination,
+                'season': season,
+                'budget': data.get('budget', 'mid-range'),
+                'travel_style': travel_style
+            }
+            
+            # Validate and plan trip
+            result = validation_service.validate_trip_request(trip_data)
+            if not result.success:
+                return jsonify({'error': result.error_message}), 400
+            
+            trip_request = result.data
+            
+            # Generate ML-powered recommendations first
+            user_preferences = TripPreference(
+                budget_range=data.get('budget', 'mid-range'),
+                duration_days=travel_days,
+                travel_style=travel_style,
+                season=season,
+                group_size=2  # Default group size
+            )
+            
+            ml_recommendations = ml_recommendation_service.get_smart_recommendations(
+                user_preferences, 
+                data.get('start_city', ''),
+                data.get('end_city', '')
+            )
+            
+            # Generate routes with travel style preference
+            plan_result = travel_planner.generate_routes(trip_request)
+            
+            if not plan_result.success:
+                return jsonify({'error': plan_result.error_message}), 500
+            
+            # Enhance routes with ML recommendations
+            routes_data = plan_result.data
+            
+            # Add ML recommendations to the response
+            if ml_recommendations.success:
+                routes_data['ml_recommendations'] = ml_recommendations.data
+                logger.info("ML recommendations added", 
+                           count=len(ml_recommendations.data.get('recommendations', [])))
+            
+            # Filter routes by travel style
+            if 'routes' in routes_data and travel_style:
+                # Prioritize routes matching the selected travel style
+                matching_routes = []
+                other_routes = []
+                
+                for route in routes_data['routes']:
+                    if route.get('route_type') == travel_style:
+                        matching_routes.append(route)
+                    else:
+                        other_routes.append(route)
+                
+                # Put matching routes first
+                routes_data['routes'] = matching_routes + other_routes
+                
+                # Enhance routes with ML insights
+                for route in routes_data['routes']:
+                    if ml_recommendations.success:
+                        route['ml_enhanced'] = True
+                        route['personalization_level'] = ml_recommendations.data.get('algorithm_info', {}).get('personalization_level', 'medium')
+            
+            # Add budget recommendations
+            budget_recommendations = {
+                'budget': {
+                    'daily_budget': '€30-50',
+                    'accommodation': 'Hostels, budget hotels',
+                    'food': 'Local markets, street food',
+                    'transport': 'Public transport, walking'
+                },
+                'mid-range': {
+                    'daily_budget': '€50-100',
+                    'accommodation': '3-star hotels, B&Bs',
+                    'food': 'Mix of restaurants and cafes',
+                    'transport': 'Mix of public and private'
+                },
+                'luxury': {
+                    'daily_budget': '€100+',
+                    'accommodation': '4-5 star hotels',
+                    'food': 'Fine dining, exclusive venues',
+                    'transport': 'Private transfers, first class'
+                }
+            }
+            
+            routes_data['budget_info'] = budget_recommendations.get(data.get('budget', 'mid-range'))
+            routes_data['trip_details'] = {
+                'duration_days': travel_days,
+                'nights_at_destination': nights_at_destination,
+                'season': season,
+                'travel_style': travel_style
+            }
+            
+            # Sanitize output
+            response_data = validation_service.sanitize_output(routes_data)
+            
+            return jsonify({
+                'success': True,
+                'data': response_data
+            })
+            
+        except Exception as e:
+            logger.error("Enhanced trip planning failed", error=str(e))
+            return jsonify({'error': 'Trip planning service unavailable'}), 500
     
     @app.route('/trip-details')
     def trip_details():

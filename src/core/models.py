@@ -46,10 +46,37 @@ class City:
     population: Optional[int] = None
     region: Optional[str] = None
     types: List[str] = None
+    # Enhanced attributes for better route suggestions
+    rating: Optional[float] = None
+    unesco: bool = False
+    elevation_m: Optional[int] = None
+    climate: Optional[str] = None
+    avg_temp_c: Optional[Dict[str, int]] = None
+    specialties: List[str] = None
+    best_months: List[int] = None
+    accessibility: Optional[str] = None
+    cost_level: Optional[str] = None
+    tourist_density: Optional[str] = None
+    unique_features: List[str] = None
+    nearby_attractions: List[str] = None
+    transport_links: List[str] = None
+    ideal_stay_hours: Optional[int] = None
+    walking_city: bool = True
+    parking_difficulty: Optional[str] = None
     
     def __post_init__(self):
         if self.types is None:
             self.types = []
+        if self.specialties is None:
+            self.specialties = []
+        if self.best_months is None:
+            self.best_months = []
+        if self.unique_features is None:
+            self.unique_features = []
+        if self.nearby_attractions is None:
+            self.nearby_attractions = []
+        if self.transport_links is None:
+            self.transport_links = []
 
 
 @dataclass
