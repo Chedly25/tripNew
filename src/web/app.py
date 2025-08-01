@@ -167,39 +167,25 @@ def create_app() -> Flask:
                 except json.JSONDecodeError:
                     user_preferences = {}
             
-            # Validate input
-            result = validation_service.validate_travel_plan_request(data)
+            # Validate input - convert frontend data to expected format
+            form_data = {
+                'start_city': data.get('start_location', ''),
+                'end_city': data.get('end_location', ''),
+                'travel_days': 5,  # Default to 5 days
+                'nights_at_destination': 2,  # Default
+                'season': 'spring'  # Default season
+            }
+            
+            result = validation_service.validate_trip_request(form_data)
             if not result.success:
                 return jsonify({'error': result.error_message}), 400
             
-            # Create TripRequest object for the travel planner
-            from ..core.models import TripRequest
+            # Get the validated trip request from the validation result
+            validated_trip_request = result.data
             
-            # Convert route types from strings to RouteType enum
-            from ..core.models import RouteType
-            route_types = []
-            route_type_map = {
-                'scenic': RouteType.SCENIC,
-                'cultural': RouteType.CULTURAL,
-                'adventure': RouteType.ADVENTURE,
-                'culinary': RouteType.CULINARY,
-                'romantic': RouteType.ROMANTIC,
-                'hidden_gems': RouteType.HIDDEN_GEMS
-            }
-            
-            for route_type_str in data.get('route_types', ['scenic', 'cultural']):
-                if route_type_str in route_type_map:
-                    route_types.append(route_type_map[route_type_str])
-            
-            # Create trip request
-            trip_request = TripRequest(
-                start_city=data['start_location'],
-                end_city=data['end_location'],
-                travel_days=5,  # Default to 5 days
-                route_types=route_types,
-                budget_range=(500, 2000),  # Default budget range
-                user_preferences=user_preferences
-            )
+            # The validated request already has the correct format for the travel planner
+            # Just use it directly since it matches the TripRequest model from core.models
+            trip_request = validated_trip_request
             
             # Plan the trip using the correct method
             plan_result = travel_planner.generate_routes(trip_request)
@@ -208,7 +194,8 @@ def create_app() -> Flask:
                 return jsonify({'error': plan_result.error_message}), 500
             
             # The plan_result.data should contain the routes
-            response_data = plan_result.data
+            # Sanitize the data to handle JSON serialization issues (like Season enum)
+            response_data = validation_service.sanitize_output(plan_result.data)
             
             # Enhance with AI personalization if user is logged in and Claude is available
             if user and user_preferences and 'routes' in response_data:
