@@ -280,7 +280,7 @@ def create_enhanced_app() -> Flask:
             )
             
             # Get the specific route strategy
-            route_strategies = travel_planner_service._initialize_route_strategies()
+            route_strategies = travel_planner._initialize_route_strategies()
             strategy = None
             for s in route_strategies:
                 if s['type'] == route_type:
@@ -337,7 +337,7 @@ def create_enhanced_app() -> Flask:
             if not ml_result.success:
                 logger.warning("ML recommendations failed, falling back to simple method")
                 # Fallback to original method
-                intermediate_cities = await travel_planner_service._find_intermediate_cities_async(
+                intermediate_cities = await travel_planner._find_intermediate_cities_async(
                     strategy, start_city, end_city, trip_request
                 )
                 filtered_cities = [c for c in intermediate_cities if c.name not in exclude_cities]
@@ -375,7 +375,7 @@ def create_enhanced_app() -> Flask:
             )
             
             # Enrich with itinerary
-            enriched_route = await travel_planner_service._enrich_route_with_itinerary(
+            enriched_route = await travel_planner._enrich_route_with_itinerary(
                 travel_route, trip_request, strategy, start_city, end_city
             )
             

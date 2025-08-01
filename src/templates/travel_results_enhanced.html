@@ -84,15 +84,15 @@
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border-bottom: 1px solid var(--glass-border);
-            padding: 2rem 0;
+            padding: 1.5rem 0;
             text-align: center;
             position: relative;
             z-index: 10;
         }
 
         .hero-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 700;
             color: white;
             margin-bottom: 0.5rem;
             text-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -1362,17 +1362,15 @@
 
         /* Route Selection Cards CSS */
         .route-selection-card {
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.1) 0%, 
-                rgba(255, 255, 255, 0.05) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            transition: all 0.4s ease;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .route-selection-card::before {
@@ -1388,9 +1386,9 @@
         }
 
         .route-selection-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            border-color: var(--sunset-orange);
         }
 
         .route-selection-card:hover::before {
@@ -1411,13 +1409,13 @@
         }
 
         .route-card-title i {
-            color: var(--coastal-mint);
-            font-size: 1.5rem;
+            color: var(--sunset-orange);
+            font-size: 1.3rem;
         }
 
         .route-card-title h3 {
-            color: white;
-            font-size: 1.5rem;
+            color: var(--midnight-navy);
+            font-size: 1.4rem;
             font-weight: 600;
             margin: 0;
         }
@@ -1474,8 +1472,8 @@
         }
 
         .route-card-description p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
+            color: var(--cobblestone-gray);
+            font-size: 0.95rem;
             line-height: 1.6;
             margin: 0;
         }
@@ -1485,12 +1483,13 @@
         }
 
         .route-card-highlights h4 {
-            color: white;
-            font-size: 1.1rem;
+            color: var(--midnight-navy);
+            font-size: 1.05rem;
             margin: 0 0 0.75rem 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 600;
         }
 
         .route-card-highlights i {
@@ -1504,12 +1503,13 @@
         }
 
         .highlight-tag {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--sunset-orange);
             padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.875rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            font-weight: 500;
         }
 
         .route-card-cities {
@@ -1517,16 +1517,17 @@
         }
 
         .route-card-cities h4 {
-            color: white;
-            font-size: 1.1rem;
+            color: var(--midnight-navy);
+            font-size: 1.05rem;
             margin: 0 0 0.75rem 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 600;
         }
 
         .route-card-cities i {
-            color: var(--coastal-mint);
+            color: var(--mediterranean-blue);
         }
 
         .cities-list {
@@ -1539,7 +1540,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 78, 137, 0.05);
             padding: 0.5rem 0.75rem;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1560,29 +1561,35 @@
 
         .city-info {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .city-name {
-            color: white;
+            color: var(--midnight-navy);
             font-weight: 500;
             font-size: 0.9rem;
         }
 
         .city-country {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.8rem;
+            background: var(--tuscan-gold);
+            color: var(--midnight-navy);
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
 
         .route-card-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 78, 137, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 78, 137, 0.1);
         }
 
         .route-stat {
@@ -1593,33 +1600,33 @@
         }
 
         .route-stat i {
-            color: var(--coastal-mint);
-            font-size: 1.2rem;
+            color: var(--mediterranean-blue);
+            font-size: 1.1rem;
             margin-bottom: 0.25rem;
         }
 
         .route-stat span {
-            color: white;
-            font-weight: 500;
-            font-size: 0.9rem;
+            color: var(--midnight-navy);
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
         .route-card-ideal-for {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding: 1rem;
-            background: rgba(255, 107, 53, 0.1);
-            border-radius: 10px;
+            background: rgba(255, 107, 53, 0.08);
+            border-radius: 12px;
             border-left: 4px solid var(--sunset-orange);
         }
 
         .route-card-ideal-for p {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--cobblestone-gray);
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .route-card-ideal-for i {
-            color: var(--coral-pink);
+            color: var(--sunset-orange);
             margin-right: 0.5rem;
         }
 
@@ -1629,13 +1636,13 @@
             justify-content: center;
         }
 
-        .route-select-btn, .route-save-btn {
+        .route-select-btn, .route-save-btn, .route-refresh-btn {
             flex: 1;
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem 1rem;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -1645,24 +1652,87 @@
         }
 
         .route-select-btn {
-            background: linear-gradient(135deg, var(--coastal-mint), var(--tuscan-gold));
-            color: var(--midnight-navy);
+            background: var(--mediterranean-blue);
+            color: white;
         }
 
         .route-select-btn:hover {
+            background: var(--nordic-teal);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(6, 255, 165, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 78, 137, 0.3);
         }
 
         .route-save-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: var(--sunset-orange);
+            border: 2px solid var(--sunset-orange);
         }
 
         .route-save-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--sunset-orange);
+            color: white;
             transform: translateY(-2px);
+        }
+
+        /* Refresh Button */
+        .route-refresh-btn {
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--sunset-orange);
+            border: 1px solid var(--sunset-orange);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+            min-width: auto;
+            flex: none;
+            border-radius: 6px;
+        }
+
+        .route-refresh-btn:hover {
+            background: var(--sunset-orange);
+            color: white;
+        }
+
+        .route-refresh-btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .route-refresh-btn.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Progress Indicator */
+        .trip-progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+            gap: 1rem;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            color: var(--cobblestone-gray);
+            font-size: 0.9rem;
+        }
+
+        .progress-step.active {
+            background: var(--mediterranean-blue);
+            color: white;
+        }
+
+        .progress-step.completed {
+            background: var(--alpine-green);
+            color: white;
         }
 
         /* Detailed Route View CSS */
@@ -1887,8 +1957,8 @@
         .route-modal-header h2 {
             color: var(--midnight-navy);
             margin: 0;
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 1.4rem;
+            font-weight: 600;
         }
 
         .route-modal-header h2 i {
@@ -2076,6 +2146,100 @@
             border-radius: 8px;
             border-left: 3px solid var(--sunset-orange);
             color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* City Explanations Styles */
+        .city-explanations {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+
+        .city-explanation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .city-explanation-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .city-marker {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(6, 255, 165, 0.3);
+            flex-shrink: 0;
+        }
+
+        .city-explanation-content {
+            flex: 1;
+        }
+
+        .city-explanation-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .city-explanation-name {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .city-explanation-country {
+            background: var(--tuscan-gold);
+            color: var(--midnight-navy);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .city-explanation-why {
+            margin-bottom: 1rem;
+        }
+
+        .city-explanation-why p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .city-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .city-tag {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.25rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: capitalize;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         @keyframes slideInUp {
@@ -2658,11 +2822,29 @@
                 return;
             }
 
+            // Add progress indicator
+            container.innerHTML = `
+                <div class="trip-progress">
+                    <div class="progress-step completed">
+                        <i class="fas fa-check"></i>
+                        <span>Route Planning</span>
+                    </div>
+                    <div class="progress-step active">
+                        <i class="fas fa-route"></i>
+                        <span>Choose Your Route</span>
+                    </div>
+                    <div class="progress-step">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Finalize Itinerary</span>
+                    </div>
+                </div>
+            `;
+
             // Update summary for route selection phase
-            routeSummary.textContent = `Choose from ${routes.length} expertly crafted route${routes.length > 1 ? 's' : ''} for your journey`;
+            routeSummary.textContent = `Found ${routes.length} personalized route${routes.length > 1 ? 's' : ''} for your journey. Each route offers different experiences - choose the one that excites you most!`;
 
             // Display route selection cards
-            container.innerHTML = routes.map((route, index) => `
+            container.innerHTML += routes.map((route, index) => `
                 <div class="route-selection-card" data-route-index="${index}">
                     <div class="route-card-header">
                         <div class="route-card-title">
@@ -2723,11 +2905,14 @@
                     <div class="route-card-actions">
                         <button class="route-select-btn" onclick="selectRoute(${index})">
                             <i class="fas fa-eye"></i>
-                            View Detailed Itinerary
+                            View Details
                         </button>
                         <button class="route-save-btn" onclick="saveRouteForLater(${index})">
                             <i class="fas fa-bookmark"></i>
-                            Save for Later
+                            Save
+                        </button>
+                        <button class="route-refresh-btn" onclick="refreshRoute('${route.route_type || 'scenic'}', ${index})" title="Get different cities for this route">
+                            <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
                 </div>
@@ -2797,11 +2982,11 @@
                             <div class="route-map-detailed" id="modal-map-${routeIndex}"></div>
                         </div>
                         
-                        <!-- Day by Day Itinerary -->
+                        <!-- Route Highlights & City Explanations -->
                         <div class="route-modal-itinerary">
-                            <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
-                            <div class="daily-program">
-                                ${generateDetailedDayByDay(route, routeIndex)}
+                            <h3><i class="fas fa-star"></i> Why These Cities?</h3>
+                            <div class="city-explanations">
+                                ${generateCityExplanations(route, routeIndex)}
                             </div>
                         </div>
                         
@@ -2870,10 +3055,10 @@
             document.body.appendChild(modal);
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
-            // Initialize detailed map
+            // Initialize detailed map after modal is fully rendered
             setTimeout(() => {
                 initializeDetailedMap(route, routeIndex);
-            }, 100);
+            }, 300);
 
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2930,6 +3115,117 @@
             }).join('');
         }
 
+        function generateCityExplanations(route, routeIndex) {
+            const routeType = route.route_type || route.name?.toLowerCase() || 'custom';
+            const cities = [];
+            
+            // Get all cities in order
+            if (route.start_city) cities.push({...route.start_city, isStart: true});
+            if (route.intermediate_cities) cities.push(...route.intermediate_cities);
+            if (route.end_city) cities.push({...route.end_city, isEnd: true});
+            
+            return cities.map((city, index) => {
+                const cityName = city.name || 'Unknown City';
+                const country = city.country || '';
+                const types = city.types || [];
+                
+                // Generate explanation based on route type and city characteristics
+                const explanation = generateCityExplanation(city, routeType, index === 0, index === cities.length - 1);
+                
+                return `
+                    <div class="city-explanation-item">
+                        <div class="city-marker">
+                            ${city.isStart ? '🏁' : city.isEnd ? '🏆' : '📍'}
+                        </div>
+                        <div class="city-explanation-content">
+                            <div class="city-explanation-header">
+                                <h4 class="city-explanation-name">${cityName}</h4>
+                                ${country ? `<span class="city-explanation-country">${country}</span>` : ''}
+                            </div>
+                            <div class="city-explanation-why">
+                                <p>${explanation}</p>
+                            </div>
+                            ${types.length > 0 ? `
+                                <div class="city-tags">
+                                    ${types.slice(0, 4).map(type => `<span class="city-tag">${type.replace('_', ' ')}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateCityExplanation(city, routeType, isStart, isEnd) {
+            const cityName = city.name || 'this city';
+            const types = city.types || [];
+            
+            if (isStart) {
+                return `Your adventure begins in ${cityName}! This vibrant starting point sets the perfect tone for your ${routeType} journey.`;
+            }
+            
+            if (isEnd) {
+                return `Your incredible ${routeType} journey concludes in the beautiful ${cityName}, leaving you with unforgettable memories.`;
+            }
+            
+            // Generate explanations based on route type and city types
+            const explanations = {
+                scenic: {
+                    'alpine': `Experience breathtaking mountain vistas and pristine Alpine beauty in ${cityName}.`,
+                    'lakes': `Discover the serene waters and stunning lake scenery that makes ${cityName} a scenic gem.`,
+                    'coastal': `Enjoy spectacular coastal views and Mediterranean charm in ${cityName}.`,
+                    'romantic': `Fall in love with the romantic atmosphere and picturesque settings of ${cityName}.`,
+                    'default': `Marvel at the natural beauty and scenic landscapes surrounding ${cityName}.`
+                },
+                cultural: {
+                    'historic': `Step back in time and explore the rich historical heritage of ${cityName}.`,
+                    'unesco': `Discover world-renowned UNESCO World Heritage sites in ${cityName}.`,
+                    'cultural': `Immerse yourself in the vibrant culture and artistic treasures of ${cityName}.`,
+                    'medieval': `Wander through enchanting medieval streets and ancient architecture in ${cityName}.`,
+                    'renaissance': `Admire magnificent Renaissance art and architecture in ${cityName}.`,
+                    'default': `Explore the fascinating cultural landmarks and heritage of ${cityName}.`
+                },
+                adventure: {
+                    'alpine': `Challenge yourself with exciting mountain adventures and outdoor activities in ${cityName}.`,
+                    'skiing': `Hit the slopes and enjoy world-class skiing experiences in ${cityName}.`,
+                    'adventure': `Get your adrenaline pumping with thrilling adventure sports in ${cityName}.`,
+                    'outdoor': `Embrace the great outdoors with hiking and nature activities in ${cityName}.`,
+                    'default': `Embark on exciting outdoor adventures and activities in ${cityName}.`
+                },
+                culinary: {
+                    'culinary': `Savor exceptional local cuisine and gastronomic delights in ${cityName}.`,
+                    'wine': `Indulge in exquisite wine tastings and vineyard tours in ${cityName}.`,
+                    'gastronomy': `Experience world-class dining and culinary traditions in ${cityName}.`,
+                    'food': `Discover authentic flavors and traditional food culture in ${cityName}.`,
+                    'default': `Delight your taste buds with the unique flavors and cuisine of ${cityName}.`
+                },
+                romantic: {
+                    'romantic': `Create magical moments in the enchanting and romantic setting of ${cityName}.`,
+                    'luxury': `Enjoy luxurious and intimate experiences perfect for couples in ${cityName}.`,
+                    'scenic': `Share breathtaking views and romantic scenery with your loved one in ${cityName}.`,
+                    'default': `Experience romance and intimate moments in the charming atmosphere of ${cityName}.`
+                },
+                hidden_gems: {
+                    'hidden': `Uncover the secret treasures and local gems that make ${cityName} special.`,
+                    'authentic': `Experience authentic local life away from tourist crowds in ${cityName}.`,
+                    'village': `Discover the charm of traditional village life and local customs in ${cityName}.`,
+                    'unique': `Explore the unique character and distinctive features that define ${cityName}.`,
+                    'default': `Find hidden treasures and authentic experiences off the beaten path in ${cityName}.`
+                }
+            };
+            
+            const routeExplanations = explanations[routeType] || explanations.scenic;
+            
+            // Find the best matching explanation
+            for (const type of types) {
+                if (routeExplanations[type]) {
+                    return routeExplanations[type];
+                }
+            }
+            
+            return routeExplanations.default;
+        }
+
         function generateDetailedDayByDay(route, routeIndex) {
             // Use actual daily_itinerary if available, otherwise generate based on route data
             if (route.daily_itinerary && route.daily_itinerary.length > 0) {
@@ -2976,10 +3272,27 @@
 
         function initializeDetailedMap(route, routeIndex) {
             try {
-                const mapId = `detailed-map-${routeIndex}`;
+                const mapId = `modal-map-${routeIndex}`;
                 const mapElement = document.getElementById(mapId);
                 
-                if (!mapElement) return;
+                if (!mapElement) {
+                    console.error('Map element not found:', mapId);
+                    return;
+                }
+
+                // Ensure the container is visible and has dimensions
+                const rect = mapElement.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) {
+                    console.warn('Map container has zero dimensions, retrying...');
+                    setTimeout(() => initializeDetailedMap(route, routeIndex), 200);
+                    return;
+                }
+
+                // Clear any existing map instance
+                if (window.mapInstances && window.mapInstances[mapId]) {
+                    window.mapInstances[mapId].remove();
+                    delete window.mapInstances[mapId];
+                }
 
                 const map = L.map(mapId, {
                     zoomControl: true,
@@ -2989,6 +3302,10 @@
                     keyboard: true,
                     dragging: true
                 }).setView([45.4408, 12.3155], 6);
+
+                // Store map instance for cleanup
+                if (!window.mapInstances) window.mapInstances = {};
+                window.mapInstances[mapId] = map;
                 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
@@ -3087,6 +3404,11 @@
                     // Fallback map view
                     map.setView([45.4408, 12.3155], 6);
                 }
+
+                // Force map to recalculate its size after modal is rendered
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
                 
             } catch (error) {
                 console.error('Error initializing detailed map:', error);
@@ -3482,6 +3804,17 @@
         function closeRouteModal(routeIndex) {
             const modal = document.getElementById(`route-modal-${routeIndex}`);
             if (modal) {
+                // Clean up map instance if it exists
+                const mapId = `modal-map-${routeIndex}`;
+                if (window.mapInstances && window.mapInstances[mapId]) {
+                    try {
+                        window.mapInstances[mapId].remove();
+                        delete window.mapInstances[mapId];
+                    } catch (e) {
+                        console.warn('Error cleaning up map:', e);
+                    }
+                }
+                
                 modal.remove();
                 document.body.style.overflow = 'auto'; // Restore background scrolling
             }

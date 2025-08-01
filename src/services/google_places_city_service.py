@@ -360,6 +360,9 @@ class GooglePlacesCityService:
             if not name:
                 return None
             
+            # Clean up city name (remove underscores, fix formatting)
+            name = self._clean_city_name(name)
+            
             # Extract coordinates (new API format)
             location = place.get('location', {})
             lat = location.get('latitude')
@@ -462,6 +465,30 @@ class GooglePlacesCityService:
         
         return None
     
+    def _clean_city_name(self, name: str) -> str:
+        """Clean up city name formatting (remove underscores, proper capitalization)."""
+        if not name:
+            return name
+        
+        # Replace underscores with spaces
+        cleaned = name.replace('_', ' ')
+        
+        # Handle special cases and proper capitalization
+        # Split by spaces and capitalize each word, except for small words like "de", "la", "le", etc.
+        words = cleaned.split()
+        small_words = {'de', 'la', 'le', 'les', 'du', 'des', 'di', 'del', 'della', 'al', 'sur', 'en', 'aux'}
+        
+        result = []
+        for i, word in enumerate(words):
+            if i == 0 or word.lower() not in small_words:
+                # Capitalize first word and words not in small_words list
+                result.append(word.capitalize())
+            else:
+                # Keep small words lowercase unless they're the first word
+                result.append(word.lower())
+        
+        return ' '.join(result)
+    
     def _get_fallback_city(self, name: str) -> Optional[City]:
         """Create a minimal fallback city when API is unavailable."""
         # Comprehensive fallback for European cities
@@ -512,8 +539,10 @@ class GooglePlacesCityService:
         name_key = name.lower().strip().replace(' ', '-')
         if name_key in known_cities:
             data = known_cities[name_key]
+            # Clean up the city name for display
+            clean_name = self._clean_city_name(name)
             return City(
-                name=name,
+                name=clean_name,
                 coordinates=Coordinates(latitude=data['lat'], longitude=data['lon']),
                 country=data['country'],
                 types=data.get('types', ['fallback'])
@@ -965,7 +994,7 @@ class GooglePlacesCityService:
             city_coords = Coordinates(latitude=data['lat'], longitude=data['lon'])
             if self._is_city_near_route(city_coords, start, end, max_deviation_km):
                 city = City(
-                    name=name.replace('-', ' ').title(),
+                    name=self._clean_city_name(name),
                     coordinates=city_coords,
                     country=data['country'],
                     types=data['types']
