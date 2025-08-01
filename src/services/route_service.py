@@ -48,6 +48,17 @@ class ProductionRouteService(RouteService):
         if len(cities) < 2:
             return ServiceResult.error_result("Need at least 2 cities")
         
+        # Debug: Log city coordinates
+        logger.info(f"Optimizing route through {len(cities)} cities:")
+        for i, city in enumerate(cities):
+            coords_info = "NO COORDS"
+            if city.coordinates:
+                if city.coordinates.latitude is not None and city.coordinates.longitude is not None:
+                    coords_info = f"({city.coordinates.latitude}, {city.coordinates.longitude})"
+                else:
+                    coords_info = f"(lat={city.coordinates.latitude}, lon={city.coordinates.longitude})"
+            logger.info(f"  {i+1}. {city.name} - {coords_info}")
+        
         # Filter out cities with invalid coordinates
         valid_cities = []
         for city in cities:
@@ -154,17 +165,31 @@ class ProductionRouteService(RouteService):
         if not cities:
             return []
         
+        # Ensure the starting city has valid coordinates
+        if not cities[0].coordinates or cities[0].coordinates.latitude is None or cities[0].coordinates.longitude is None:
+            logger.warning(f"Starting city {cities[0].name} has invalid coordinates, skipping TSP")
+            return cities  # Return original order if first city has no coordinates
+        
         unvisited = cities[1:]  # Start with first city
         route = [cities[0]]
         current = cities[0]
         
         while unvisited:
+            # Ensure current city has valid coordinates
+            if not current.coordinates or current.coordinates.latitude is None or current.coordinates.longitude is None:
+                logger.warning(f"Current city {current.name} has invalid coordinates, stopping TSP")
+                # Add remaining cities to route without optimization
+                route.extend(unvisited)
+                break
+            
             # Filter cities with valid coordinates for comparison
             valid_unvisited = [c for c in unvisited if c.coordinates and 
                              c.coordinates.latitude is not None and 
                              c.coordinates.longitude is not None]
             
             if not valid_unvisited:
+                # Add remaining cities (even with invalid coordinates) to preserve route
+                route.extend(unvisited)
                 break
                 
             nearest = min(valid_unvisited, key=lambda c: geodesic(

@@ -360,9 +360,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         if len(candidates) <= max_cities:
             return candidates
         
-        # Sort by rating/popularity if available
+        # Sort by rating/popularity if available (handle None ratings)
         sorted_candidates = sorted(candidates, 
-                                 key=lambda c: getattr(c, 'rating', 0), 
+                                 key=lambda c: getattr(c, 'rating', None) or 0, 
                                  reverse=True)
         
         selected = []
@@ -373,9 +373,12 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             if len(selected) >= max_cities:
                 break
             
-            if city.country not in used_countries:
+            # Handle None country values
+            city_country = city.country if city.country is not None else 'Unknown'
+            
+            if city_country not in used_countries:
                 selected.append(city)
-                used_countries.add(city.country)
+                used_countries.add(city_country)
         
         # If we still need more cities, add highest rated remaining ones
         remaining_slots = max_cities - len(selected)
