@@ -586,51 +586,6 @@
             }
         };
 
-        // Sample data structure - will be replaced with actual data
-        const sampleItineraries = [
-            {
-                route_type: 'scenic',
-                name: 'Scenic Mountain & Lakes Route',
-                description: 'Journey through breathtaking Alpine landscapes, pristine lakes, and mountain vistas. Perfect for nature lovers and photographers.',
-                total_distance_km: 587.3,
-                total_duration_hours: 8.2,
-                start_city: {name: 'Aix-en-Provence', coordinates: [43.5297, 5.4474]},
-                end_city: {name: 'Venice', coordinates: [45.4408, 12.3155]},
-                intermediate_cities: [
-                    {name: 'Annecy', coordinates: [45.8992, 6.1294], types: ['scenic', 'alpine']},
-                    {name: 'Lake Como', coordinates: [45.8081, 9.0852], types: ['scenic', 'romantic']},
-                    {name: 'Verona', coordinates: [45.4384, 10.9916], types: ['romantic', 'historic']}
-                ],
-                highlights: ['Alpine mountain passes', 'Pristine lake views', 'Scenic overlooks', 'Mountain villages'],
-                ideal_for: 'Nature enthusiasts, photographers, romantic getaways',
-                estimated_cost: {
-                    fuel_estimate: 117.46,
-                    accommodation_estimate: 400.00,
-                    total_estimate: 517.46
-                }
-            },
-            {
-                route_type: 'cultural',
-                name: 'Cultural Heritage Route',
-                description: 'Explore UNESCO World Heritage sites, historic city centers, and cultural landmarks spanning centuries of European history.',
-                total_distance_km: 623.8,
-                total_duration_hours: 9.1,
-                start_city: {name: 'Aix-en-Provence', coordinates: [43.5297, 5.4474]},
-                end_city: {name: 'Venice', coordinates: [45.4408, 12.3155]},
-                intermediate_cities: [
-                    {name: 'Avignon', coordinates: [43.9493, 4.8055], types: ['historic', 'unesco']},
-                    {name: 'Florence', coordinates: [43.7696, 11.2558], types: ['cultural', 'renaissance']},
-                    {name: 'Bologna', coordinates: [44.4949, 11.3426], types: ['cultural', 'university']}
-                ],
-                highlights: ['UNESCO World Heritage sites', 'Renaissance art', 'Historic city centers', 'Medieval architecture'],
-                ideal_for: 'History buffs, art lovers, cultural explorers',
-                estimated_cost: {
-                    fuel_estimate: 124.76,
-                    accommodation_estimate: 400.00,
-                    total_estimate: 524.76
-                }
-            }
-        ];
 
         // Utility function to format numbers to 2 decimal places
         function formatNumber(num) {
@@ -664,10 +619,20 @@
                 console.error('Error loading stored data:', e);
             }
             
-            // Use sample data if no real data available
+            // Show message if no real data available (no fake data)
             if (itineraries.length === 0) {
-                console.log('No real data found, using sample data');
-                itineraries = sampleItineraries;
+                console.log('No real data found');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: white;">
+                        <h3>No Trip Results Available</h3>
+                        <p>Please go back and plan a new trip to see results here.</p>
+                        <a href="/" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 1rem 2rem; background: var(--primary); color: white; text-decoration: none; border-radius: 12px;">
+                            <i class="fas fa-arrow-left"></i>
+                            Plan New Trip
+                        </a>
+                    </div>
+                `;
+                return;
             } else {
                 console.log('Using real data from API');
             }
@@ -917,9 +882,19 @@
                 console.error('Error loading stored data:', e);
             }
             
-            // Use sample data if no real data available
+            // If no real data available, show message instead of fake data
             if (itineraries.length === 0) {
-                itineraries = sampleItineraries;
+                document.getElementById('routeContainer').innerHTML = `
+                    <div class="no-results-message">
+                        <h3>No Trip Results Available</h3>
+                        <p>Please go back and plan a new trip to see results here.</p>
+                        <a href="/" class="back-btn">
+                            <i class="fas fa-arrow-left"></i>
+                            Plan New Trip
+                        </a>
+                    </div>
+                `;
+                return;
             }
             
             if (itineraries[index]) {
@@ -931,6 +906,33 @@
                 window.location.href = '/trip-details';
             } else {
                 alert('Route data not found. Please try again.');
+            }
+        }
+
+        // Load real hotel and restaurant data
+        async function loadTripData(cities) {
+            try {
+                console.log('Loading real trip data for cities:', cities);
+                
+                const response = await fetch('/api/trip-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cities: cities })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Received trip data:', data);
+                    return data.data || {};
+                } else {
+                    console.error('Trip data API error:', response.status);
+                    return {};
+                }
+            } catch (error) {
+                console.error('Failed to load trip data:', error);
+                return {};
             }
         }
 
@@ -1129,8 +1131,8 @@
                 console.error('Error loading stored data:', e);
             }
             
-            // Fallback to sample data
-            return sampleItineraries;
+            // Return empty array if no real data
+            return [];
         }
         
         // Add custom CSS for map icons
