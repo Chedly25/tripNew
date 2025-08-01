@@ -494,6 +494,103 @@
             to { transform: rotate(360deg); }
         }
         
+        /* Trip History & Memory Styles */
+        .trip-history-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .history-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .history-tab {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .history-tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .history-tab.active {
+            background: var(--primary);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+        
+        .history-content {
+            min-height: 200px;
+        }
+        
+        .history-tab-content {
+            display: none;
+        }
+        
+        .history-tab-content.active {
+            display: block;
+        }
+        
+        .trip-preparation-item, .search-history-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .trip-preparation-item:hover, .search-history-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .trip-preparation-item h4, .search-history-item h4 {
+            color: white;
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+        }
+        
+        .trip-preparation-item p, .search-history-item p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .trip-preparation-item small, .search-history-item small {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+        
+        .memory-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .memory-notification.show {
+            opacity: 1;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .hero-features {
@@ -642,6 +739,40 @@
                             Upload a photo and let AI suggest similar European destinations
                         </p>
                         <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="analyzePhoto(this)">
+                    </div>
+                </div>
+                
+                <!-- Trip History & Preparations -->
+                <div class="trip-history-section" style="margin-top: 2rem;">
+                    <h3 style="color: white; margin-bottom: 1rem;">
+                        <i class="fas fa-history me-2"></i>
+                        Your Trip History
+                    </h3>
+                    <div class="history-tabs">
+                        <button class="history-tab active" onclick="showHistoryTab('preparations')">
+                            <i class="fas fa-drafting-compass me-2"></i>
+                            Preparations
+                        </button>
+                        <button class="history-tab" onclick="showHistoryTab('searches')">
+                            <i class="fas fa-search me-2"></i>
+                            Search History
+                        </button>
+                    </div>
+                    <div id="historyContent" class="history-content">
+                        <div id="preparationsTab" class="history-tab-content active">
+                            <div id="tripPreparationsContainer">
+                                <p style="color: rgba(255,255,255,0.7); text-align: center;">
+                                    Start planning a trip to see your preparations here
+                                </p>
+                            </div>
+                        </div>
+                        <div id="searchesTab" class="history-tab-content">
+                            <div id="searchHistoryContainer">
+                                <p style="color: rgba(255,255,255,0.7); text-align: center;">
+                                    Your search history will appear here
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -794,6 +925,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/memory-manager.js"></script>
     
     <script>
         // Route type selection
@@ -1178,6 +1310,106 @@
                 block: 'center'
             });
         }
+        
+        // History tab management
+        function showHistoryTab(tabName) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.history-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.history-tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Load content based on tab
+            if (tabName === 'preparations') {
+                loadTripPreparations();
+            } else if (tabName === 'searches') {
+                loadSearchHistory();
+            }
+        }
+        
+        async function loadTripPreparations() {
+            if (window.memoryManager) {
+                await window.memoryManager.displayTripPreparations();
+            }
+        }
+        
+        async function loadSearchHistory() {
+            if (window.memoryManager) {
+                try {
+                    const history = await window.memoryManager.getSearchHistory(10);
+                    const container = document.getElementById('searchHistoryContainer');
+                    
+                    if (history.length === 0) {
+                        container.innerHTML = '<p style="color: rgba(255,255,255,0.7); text-align: center;">No search history yet</p>';
+                        return;
+                    }
+                    
+                    const html = history.map(item => {
+                        const results = item.search_results ? JSON.parse(item.search_results) : {};
+                        return `
+                            <div class="search-history-item" onclick="loadSearchResult('${item.id}')">
+                                <h4>${item.search_query}</h4>
+                                <p>Route types: ${results.route_types ? results.route_types.join(', ') : 'N/A'}</p>
+                                <small>Searched: ${new Date(item.created_at).toLocaleDateString()}</small>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    container.innerHTML = html;
+                } catch (error) {
+                    console.error('Failed to load search history:', error);
+                }
+            }
+        }
+        
+        function loadSearchResult(searchId) {
+            // Implementation to reload a previous search
+            if (window.memoryManager) {
+                window.memoryManager.showNotification('Loading search result...', 'info');
+            }
+        }
+        
+        // Auto-save trip preparation when form changes
+        let autoSaveTimeout;
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                if (window.memoryManager) {
+                    window.memoryManager.autoSaveTripPreparation();
+                }
+            }, 5000); // Auto-save after 5 seconds of inactivity
+        }
+        
+        // Enhanced initialization with memory management
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for memory manager to initialize
+            setTimeout(() => {
+                // Load initial trip preparations
+                loadTripPreparations();
+                
+                // Set up auto-save for form inputs
+                const startInput = document.getElementById('startLocation');
+                const endInput = document.getElementById('endLocation');
+                
+                if (startInput) {
+                    startInput.addEventListener('input', scheduleAutoSave);
+                }
+                if (endInput) {
+                    endInput.addEventListener('input', scheduleAutoSave);
+                }
+                
+                // Auto-save when route types change
+                document.querySelectorAll('.route-type-card').forEach(card => {
+                    const originalClick = card.onclick;
+                    card.addEventListener('click', function() {
+                        if (originalClick) originalClick.call(this);
+                        scheduleAutoSave();
+                    });
+                });
+            }, 1000);
+        });
     </script>
     
     <style>

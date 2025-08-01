@@ -56,6 +56,8 @@
 .fa-lock::before { content: "🔒"; }
 .fa-sign-in-alt::before { content: "➡️"; }
 .fa-user-plus::before { content: "👤"; }
+.fa-history::before { content: "📜"; }
+.fa-drafting-compass::before { content: "📐"; }
 
 /* Ensure icons are visible */
 .fas::before, .far::before, .fab::before {

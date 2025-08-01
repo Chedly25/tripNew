@@ -26,6 +26,7 @@ from ..services.claude_ai_service import get_claude_service
 from ..services.weather_service import get_weather_service
 from ..services.social_service import get_social_service
 from ..services.emergency_service import get_emergency_service
+from ..services.memory_service import get_memory_service
 from ..core.exceptions import TravelPlannerException, ValidationError
 
 # Configure logging
@@ -65,6 +66,7 @@ def create_app() -> Flask:
     weather_service = get_weather_service()
     social_service = get_social_service()
     emergency_service = get_emergency_service()
+    memory_service = get_memory_service()
     
     travel_planner = TravelPlannerServiceImpl(
         city_service, route_service, validation_service
@@ -196,6 +198,20 @@ def create_app() -> Flask:
             # The plan_result.data should contain the routes
             # Sanitize the data to handle JSON serialization issues (like Season enum)
             response_data = validation_service.sanitize_output(plan_result.data)
+            
+            # Save search to history
+            try:
+                session_id = session.get('session_id', 'anonymous')
+                search_data = {
+                    'start_location': data['start_location'],
+                    'end_location': data['end_location'],
+                    'route_types': data.get('route_types', []),
+                    'results': response_data,
+                    'timestamp': datetime.now().isoformat()
+                }
+                memory_service.save_search_history(user['id'] if user else None, session_id, search_data)
+            except Exception as e:
+                logger.warning(f"Failed to save search history: {e}")
             
             # Enhance with AI personalization if user is logged in and Claude is available
             if user and user_preferences and 'routes' in response_data:
@@ -499,6 +515,113 @@ def create_app() -> Flask:
         except Exception as e:
             logger.error("Photo analysis failed", error=str(e))
             return jsonify({'error': 'Photo analysis failed'}), 500
+    
+    # Memory and Session Management API
+    @app.route('/api/session/save', methods=['POST'])
+    def save_session_state():
+        """Save current session state."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
+            
+            # Get session ID from session or generate new one
+            session_id = session.get('session_id')
+            if not session_id:
+                import secrets
+                session_id = secrets.token_urlsafe(32)
+                session['session_id'] = session_id
+            
+            user = get_current_user()
+            user_id = user['id'] if user else None
+            
+            success = memory_service.save_session_state(user_id, session_id, data)
+            
+            if success:
+                return jsonify({'success': True, 'message': 'Session state saved'})
+            else:
+                return jsonify({'error': 'Failed to save session state'}), 500
+                
+        except Exception as e:
+            logger.error("Save session state failed", error=str(e))
+            return jsonify({'error': 'Failed to save session state'}), 500
+    
+    @app.route('/api/session/restore', methods=['GET'])
+    def restore_session_state():
+        """Restore session state."""
+        try:
+            session_id = session.get('session_id')
+            if not session_id:
+                return jsonify({'state': None})
+            
+            state_data = memory_service.get_session_state(session_id)
+            
+            return jsonify({'state': state_data})
+            
+        except Exception as e:
+            logger.error("Restore session state failed", error=str(e))
+            return jsonify({'error': 'Failed to restore session state'}), 500
+    
+    @app.route('/api/trip-preparation/save', methods=['POST'])
+    def save_trip_preparation():
+        """Save trip preparation data."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No preparation data provided'}), 400
+            
+            session_id = session.get('session_id')
+            if not session_id:
+                import secrets
+                session_id = secrets.token_urlsafe(32)
+                session['session_id'] = session_id
+            
+            user = get_current_user()
+            user_id = user['id'] if user else None
+            
+            prep_id = memory_service.save_trip_preparation(user_id, session_id, data)
+            
+            if prep_id:
+                return jsonify({'success': True, 'prep_id': prep_id, 'message': 'Trip preparation saved'})
+            else:
+                return jsonify({'error': 'Failed to save trip preparation'}), 500
+                
+        except Exception as e:
+            logger.error("Save trip preparation failed", error=str(e))
+            return jsonify({'error': 'Failed to save trip preparation'}), 500
+    
+    @app.route('/api/trip-preparation/list', methods=['GET'])
+    def get_trip_preparations():
+        """Get all trip preparations for user."""
+        try:
+            session_id = session.get('session_id', 'anonymous')
+            user = get_current_user()
+            user_id = user['id'] if user else None
+            
+            preparations = memory_service.get_trip_preparations(user_id, session_id)
+            
+            return jsonify({'success': True, 'preparations': preparations})
+            
+        except Exception as e:
+            logger.error("Get trip preparations failed", error=str(e))
+            return jsonify({'error': 'Failed to get trip preparations'}), 500
+    
+    @app.route('/api/search-history', methods=['GET'])
+    def get_search_history():
+        """Get search history for user."""
+        try:
+            session_id = session.get('session_id', 'anonymous')
+            user = get_current_user()
+            user_id = user['id'] if user else None
+            
+            limit = int(request.args.get('limit', 20))
+            history = memory_service.get_search_history(user_id, session_id, limit)
+            
+            return jsonify({'success': True, 'history': history})
+            
+        except Exception as e:
+            logger.error("Get search history failed", error=str(e))
+            return jsonify({'error': 'Failed to get search history'}), 500
     
     logger.info("Enhanced application initialized with all new features")
     return app
