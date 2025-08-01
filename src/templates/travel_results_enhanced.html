@@ -1441,6 +1441,21 @@
             }, 3000);
         }
 
+        // Calculate realistic drive time based on European distances
+        function calculateDriveTime(currentDay, totalDays) {
+            // Use data from route if available, otherwise estimate based on typical European routes
+            if (window.routeData && window.routeData.segments && window.routeData.segments[currentDay - 1]) {
+                const segment = window.routeData.segments[currentDay - 1];
+                return Math.round(segment.duration || 3);
+            }
+            
+            // Fallback: estimate based on trip length and position
+            const progressRatio = currentDay / totalDays;
+            if (progressRatio < 0.3) return 3; // Shorter drives at start
+            if (progressRatio > 0.7) return 2; // Shorter drives at end
+            return 4; // Longer drives in middle
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
             // Check authentication
@@ -1912,7 +1927,7 @@
                                 ${day < totalDays ? `
                                 <div class="logistics-item">
                                     <i class="fas fa-car"></i>
-                                    <span>Drive to next city: ~${Math.floor(Math.random() * 3 + 2)} hours</span>
+                                    <span>Drive to next city: ~${calculateDriveTime(day, totalDays)} hours</span>
                                 </div>
                                 ` : ''}
                             </div>
