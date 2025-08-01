@@ -1,0 +1,75 @@
+{
+  "paris_info": {
+    "name": "Paris",
+    "country": "FR",
+    "coordinates": {
+      "latitude": 48.85341,
+      "longitude": 2.3488
+    },
+    "population": 2138551,
+    "timezone": "Europe/Paris",
+    "source": "opentripmap"
+  },
+  "attractions_count": 10,
+  "cities_count": 0,
+  "sample_attractions": [
+    {
+      "xid": "N6216897829",
+      "name": "The Science",
+      "kinds": [
+        "historic",
+        "monuments_and_memorials",
+        "urban_environment",
+        "cultural",
+        "interesting_places",
+        "sculptures",
+        "monuments"
+      ],
+      "rating": 2,
+      "distance": 25.00578176,
+      "coordinates": {
+        "latitude": 48.856651306152344,
+        "longitude": 2.351867914199829
+      },
+      "wikidata": "Q63341415",
+      "source": "opentripmap"
+    },
+    {
+      "xid": "Q3485975",
+      "name": "Siege of Paris",
+      "kinds": [
+        "battlefields",
+        "historic",
+        "historical_places",
+        "interesting_places"
+      ],
+      "rating": 2,
+      "distance": 27.15120118,
+      "coordinates": {
+        "latitude": 48.85660171508789,
+        "longitude": 2.351830005645752
+      },
+      "wikidata": "Q3485975",
+      "source": "opentripmap"
+    },
+    {
+      "xid": "Q2889171",
+      "name": "bataille de Lutèce",
+      "kinds": [
+        "battlefields",
+        "historic",
+        "historical_places",
+        "interesting_places"
+      ],
+      "rating": 2,
+      "distance": 27.15120118,
+      "coordinates": {
+        "latitude": 48.85660171508789,
+        "longitude": 2.351830005645752
+      },
+      "wikidata": "Q2889171",
+      "source": "opentripmap"
+    }
+  ],
+  "sample_cities": []
+}

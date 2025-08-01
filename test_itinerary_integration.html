@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Itinerary Integration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .day-item { border: 1px solid #ccc; margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .day-header { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+        .activity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+        .activity-card { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .activity-type { font-weight: bold; color: #666; }
+        .activity-name { font-weight: bold; margin: 5px 0; }
+        .activity-details { font-size: 0.9em; color: #555; }
+        .test-section { background: #e8f4f8; padding: 15px; margin: 20px 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Day-by-Day Itinerary Integration Test</h1>
+
+    <div class="test-section">
+        <h2>Sample API Data (What we get from Venice)</h2>
+        <h3>Restaurants:</h3>
+        <ul>
+            <li>Le Bistro Venice (fallback)</li>
+            <li>Osteria del Venice (fallback)</li>
+            <li>Café Central Venice (fallback)</li>
+        </ul>
+        
+        <h3>Attractions (OpenTripMap):</h3>
+        <ul>
+            <li>chiesa di Santa Chiara (Real - Rating: 3)</li>
+            <li>Nome di Gesù (Real - Rating: 3)</li>
+            <li>Sant'Andrea della Zirada (Real - Rating: 3)</li>
+            <li>Constitution Bridge (Real - Rating: 3)</li>
+        </ul>
+    </div>
+
+    <div id="dayTimeline"></div>
+
+    <script>
+        // Mock API data similar to what we get from the enhanced endpoint
+        const mockApiData = {
+            restaurants: {
+                "Venice": [
+                    { name: "Le Bistro Venice", source: "fallback", rating: 4.5 },
+                    { name: "Osteria del Venice", source: "fallback", rating: 4.3 },
+                    { name: "Café Central Venice", source: "fallback", rating: 4.1 }
+                ]
+            },
+            activities: {
+                "Venice": [
+                    { name: "chiesa di Santa Chiara", source: "opentripmap", rating: 3 },
+                    { name: "Nome di Gesù", source: "opentripmap", rating: 3 },
+                    { name: "Sant'Andrea della Zirada", source: "opentripmap", rating: 3 },
+                    { name: "Constitution Bridge", source: "opentripmap", rating: 3 },
+                    { name: "Chiesa di San Geremia", source: "opentripmap", rating: 2 }
+                ]
+            }
+        };
+
+        // Mock route data
+        const mockRoute = {
+            name: "Venice Adventure",
+            travel_days: 3,
+            start_city: { name: "Venice", coordinates: [45.4408, 12.3155] },
+            intermediate_cities: [],
+            end_city: { name: "Venice", coordinates: [45.4408, 12.3155] }
+        };
+
+        // Copy the functions from the trip_details.html
+        function populateDayTimelineWithRealData(route, apiData) {
+            const timeline = document.getElementById('dayTimeline');
+            const cities = [route.start_city, ...route.intermediate_cities, route.end_city];
+            const days = route.travel_days || 5;
+            
+            let timelineHTML = '<h2>Generated Itinerary with Real Data:</h2>';
+            
+            for (let day = 1; day <= days; day++) {
+                const cityIndex = Math.floor((day - 1) * cities.length / days);
+                const currentCity = cities[Math.min(cityIndex, cities.length - 1)];
+                
+                // Get real data for this city
+                const cityRestaurants = apiData.restaurants[currentCity.name] || [];
+                const cityActivities = apiData.activities[currentCity.name] || [];
+                
+                // Generate activities using real data
+                const activities = generateDayActivitiesWithRealData(currentCity, day, days, cityRestaurants, cityActivities);
+                
+                timelineHTML += `
+                    <div class="day-item">
+                        <div class="day-header">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            Day ${day} - ${currentCity.name}
+                        </div>
+                        <div class="activity-grid">
+                            ${activities.map(activity => `
+                                <div class="activity-card">
+                                    <div class="activity-type">${activity.time}</div>
+                                    <div class="activity-name">${activity.name}</div>
+                                    <div class="activity-details">${activity.details}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            timeline.innerHTML = timelineHTML;
+        }
+
+        function generateDayActivitiesWithRealData(city, day, totalDays, restaurants, activities) {
+            const cityName = city.name;
+            const isFirstDay = day === 1;
+            const isLastDay = day === totalDays;
+            
+            // Get real restaurant for lunch/dinner
+            const getRandomRestaurant = () => {
+                if (restaurants.length > 0) {
+                    const restaurant = restaurants[Math.floor(Math.random() * restaurants.length)];
+                    return restaurant.name;
+                }
+                return 'Local Restaurant';
+            };
+            
+            // Get real attraction for activities
+            const getRandomAttraction = () => {
+                if (activities.length > 0) {
+                    const attraction = activities[Math.floor(Math.random() * activities.length)];
+                    return attraction.name;
+                }
+                return `${cityName} Historic Center`;
+            };
+            
+            // Get top attraction for main activity
+            const getTopAttraction = () => {
+                if (activities.length > 0) {
+                    // Sort by rating and pick the highest rated
+                    const sortedActivities = [...activities].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    return sortedActivities[0].name;
+                }
+                return `${cityName} Main Attraction`;
+            };
+            
+            let dayActivities = [];
+            
+            if (isFirstDay) {
+                // Arrival day
+                dayActivities = [
+                    {
+                        time: "Morning",
+                        name: `Arrive in ${cityName}`,
+                        details: "Check into hotel, freshen up, and get oriented with the city center"
+                    },
+                    {
+                        time: "Afternoon", 
+                        name: getTopAttraction(),
+                        details: "First impressions tour of the main attractions and city landmarks"
+                    },
+                    {
+                        time: "Evening",
+                        name: `Dinner at ${getRandomRestaurant()}`,
+                        details: `Welcome dinner and plan tomorrow's adventures`
+                    }
+                ];
+            } else if (isLastDay) {
+                // Departure day
+                dayActivities = [
+                    {
+                        time: "Morning",
+                        name: `Final visit to ${getRandomAttraction()}`,
+                        details: "Visit any missed attractions, last-minute shopping, and photo opportunities"
+                    },
+                    {
+                        time: "Midday",
+                        name: "Departure Preparation", 
+                        details: "Check out, grab lunch, and begin journey to next destination"
+                    }
+                ];
+            } else {
+                // Full day
+                dayActivities = [
+                    {
+                        time: "Morning",
+                        name: getRandomAttraction(),
+                        details: `Start the day exploring ${cityName}'s most iconic attractions and historic sites`
+                    },
+                    {
+                        time: "Midday",
+                        name: `Lunch at ${getRandomRestaurant()}`,
+                        details: "Experience local cuisine and rest before afternoon activities"
+                    },
+                    {
+                        time: "Afternoon", 
+                        name: getRandomAttraction(),
+                        details: `Discover hidden gems and experience authentic ${cityName} culture`
+                    },
+                    {
+                        time: "Evening",
+                        name: `Dinner at ${getRandomRestaurant()}`,
+                        details: "Evening meal and explore the nighttime atmosphere"
+                    }
+                ];
+            }
+            
+            return dayActivities;
+        }
+
+        // Test the integration
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Testing day-by-day itinerary with real data...');
+            populateDayTimelineWithRealData(mockRoute, mockApiData);
+        });
+    </script>
+</body>
+</html>

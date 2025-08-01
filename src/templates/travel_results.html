@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your European Journey - Travel Plan Results</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding-top: 80px;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--primary) !important;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .route-comparison {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .route-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .route-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .route-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+        
+        .route-card.selected::before {
+            content: "✓ SELECTED";
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: var(--success);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .metric-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        .map-container {
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .itinerary-day {
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .day-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .day-number {
+            background: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+        
+        .activity-timeline {
+            padding: 2rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .activity-time {
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-card, .restaurant-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--success);
+        }
+        
+        .restaurant-card {
+            border-left-color: var(--warning);
+        }
+        
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .comparison-table table {
+            margin: 0;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+        }
+        
+        .comparison-table td {
+            padding: 1rem;
+            border-color: #e5e7eb;
+        }
+        
+        .fuel-info {
+            background: linear-gradient(135deg, var(--warning) 0%, #f97316 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hidden-gem {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .gem-score {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .tabs-nav {
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 2rem;
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            .metric-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-map-marked-alt me-2"></i>
+                European Travel Planner
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/" target="_blank">
+                    <i class="fas fa-plus me-1"></i>Plan Another Trip
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Trip Summary -->
+        <div class="section-header">
+            <h1 class="section-title" id="tripTitle">Your Perfect European Journey</h1>
+            <p class="text-muted" id="tripSubtitle">Comprehensive travel plan with routes, accommodations, and experiences</p>
+        </div>
+
+        <!-- Route Comparison Section -->
+        <div class="route-comparison">
+            <h3 class="mb-4">
+                <i class="fas fa-route me-2 text-primary"></i>
+                Route Options & Comparison
+            </h3>
+            <div id="routeComparison">
+                <!-- Route comparison will be populated here -->
+            </div>
+            
+            <!-- Comparison Table -->
+            <div class="comparison-table mt-4">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Route</th>
+                            <th>Distance</th>
+                            <th>Driving Time</th>
+                            <th>Fuel Cost</th>
+                            <th>Total Cost</th>
+                            <th>Hidden Gems</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody">
+                        <!-- Comparison data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Selected Route Details -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Selected Route Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <div id="selectedRouteDetails">
+                    <p class="text-muted">Select a route above to see detailed information</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-nav">
+            <button class="tab-button active" data-tab="itinerary">
+                <i class="fas fa-calendar-alt me-2"></i>Daily Itinerary
+            </button>
+            <button class="tab-button" data-tab="map">
+                <i class="fas fa-map me-2"></i>Interactive Map
+            </button>
+            <button class="tab-button" data-tab="accommodations">
+                <i class="fas fa-hotel me-2"></i>Hotels & Dining
+            </button>
+            <button class="tab-button" data-tab="hidden-gems">
+                <i class="fas fa-gem me-2"></i>Hidden Gems
+            </button>
+            <button class="tab-button" data-tab="budget">
+                <i class="fas fa-calculator me-2"></i>Budget & Costs
+            </button>
+        </div>
+
+        <!-- Tab Content: Daily Itinerary -->
+        <div id="itinerary" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Your Day-by-Day Adventure
+                    </h4>
+                </div>
+                <div class="card-body" id="dailyItinerary">
+                    <!-- Daily itinerary will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Interactive Map -->
+        <div id="map" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-map me-2"></i>
+                        Interactive Journey Map
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <div id="journeyMap" class="map-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Hotels & Dining -->
+        <div id="accommodations" class="tab-content">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">
+                                <i class="fas fa-hotel me-2"></i>
+                                Recommended Hotels
+                            </h4>
+                        </div>
+                        <div class="card-body" id="hotelsContainer">
+                            <!-- Hotels will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">
+                                <i class="fas fa-utensils me-2"></i>
+                                Restaurant Recommendations
+                            </h4>
+                        </div>
+                        <div class="card-body" id="restaurantsContainer">
+                            <!-- Restaurants will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Hidden Gems -->
+        <div id="hidden-gems" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-gem me-2"></i>
+                        Hidden Gems Along Your Route
+                    </h4>
+                </div>
+                <div class="card-body" id="hiddenGemsContainer">
+                    <!-- Hidden gems will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Budget & Costs -->
+        <div id="budget" class="tab-content">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">
+                                <i class="fas fa-euro-sign me-2"></i>
+                                Budget Breakdown
+                            </h4>
+                        </div>
+                        <div class="card-body" id="budgetBreakdown">
+                            <!-- Budget breakdown will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">
+                                <i class="fas fa-gas-pump me-2"></i>
+                                Fuel & Transportation
+                            </h4>
+                        </div>
+                        <div class="card-body" id="fuelAnalysis">
+                            <!-- Fuel analysis will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        let travelData = null;
+        let map = null;
+        let selectedRouteIndex = 0;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get travel data from sessionStorage
+            const storedData = sessionStorage.getItem('travelPlanResult');
+            if (!storedData) {
+                document.body.innerHTML = `
+                    <div class="container mt-5 text-center">
+                        <h2>No Travel Plan Found</h2>
+                        <p>Please go back and create a travel plan first.</p>
+                        <a href="/" class="btn btn-primary">Plan Your Journey</a>
+                    </div>
+                `;
+                return;
+            }
+
+            travelData = JSON.parse(storedData);
+            console.log('Travel data:', travelData);
+            
+            // Initialize all sections
+            initializePage();
+        });
+
+        function initializePage() {
+            const data = travelData.data;
+            
+            // Update page title
+            if (data.trip_request) {
+                document.getElementById('tripTitle').textContent = 
+                    `${data.trip_request.start_city} to ${data.trip_request.end_city}`;
+                document.getElementById('tripSubtitle').textContent = 
+                    `${data.trip_request.travel_days} days • ${data.trip_request.season} season`;
+            }
+            
+            // Initialize all sections
+            displayRouteComparison(data.routes || []);
+            displayDailyItinerary(data.daily_itinerary || []);
+            displayAccommodations(data.accommodations || {});
+            displayRestaurants(data.restaurants || {});
+            displayHiddenGems(data.intermediate_cities || []);
+            displayBudget(data.budget_breakdown || {});
+            displayFuelAnalysis(data.routes || []);
+            
+            // Initialize map after a short delay
+            setTimeout(() => {
+                initializeMap(data);
+            }, 500);
+            
+            // Setup tab navigation
+            setupTabs();
+        }
+
+        function displayRouteComparison(routes) {
+            const container = document.getElementById('routeComparison');
+            const tableBody = document.getElementById('comparisonTableBody');
+            
+            if (!routes || routes.length === 0) {
+                container.innerHTML = '<p class="text-muted">No routes available</p>';
+                return;
+            }
+
+            // Route cards
+            const routeCards = routes.map((route, index) => `
+                <div class="route-card ${index === 0 ? 'selected' : ''}" data-route-index="${index}">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-route text-primary me-2"></i>
+                            ${route.name}
+                        </h5>
+                        <span class="badge bg-primary">${route.data_source || 'Real API'}</span>
+                    </div>
+                    
+                    <p class="text-muted mb-3">${route.description}</p>
+                    
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">${route.total_distance_km}</div>
+                            <div class="metric-label">km</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${route.total_duration_hours?.toFixed(1) || 'N/A'}</div>
+                            <div class="metric-label">hours</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">€${route.estimated_cost?.fuel_estimate_eur || 'N/A'}</div>
+                            <div class="metric-label">fuel</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">€${route.estimated_cost?.total_estimate_eur || 'N/A'}</div>
+                            <div class="metric-label">total</div>
+                        </div>
+                    </div>
+                    
+                    ${route.waypoints && route.waypoints.length > 0 ? `
+                        <div class="mt-3">
+                            <strong>Via:</strong> ${route.waypoints.map(w => w.name).join(', ')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+            
+            container.innerHTML = routeCards;
+            
+            // Comparison table
+            const tableRows = routes.map(route => `
+                <tr>
+                    <td><strong>${route.name}</strong></td>
+                    <td>${route.total_distance_km} km</td>
+                    <td>${route.total_duration_hours?.toFixed(1) || 'N/A'} hours</td>
+                    <td>€${route.estimated_cost?.fuel_estimate_eur || 'N/A'}</td>
+                    <td>€${route.estimated_cost?.total_estimate_eur || 'N/A'}</td>
+                    <td>${route.waypoints?.length || 0} stops</td>
+                </tr>
+            `).join('');
+            
+            tableBody.innerHTML = tableRows;
+            
+            // Add click handlers
+            document.querySelectorAll('.route-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const routeIndex = parseInt(this.dataset.routeIndex);
+                    selectRoute(routeIndex);
+                });
+            });
+            
+            // Show details for first route
+            selectRoute(0);
+        }
+
+        function selectRoute(index) {
+            selectedRouteIndex = index;
+            const routes = travelData.data.routes || [];
+            const route = routes[index];
+            
+            if (!route) return;
+            
+            // Update visual selection
+            document.querySelectorAll('.route-card').forEach((card, i) => {
+                card.classList.toggle('selected', i === index);
+            });
+            
+            // Show route details
+            const detailsContainer = document.getElementById('selectedRouteDetails');
+            detailsContainer.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-info-circle text-primary me-2"></i>Route Information</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>Type:</strong> ${route.type || 'Standard'}</li>
+                            <li><strong>Distance:</strong> ${route.total_distance_km} km</li>
+                            <li><strong>Driving Time:</strong> ${route.estimated_driving_time}</li>
+                            <li><strong>Data Source:</strong> ${route.data_source || 'Real API'}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-euro-sign text-success me-2"></i>Cost Breakdown</h5>
+                        ${route.estimated_cost ? `
+                            <ul class="list-unstyled">
+                                <li><strong>Fuel:</strong> €${route.estimated_cost.fuel_estimate_eur}</li>
+                                <li><strong>Tolls:</strong> €${route.estimated_cost.tolls_estimate_eur}</li>
+                                <li><strong>Accommodation:</strong> €${route.estimated_cost.accommodation_estimate_eur}</li>
+                                <li><strong>Food:</strong> €${route.estimated_cost.food_estimate_eur}</li>
+                                <li class="border-top pt-2 mt-2"><strong>Total:</strong> €${route.estimated_cost.total_estimate_eur}</li>
+                            </ul>
+                        ` : '<p class="text-muted">Cost breakdown not available</p>'}
+                    </div>
+                </div>
+                
+                ${route.season_tips && route.season_tips.length > 0 ? `
+                    <div class="mt-4">
+                        <h5><i class="fas fa-lightbulb text-warning me-2"></i>Season Tips</h5>
+                        <ul>
+                            ${route.season_tips.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function displayDailyItinerary(dailyItinerary) {
+            const container = document.getElementById('dailyItinerary');
+            
+            if (!dailyItinerary || dailyItinerary.length === 0) {
+                container.innerHTML = '<p class="text-muted">No detailed itinerary available</p>';
+                return;
+            }
+            
+            const itineraryHTML = dailyItinerary.map(day => {
+                const activities = day.activities || [];
+                const activitiesHTML = activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-time">${activity.time}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.activity}</div>
+                            <div class="text-muted">${activity.description}</div>
+                            <small class="text-primary">Duration: ${activity.duration}</small>
+                        </div>
+                    </div>
+                `).join('');
+                
+                return `
+                    <div class="itinerary-day">
+                        <div class="day-header">
+                            <div class="day-number">${day.day}</div>
+                            <div>
+                                <h5 class="mb-1">${day.title}</h5>
+                                <small>${day.date}</small>
+                            </div>
+                        </div>
+                        <div class="activity-timeline">
+                            ${activitiesHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = itineraryHTML;
+        }
+
+        function displayAccommodations(accommodations) {
+            const container = document.getElementById('hotelsContainer');
+            
+            if (!accommodations || Object.keys(accommodations).length === 0) {
+                container.innerHTML = '<p class="text-muted">No hotel recommendations available</p>';
+                return;
+            }
+            
+            let hotelsHTML = '';
+            Object.entries(accommodations).forEach(([city, hotels]) => {
+                if (hotels && hotels.length > 0) {
+                    hotelsHTML += `<h6 class="mb-3"><i class="fas fa-map-marker-alt me-2"></i>${city}</h6>`;
+                    hotels.slice(0, 3).forEach(hotel => {
+                        hotelsHTML += `
+                            <div class="hotel-card">
+                                <h6>${hotel.name}</h6>
+                                <p class="text-muted small mb-2">${hotel.vicinity}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        ${hotel.rating ? `
+                                            <span class="text-warning">
+                                                ${'★'.repeat(Math.floor(hotel.rating))}
+                                            </span>
+                                            <small>(${hotel.rating})</small>
+                                        ` : ''}
+                                    </div>
+                                    <div>
+                                        ${hotel.price_level ? `
+                                            <span class="text-success">
+                                                ${'€'.repeat(hotel.price_level)}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            });
+            
+            container.innerHTML = hotelsHTML || '<p class="text-muted">No hotels available</p>';
+        }
+
+        function displayRestaurants(restaurants) {
+            const container = document.getElementById('restaurantsContainer');
+            
+            if (!restaurants || Object.keys(restaurants).length === 0) {
+                container.innerHTML = '<p class="text-muted">No restaurant recommendations available</p>';
+                return;
+            }
+            
+            let restaurantsHTML = '';
+            Object.entries(restaurants).forEach(([city, cityRestaurants]) => {
+                if (cityRestaurants && cityRestaurants.length > 0) {
+                    restaurantsHTML += `<h6 class="mb-3"><i class="fas fa-map-marker-alt me-2"></i>${city}</h6>`;
+                    cityRestaurants.slice(0, 4).forEach(restaurant => {
+                        restaurantsHTML += `
+                            <div class="restaurant-card">
+                                <h6>${restaurant.name}</h6>
+                                <p class="text-muted small mb-2">${restaurant.vicinity}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        ${restaurant.rating ? `
+                                            <span class="text-warning">
+                                                ${'★'.repeat(Math.floor(restaurant.rating))}
+                                            </span>
+                                            <small>(${restaurant.rating})</small>
+                                        ` : ''}
+                                    </div>
+                                    <div>
+                                        ${restaurant.price_level ? `
+                                            <span class="text-success">
+                                                ${'€'.repeat(restaurant.price_level)}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                ${restaurant.cuisine_types && restaurant.cuisine_types.length > 0 ? `
+                                    <div class="mt-2">
+                                        <small class="text-muted">${restaurant.cuisine_types.slice(0, 2).join(', ')}</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                }
+            });
+            
+            container.innerHTML = restaurantsHTML || '<p class="text-muted">No restaurants available</p>';
+        }
+
+        function displayHiddenGems(intermediateCities) {
+            const container = document.getElementById('hiddenGemsContainer');
+            
+            if (!intermediateCities || intermediateCities.length === 0) {
+                container.innerHTML = '<p class="text-muted">No hidden gems discovered for this route</p>';
+                return;
+            }
+            
+            const gemsHTML = intermediateCities.map(cityData => {
+                const city = cityData.city;
+                return `
+                    <div class="hidden-gem">
+                        <div class="gem-score"><i class="fas fa-star me-1"></i>${cityData.recommendation_score?.toFixed(1) || 'N/A'}/10</div>
+                        <h5><i class="fas fa-gem me-2"></i>${city.name}, ${city.country}</h5>
+                        <p><strong>Region:</strong> ${city.region}</p>
+                        <p><strong>Why Visit:</strong> ${(cityData.why_visit || []).join(', ')}</p>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-star me-2"></i>Best For:</h6>
+                                <ul class="mb-0">
+                                    ${(cityData.best_for || []).slice(0, 3).map(activity => 
+                                        `<li><small>${activity}</small></li>`
+                                    ).join('')}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-utensils me-2"></i>Local Specialties:</h6>
+                                <ul class="mb-0">
+                                    ${(cityData.local_specialties || []).slice(0, 3).map(specialty => 
+                                        `<li><small>${specialty}</small></li>`
+                                    ).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        ${cityData.travel_tips && cityData.travel_tips.length > 0 ? `
+                            <div class="mt-3">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Insider Tips:</h6>
+                                <ul class="mb-0">
+                                    ${cityData.travel_tips.map(tip => `<li><small>${tip}</small></li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = gemsHTML;
+        }
+
+        function displayBudget(budgetData) {
+            const container = document.getElementById('budgetBreakdown');
+            
+            if (!budgetData || !budgetData.total_estimated) {
+                container.innerHTML = '<p class="text-muted">No budget breakdown available</p>';
+                return;
+            }
+            
+            const budgetItems = [
+                { name: 'Accommodation', amount: budgetData.accommodation?.amount, icon: 'fas fa-bed' },
+                { name: 'Meals', amount: budgetData.meals?.amount, icon: 'fas fa-utensils' },
+                { name: 'Activities', amount: budgetData.activities?.amount, icon: 'fas fa-ticket-alt' },
+                { name: 'Transport', amount: budgetData.transport?.amount, icon: 'fas fa-car' },
+                { name: 'Miscellaneous', amount: budgetData.miscellaneous?.amount, icon: 'fas fa-shopping-bag' }
+            ];
+            
+            const budgetHTML = `
+                ${budgetItems.map(item => `
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <i class="${item.icon} text-primary me-3"></i>
+                            <span>${item.name}</span>
+                        </div>
+                        <strong>€${item.amount || 0}</strong>
+                    </div>
+                `).join('')}
+                
+                <div class="d-flex justify-content-between align-items-center py-3 border-top">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calculator text-success me-3"></i>
+                        <strong>Total Estimated</strong>
+                    </div>
+                    <strong class="text-success fs-5">€${budgetData.total_estimated}</strong>
+                </div>
+                
+                ${budgetData.budget_tips && budgetData.budget_tips.length > 0 ? `
+                    <div class="mt-4">
+                        <h6><i class="fas fa-lightbulb text-warning me-2"></i>Budget Tips</h6>
+                        <ul class="mb-0">
+                            ${budgetData.budget_tips.map(tip => `<li><small>${tip}</small></li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            `;
+            
+            container.innerHTML = budgetHTML;
+        }
+
+        function displayFuelAnalysis(routes) {
+            const container = document.getElementById('fuelAnalysis');
+            
+            if (!routes || routes.length === 0) {
+                container.innerHTML = '<p class="text-muted">No fuel analysis available</p>';
+                return;
+            }
+            
+            const selectedRoute = routes[selectedRouteIndex] || routes[0];
+            const fuelCost = selectedRoute.estimated_cost?.fuel_estimate_eur || 0;
+            const distance = selectedRoute.total_distance_km || 0;
+            const tollsCost = selectedRoute.estimated_cost?.tolls_estimate_eur || 0;
+            
+            // Calculate fuel consumption (assuming 7L/100km average)
+            const fuelConsumption = (distance * 7 / 100).toFixed(1);
+            const fuelPrice = distance > 0 ? (fuelCost / (distance * 7 / 100)).toFixed(2) : 0;
+            
+            const fuelHTML = `
+                <div class="fuel-info">
+                    <h5><i class="fas fa-gas-pump me-2"></i>Fuel Analysis</h5>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="fs-4 fw-bold">${fuelConsumption}L</div>
+                                <small>Estimated Consumption</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="fs-4 fw-bold">€${fuelPrice}</div>
+                                <small>Per Liter</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6><i class="fas fa-road me-2"></i>Transportation Costs</h6>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Fuel Cost</span>
+                        <strong>€${fuelCost}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Tolls (estimated)</span>
+                        <strong>€${tollsCost}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-top">
+                        <strong>Total Transport</strong>
+                        <strong class="text-primary">€${(parseFloat(fuelCost) + parseFloat(tollsCost)).toFixed(2)}</strong>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6><i class="fas fa-leaf text-success me-2"></i>Environmental Impact</h6>
+                    <p class="mb-1"><small>Estimated CO₂ emissions: ${(distance * 0.12).toFixed(1)} kg</small></p>
+                    <p class="mb-0"><small>Consider carpooling or train alternatives for eco-friendly travel</small></p>
+                </div>
+            `;
+            
+            container.innerHTML = fuelHTML;
+        }
+
+        function initializeMap(data) {
+            const mapContainer = document.getElementById('journeyMap');
+            if (!mapContainer) return;
+            
+            // Initialize map
+            if (map) {
+                map.remove();
+            }
+            
+            map = L.map('journeyMap').setView([45.8566, 4.3522], 6);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            const bounds = L.latLngBounds();
+            
+            // Add route markers
+            if (data.routes && data.routes.length > 0) {
+                const route = data.routes[selectedRouteIndex] || data.routes[0];
+                
+                if (route.start_city && route.start_city.coordinates) {
+                    L.marker(route.start_city.coordinates)
+                        .addTo(map)
+                        .bindPopup(`<b>Start:</b> ${route.start_city.name}`)
+                        .openPopup();
+                    bounds.extend(route.start_city.coordinates);
+                }
+                
+                if (route.end_city && route.end_city.coordinates) {
+                    L.marker(route.end_city.coordinates)
+                        .addTo(map)
+                        .bindPopup(`<b>Destination:</b> ${route.end_city.name}`);
+                    bounds.extend(route.end_city.coordinates);
+                }
+                
+                // Add waypoints
+                if (route.waypoints) {
+                    route.waypoints.forEach(waypoint => {
+                        if (waypoint.coordinates) {
+                            L.marker(waypoint.coordinates)
+                                .addTo(map)
+                                .bindPopup(`<b>Stop:</b> ${waypoint.name}`);
+                            bounds.extend(waypoint.coordinates);
+                        }
+                    });
+                }
+            }
+            
+            // Add intermediate cities (hidden gems)
+            if (data.intermediate_cities) {
+                data.intermediate_cities.forEach(cityData => {
+                    const coords = cityData.city.coordinates;
+                    if (coords && coords.length === 2) {
+                        const marker = L.marker([coords[0], coords[1]])
+                            .addTo(map)
+                            .bindPopup(`
+                                <b>Hidden Gem:</b> ${cityData.city.name}<br>
+                                <small>${cityData.city.country}</small><br>
+                                <small>Score: ${cityData.recommendation_score?.toFixed(1) || 'N/A'}/10</small>
+                            `);
+                        bounds.extend([coords[0], coords[1]]);
+                        
+                        // Custom icon for hidden gems
+                        marker.setIcon(L.divIcon({
+                            className: 'custom-div-icon',
+                            html: '<i class="fas fa-gem" style="color: #f093fb;"></i>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        }));
+                    }
+                });
+            }
+            
+            // Fit map to bounds
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        }
+
+        function setupTabs() {
+            // Tab navigation
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Update active tab button
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update active tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Refresh map when map tab is activated
+                    if (tabId === 'map' && map) {
+                        setTimeout(() => {
+                            map.invalidateSize();
+                        }, 100);
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

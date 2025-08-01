@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EuroRoam - Plan Your Epic European Adventure</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* European Travel Inspired Color Palette */
+            --sunset-orange: #FF6B35;
+            --mediterranean-blue: #004E89;
+            --alpine-green: #1A5D1A;
+            --tuscan-gold: #FFD23F;
+            --nordic-teal: #7209B7;
+            --coastal-mint: #06FFA5;
+            --cobblestone-gray: #4A5568;
+            --vintage-cream: #FFF8E7;
+            --midnight-navy: #1A202C;
+            
+            /* Gradients */
+            --hero-gradient: linear-gradient(135deg, var(--mediterranean-blue) 0%, var(--nordic-teal) 50%, var(--sunset-orange) 100%);
+            --card-gradient: linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+            --accent-gradient: linear-gradient(90deg, var(--tuscan-gold) 0%, var(--sunset-orange) 100%);
+            
+            /* Glass morphism */
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.25);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--hero-gradient);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated European Landmarks Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><pattern id="landmarks" patternUnits="userSpaceOnUse" width="300" height="200"><g opacity="0.03"><path d="M50,150 L70,100 L90,150 Z" fill="white"/><rect x="120" y="120" width="40" height="30" fill="white"/><circle cx="200" cy="130" r="15" fill="white"/><path d="M230,150 Q250,120 270,150" stroke="white" stroke-width="2" fill="none"/></g></pattern></defs><rect width="1200" height="800" fill="url(%23landmarks)"/></svg>') repeat;
+            opacity: 0.4;
+            animation: float 30s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(0.5deg); }
+            66% { transform: translateY(5px) rotate(-0.3deg); }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(26, 32, 44, 0.9);
+            backdrop-filter: blur(30px);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            color: var(--tuscan-gold);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--tuscan-gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--tuscan-gold);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            animation: slideUp 1s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .handwritten-accent {
+            font-family: 'Caveat', cursive;
+            color: var(--tuscan-gold);
+            font-size: 1.2em;
+            font-weight: 600;
+            display: inline-block;
+            transform: rotate(-2deg);
+            margin: 0 0.5rem;
+        }
+
+        /* Trip Planning Form */
+        .planning-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            box-shadow: var(--glass-shadow);
+            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .planning-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .form-title::after {
+            content: '✈️';
+            position: absolute;
+            right: -3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            animation: fly 3s ease-in-out infinite;
+        }
+
+        @keyframes fly {
+            0%, 100% { transform: translateY(-50%) translateX(0px); }
+            50% { transform: translateY(-50%) translateX(10px); }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--tuscan-gold);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Custom Select Styling */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+        }
+
+        select.form-control {
+            appearance: none;
+            cursor: pointer;
+        }
+
+        /* Specialty Buttons */
+        .specialty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .specialty-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .specialty-btn:hover, .specialty-btn.active {
+            background: rgba(255, 210, 63, 0.2);
+            border-color: var(--tuscan-gold);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .specialty-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Plan Trip Button */
+        .plan-btn {
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 20px;
+            padding: 1.25rem 3rem;
+            color: var(--midnight-navy);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 2rem auto 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .plan-btn:hover::before {
+            left: 100%;
+        }
+
+        .plan-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.4);
+        }
+
+        .plan-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--midnight-navy);
+            margin: 0 auto 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .feature-desc {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left: 4px solid var(--tuscan-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 1rem;
+                min-height: 90vh;
+            }
+
+            .planning-container {
+                padding: 2rem 1.5rem;
+                margin: 2rem 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                padding: 4rem 1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Success Animation */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: var(--coastal-mint);
+            stroke-miterlimit: 10;
+            margin: 10px auto;
+            box-shadow: inset 0px 0px 0px var(--coastal-mint);
+            animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+        }
+
+        .success-checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: var(--coastal-mint);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .success-checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+
+        @keyframes fill {
+            100% { box-shadow: inset 0px 0px 0px 30px var(--coastal-mint); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-route"></i>
+                </div>
+                <span>EuroRoam</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="/auth/login" class="nav-link">Login</a>
+                <a href="/auth/register" class="nav-link">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Your Epic
+                <span class="handwritten-accent">European</span>
+                Road Trip Awaits
+            </h1>
+            <p class="hero-subtitle">
+                From the romantic canals of Amsterdam to the sun-kissed shores of the Mediterranean, 
+                craft your perfect European adventure with AI-powered route planning
+            </p>
+
+            <!-- Trip Planning Form -->
+            <div class="planning-container">
+                <h2 class="form-title">Plan Your Journey</h2>
+                
+                <form id="travel-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">🏛️ Starting City</label>
+                            <input type="text" class="form-control" id="start-city" placeholder="Paris, Amsterdam, Berlin..." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎯 Destination City</label>
+                            <input type="text" class="form-control" id="end-city" placeholder="Rome, Barcelona, Prague..." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📅 Trip Duration</label>
+                            <div class="select-wrapper">
+                                <select class="form-control" id="duration" name="duration" required>
+                                    <option value="">Choose duration</option>
+                                    <option value="3-5">Weekend Getaway (3-5 days)</option>
+                                    <option value="7-10">Classic Tour (1-2 weeks)</option>
+                                    <option value="14-21">Grand Adventure (2-3 weeks)</option>
+                                    <option value="21+">Epic Journey (3+ weeks)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">💰 Budget Range</label>
+                            <div class="select-wrapper">
+                                <select class="form-control" id="budget" name="budget" required>
+                                    <option value="">Select budget</option>
+                                    <option value="budget">Budget Explorer (€30-50/day)</option>
+                                    <option value="mid-range">Comfortable Traveler (€50-100/day)</option>
+                                    <option value="luxury">Luxury Experience (€100+/day)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🎨 Travel Style <small>(Select one or more)</small></label>
+                        <div class="specialty-grid">
+                            <div class="specialty-btn" data-specialty="scenic">
+                                <i class="fas fa-mountain"></i>
+                                <span>Scenic Routes</span>
+                            </div>
+                            <div class="specialty-btn" data-specialty="cultural">
+                                <i class="fas fa-landmark"></i>
+                                <span>Cultural Heritage</span>
+                            </div>
+                            <div class="specialty-btn" data-specialty="adventure">
+                                <i class="fas fa-hiking"></i>
+                                <span>Adventure</span>
+                            </div>
+                            <div class="specialty-btn" data-specialty="culinary">
+                                <i class="fas fa-utensils"></i>
+                                <span>Food & Wine</span>
+                            </div>
+                            <div class="specialty-btn" data-specialty="romantic">
+                                <i class="fas fa-heart"></i>
+                                <span>Romantic</span>
+                            </div>
+                            <div class="specialty-btn" data-specialty="hidden_gems">
+                                <i class="fas fa-gem"></i>
+                                <span>Hidden Gems</span>
+                            </div>
+                        </div>
+                        <!-- Hidden input to store selected travel styles -->
+                        <input type="hidden" id="travel-styles" name="travel_styles" value="">
+                    </div>
+
+                    <button type="submit" class="plan-btn">
+                        <i class="fas fa-magic"></i>
+                        <span>Create My Adventure</span>
+                        <div class="loading-spinner"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <h2 class="features-title">Why Choose EuroRoam?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h3 class="feature-title">Smart Route Planning</h3>
+                    <p class="feature-desc">AI-powered algorithms create optimal routes considering traffic, tolls, and scenic beauty for your perfect European journey.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Hidden Gems Discovery</h3>
+                    <p class="feature-desc">Uncover authentic local experiences, charming villages, and secret spots that typical tourists never find.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="feature-title">Real-Time Optimization</h3>
+                    <p class="feature-desc">Dynamic route adjustments based on weather, events, and traffic conditions to maximize your travel experience.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="feature-title">Personalized Experiences</h3>
+                    <p class="feature-desc">Tailored recommendations for accommodations, restaurants, and activities based on your interests and budget.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Offline Ready</h3>
+                    <p class="feature-desc">Download your complete itinerary and maps for offline access, ensuring you're never lost even without internet.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">Group Planning</h3>
+                    <p class="feature-desc">Collaborate with travel companions, share expenses, and create memories together with our group planning tools.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Specialty button selection (multiple selection allowed)
+        document.querySelectorAll('.specialty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                updateTravelStylesInput();
+            });
+        });
+
+        function updateTravelStylesInput() {
+            const selectedStyles = [];
+            document.querySelectorAll('.specialty-btn.active').forEach(btn => {
+                selectedStyles.push(btn.dataset.specialty);
+            });
+            document.getElementById('travel-styles').value = selectedStyles.join(',');
+        }
+
+        // Form submission
+        document.getElementById('travel-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const button = document.querySelector('.plan-btn');
+            const spinner = button.querySelector('.loading-spinner');
+            const buttonText = button.querySelector('span');
+            
+            // Show loading state
+            spinner.style.display = 'block';
+            buttonText.textContent = 'Creating Your Adventure...';
+            button.disabled = true;
+            
+            // Collect form data
+            const selectedStyles = document.getElementById('travel-styles').value;
+            const formData = {
+                start_city: document.getElementById('start-city').value,
+                end_city: document.getElementById('end-city').value,
+                duration: document.getElementById('duration').value,
+                budget: document.getElementById('budget').value,
+                travel_style: selectedStyles || 'scenic'  // Default to scenic if none selected
+            };
+
+            // Validate that all required fields are filled
+            if (!formData.start_city || !formData.end_city || !formData.duration || !formData.budget) {
+                alert('Please fill in all required fields (cities, duration, and budget)');
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Create My Adventure';
+                button.disabled = false;
+                return;
+            }
+            
+            try {
+                const response = await fetch('/plan_trip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Store result in sessionStorage for the results page
+                    sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
+                    
+                    // Show success animation briefly
+                    buttonText.innerHTML = `
+                        <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="success-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="success-checkmark-check" fill="none" d="m14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                        Adventure Created!
+                    `;
+                    
+                    // Redirect after animation
+                    setTimeout(() => {
+                        window.location.href = '/results';
+                    }, 2000);
+                    
+                } else {
+                    throw new Error('Failed to create trip plan');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                buttonText.textContent = 'Try Again';
+                button.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+                
+                setTimeout(() => {
+                    buttonText.textContent = 'Create My Adventure';
+                    button.style.background = 'var(--accent-gradient)';
+                    button.disabled = false;
+                }, 3000);
+                
+            } finally {
+                spinner.style.display = 'none';
+                button.disabled = false;
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add some interactive animations
+        document.addEventListener('mousemove', (e) => {
+            const cursor = e.clientX / window.innerWidth;
+            const vertical = e.clientY / window.innerHeight;
+            
+            document.body.style.backgroundPosition = `${cursor * 50}px ${vertical * 50}px`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Insights - Road Trip Planner</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+        
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--primary-dark) !important;
+        }
+        
+        .insights-header {
+            background: transparent;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .insights-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .insights-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .insight-card {
+            background: var(--glass-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--gray-600);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1.5rem 0;
+        }
+        
+        .ai-insights {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .ai-insights h4 {
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .achievement-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--success), var(--secondary));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .milestone-progress {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .progress {
+            height: 12px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 0.5rem 0;
+        }
+        
+        .progress-bar {
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        .cities-visited {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .city-badge {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            transition: all 0.2s ease;
+        }
+        
+        .city-badge:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .recommendation-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 0.75rem 0;
+            border-left: 4px solid var(--warning);
+            transition: all 0.2s ease;
+        }
+        
+        .recommendation-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(4px);
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-600);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .insight-card {
+                padding: 1.5rem;
+                margin: 0 1rem 1.5rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-route me-2"></i>
+                Road Trip Planner
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/ai-assistant">AI Assistant</a>
+                <a class="nav-link active" href="/travel-insights">Travel Insights</a>
+                <a class="nav-link" href="/auth/profile">Profile</a>
+                <a class="nav-link" href="/auth/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="insights-header">
+        <div class="container">
+            <h1 class="insights-title">
+                <i class="fas fa-chart-line me-2"></i>
+                Your Travel Insights
+            </h1>
+            <p>Discover patterns in your travel adventures and get AI-powered recommendations</p>
+        </div>
+    </div>
+
+    <div class="container insights-container">
+        <!-- Loading State -->
+        <div id="loadingState" class="insight-card loading-state">
+            <div class="loading-spinner"></div>
+            <h3>Analyzing Your Travel Data</h3>
+            <p>Our AI is crunching your travel patterns to generate personalized insights...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="insight-card error-state" style="display: none;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <h3>Unable to Load Insights</h3>
+            <p>We're having trouble analyzing your travel data. Please try again later.</p>
+            <button class="btn btn-primary" onclick="loadInsights()">
+                <i class="fas fa-refresh me-2"></i>Try Again
+            </button>
+        </div>
+
+        <!-- Travel Statistics -->
+        <div id="travelStats" class="insight-card" style="display: none;">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                Travel Statistics
+            </h2>
+            
+            <div class="stats-grid" id="statsGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div id="aiInsights" class="insight-card" style="display: none;">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                AI Travel Analysis
+            </h2>
+            
+            <div id="aiInsightsContent">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Travel Charts -->
+        <div id="travelCharts" class="insight-card" style="display: none;">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                Travel Patterns
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Route Types Preference</h4>
+                    <div class="chart-container">
+                        <canvas id="routeTypesChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4>Monthly Travel Activity</h4>
+                    <div class="chart-container">
+                        <canvas id="monthlyTravelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div id="achievements" class="insight-card" style="display: none;">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                Travel Achievements
+            </h2>
+            
+            <div id="achievementsList">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Destinations Visited -->
+        <div id="destinations" class="insight-card" style="display: none;">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                Places You've Explored
+            </h2>
+            
+            <div id="citiesVisited">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div id="recommendations" class="insight-card" style="display: none;">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                AI Recommendations
+            </h2>
+            
+            <div id="recommendationsList">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let routeTypesChart = null;
+        let monthlyTravelChart = null;
+        
+        // Load insights on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInsights();
+        });
+        
+        async function loadInsights() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            
+            // Show loading state
+            loadingState.style.display = 'block';
+            errorState.style.display = 'none';
+            hideAllSections();
+            
+            try {
+                const response = await fetch('/api/travel-insights');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayInsights(data.insights, data.analytics);
+                } else {
+                    throw new Error(data.error || 'Failed to load insights');
+                }
+                
+            } catch (error) {
+                console.error('Insights loading error:', error);
+                showErrorState();
+            }
+        }
+        
+        function hideAllSections() {
+            const sections = ['travelStats', 'aiInsights', 'travelCharts', 'achievements', 'destinations', 'recommendations'];
+            sections.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
+        
+        function showErrorState() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            hideAllSections();
+        }
+        
+        function displayInsights(insights, analytics) {
+            // Hide loading state
+            document.getElementById('loadingState').style.display = 'none';
+            
+            // Display travel statistics
+            displayTravelStats(analytics);
+            
+            // Display AI insights
+            displayAIInsights(insights);
+            
+            // Display charts
+            displayCharts(analytics);
+            
+            // Display achievements
+            displayAchievements(insights.achievements || []);
+            
+            // Display destinations
+            displayDestinations(analytics);
+            
+            // Display recommendations
+            displayRecommendations(insights.recommendations || []);
+            
+            // Show all sections
+            const sections = ['travelStats', 'aiInsights', 'travelCharts', 'achievements', 'destinations', 'recommendations'];
+            sections.forEach(id => {
+                document.getElementById(id).style.display = 'block';
+            });
+        }
+        
+        function displayTravelStats(analytics) {
+            const statsGrid = document.getElementById('statsGrid');
+            
+            const stats = [
+                {
+                    icon: 'fa-route',
+                    value: analytics.total_trips || 0,
+                    label: 'Total Trips'
+                },
+                {
+                    icon: 'fa-map-marker-alt',
+                    value: `${(analytics.total_distance || 0).toFixed(0)}`,
+                    label: 'Kilometers Traveled'
+                },
+                {
+                    icon: 'fa-clock',
+                    value: `${(analytics.total_duration || 0).toFixed(0)}`,
+                    label: 'Hours on the Road'
+                },
+                {
+                    icon: 'fa-leaf',
+                    value: `${(analytics.carbon_footprint || 0).toFixed(1)}`,
+                    label: 'CO² kg (Carbon Footprint)'
+                },
+                {
+                    icon: 'fa-city',
+                    value: JSON.parse(analytics.cities_visited || '[]').length,
+                    label: 'Cities Explored'
+                },
+                {
+                    icon: 'fa-heart',
+                    value: analytics.favorite_route_type || 'Scenic',
+                    label: 'Favorite Route Type'
+                }
+            ];
+            
+            statsGrid.innerHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas ${stat.icon}"></i>
+                    </div>
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                </div>
+            `).join('');
+        }
+        
+        function displayAIInsights(insights) {
+            const content = document.getElementById('aiInsightsContent');
+            
+            content.innerHTML = `
+                <div class="ai-insights">
+                    <h4>
+                        <i class="fas fa-user-circle me-2"></i>
+                        Your Travel Personality
+                    </h4>
+                    <p>${insights.travel_personality || 'Adventurous Explorer'}</p>
+                </div>
+                
+                <div class="ai-insights">
+                    <h4>
+                        <i class="fas fa-star me-2"></i>
+                        Preferred Experiences
+                    </h4>
+                    <div>
+                        ${(insights.preferred_experiences || []).map(exp => 
+                            `<span class="achievement-badge">${exp}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div class="ai-insights">
+                    <h4>
+                        <i class="fas fa-euro-sign me-2"></i>
+                        Budget Insights
+                    </h4>
+                    <p>${insights.budget_insights || 'Balanced approach to travel spending'}</p>
+                </div>
+                
+                <div class="ai-insights">
+                    <h4>
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Optimal Trip Length
+                    </h4>
+                    <p>${insights.optimal_trip_length || '5-7 days'}</p>
+                </div>
+            `;
+        }
+        
+        function displayCharts(analytics) {
+            // Route Types Chart
+            const routeCtx = document.getElementById('routeTypesChart').getContext('2d');
+            
+            if (routeTypesChart) {
+                routeTypesChart.destroy();
+            }
+            
+            routeTypesChart = new Chart(routeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Scenic', 'Cultural', 'Adventure', 'Culinary', 'Romantic', 'Hidden Gems'],
+                    datasets: [{
+                        data: [30, 25, 15, 12, 10, 8], // Sample data
+                        backgroundColor: [
+                            '#10b981',
+                            '#8b5cf6',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#ec4899',
+                            '#6366f1'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Travel Chart
+            const monthlyCtx = document.getElementById('monthlyTravelChart').getContext('2d');
+            
+            if (monthlyTravelChart) {
+                monthlyTravelChart.destroy();
+            }
+            
+            monthlyTravelChart = new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Trips',
+                        data: [1, 0, 2, 3, 4, 2, 5, 4, 3, 2, 1, 0], // Sample data
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function displayAchievements(achievements) {
+            const achievementsList = document.getElementById('achievementsList');
+            
+            const allAchievements = [
+                ...achievements,
+                'First Trip Planner',
+                'Explorer',
+                'Road Trip Enthusiast',
+                'European Adventurer'
+            ];
+            
+            achievementsList.innerHTML = `
+                <div>
+                    ${allAchievements.map(achievement => 
+                        `<span class="achievement-badge">
+                            <i class="fas fa-trophy me-1"></i>${achievement}
+                        </span>`
+                    ).join('')}
+                </div>
+                
+                <div class="milestone-progress mt-4">
+                    <h5>Next Milestones</h5>
+                    <div>
+                        <strong>Visit 10 Countries</strong> - 6/10
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Complete 25 Trips</strong> - 8/25
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 32%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function displayDestinations(analytics) {
+            const citiesVisited = document.getElementById('citiesVisited');
+            const cities = JSON.parse(analytics.cities_visited || '[]');
+            
+            if (cities.length === 0) {
+                citiesVisited.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marked-alt" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+                        <h4>No destinations yet</h4>
+                        <p>Start planning your first trip to see your travel map!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            citiesVisited.innerHTML = `
+                <p class="mb-3">You've explored <strong>${cities.length}</strong> amazing European destinations:</p>
+                <div class="cities-visited">
+                    ${cities.map(city => `<span class="city-badge">${city}</span>`).join('')}
+                </div>
+            `;
+        }
+        
+        function displayRecommendations(recommendations) {
+            const recommendationsList = document.getElementById('recommendationsList');
+            
+            const allRecommendations = [
+                ...recommendations,
+                "Try exploring Eastern Europe - countries like Czech Republic and Slovenia offer incredible value and stunning landscapes",
+                "Consider planning a spring trip (April-May) for better weather and fewer crowds",
+                "Your scenic route preference suggests you'd love the Swiss Alps or Norwegian fjords",
+                "Based on your travel pattern, a 7-day trip would be your sweet spot for the next adventure"
+            ];
+            
+            recommendationsList.innerHTML = allRecommendations.map(rec => `
+                <div class="recommendation-card">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i>
+                    ${rec}
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

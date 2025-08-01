@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Test</title>
+</head>
+<body>
+    <h1>Testing Frontend Flow</h1>
+    
+    <form id="testForm">
+        <input type="text" name="start_city" value="Aix-en-Provence" placeholder="Start City">
+        <input type="text" name="end_city" value="Venice" placeholder="End City">
+        <input type="hidden" name="travel_days" value="5">
+        <input type="hidden" name="nights_at_destination" value="2">
+        <input type="hidden" name="season" value="summer">
+        <input type="hidden" name="trip_type" value="home">
+        <button type="submit">Test Submit</button>
+    </form>
+    
+    <div id="results"></div>
+    
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            
+            const formData = new FormData(this);
+            console.log('Form data:', Object.fromEntries(formData));
+            
+            try {
+                const response = await fetch('/plan', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (result.success) {
+                    sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
+                    document.getElementById('results').innerHTML = 
+                        `<h2>Success! Generated ${result.data.routes.length} routes</h2>
+                         <p>Data stored in sessionStorage</p>
+                         <button onclick="window.open('/results', '_blank')">Open Results Page</button>`;
+                } else {
+                    document.getElementById('results').innerHTML = 
+                        `<h2>Error: ${result.error}</h2>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = 
+                    `<h2>Error: ${error.message}</h2>`;
+            }
+        });
+    </script>
+</body>
+</html>

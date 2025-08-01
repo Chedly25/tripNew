@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend with Real Data</title>
+    <script>
+        // Simulate what happens when the form is submitted
+        // This mimics the exact data structure from our working API
+        const realApiData = {
+            "success": true,
+            "data": {
+                "routes": [
+                    {
+                        "route_type": "scenic",
+                        "name": "Scenic Mountain & Lakes Route",
+                        "description": "Journey through breathtaking Alpine landscapes, pristine lakes, and mountain vistas. Perfect for nature lovers and photographers.",
+                        "start_city": {
+                            "name": "Aix-en-Provence",
+                            "coordinates": [43.5297, 5.4474]
+                        },
+                        "end_city": {
+                            "name": "Venice",
+                            "coordinates": [45.4408, 12.3155]
+                        },
+                        "intermediate_cities": [
+                            {
+                                "name": "Cannes",
+                                "coordinates": [43.5528, 7.0174],
+                                "types": ["luxury", "coastal", "glamour", "festivals"]
+                            },
+                            {
+                                "name": "Monaco",
+                                "coordinates": [43.7384, 7.4246],
+                                "types": ["luxury", "coastal", "casinos", "glamour"]
+                            },
+                            {
+                                "name": "Como",
+                                "coordinates": [45.8081, 9.0852],
+                                "types": ["scenic", "lakes", "romantic", "luxury"]
+                            }
+                        ],
+                        "total_distance_km": 685.8,
+                        "total_duration_hours": 9.8,
+                        "highlights": ["Mountain passes", "Lake views", "Scenic overlooks", "National parks"],
+                        "ideal_for": "Nature enthusiasts, photographers, romantic getaways",
+                        "estimated_cost": {
+                            "fuel_estimate": 54.86,
+                            "accommodation_estimate": 400,
+                            "total_estimate": 454.86
+                        }
+                    }
+                ]
+            }
+        };
+        
+        // Store this data in sessionStorage (simulating form submission)
+        sessionStorage.setItem('travelPlanResult', JSON.stringify(realApiData));
+        
+        console.log('Real API data stored in sessionStorage');
+        console.log('Data:', realApiData);
+        
+        // Now redirect to the actual results page to see if it displays correctly
+        setTimeout(() => {
+            window.location.href = '/results';
+        }, 1000);
+    </script>
+</head>
+<body>
+    <h1>Setting up real API data...</h1>
+    <p>This page simulates form submission by storing real API data in sessionStorage.</p>
+    <p>Redirecting to results page in 1 second...</p>
+</body>
+</html>

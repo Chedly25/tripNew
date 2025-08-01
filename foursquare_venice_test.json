@@ -1,0 +1,105 @@
+{
+  "restaurants": [
+    {
+      "name": "Le Bistro Venice",
+      "rating": 4.5,
+      "price_level": 3,
+      "address": "City Center, Venice",
+      "category": "Restaurant",
+      "cuisine": "French",
+      "website": "https://www.lebistro-venice.com",
+      "hours": "12:00-14:00, 19:00-22:00",
+      "photo": ""
+    },
+    {
+      "name": "Osteria del Venice",
+      "rating": 4.3,
+      "price_level": 2,
+      "address": "Old Town, Venice",
+      "category": "Restaurant",
+      "cuisine": "Italian",
+      "website": "https://www.osteria-venice.com",
+      "hours": "18:00-23:00",
+      "photo": ""
+    },
+    {
+      "name": "Caf\u00e9 Central Venice",
+      "rating": 4.1,
+      "price_level": 1,
+      "address": "Main Square, Venice",
+      "category": "Caf\u00e9",
+      "cuisine": "Coffee & Light Meals",
+      "website": "",
+      "hours": "07:00-19:00",
+      "photo": ""
+    }
+  ],
+  "activities": [
+    {
+      "name": "Venice Historic Center",
+      "rating": 4.6,
+      "price_level": 0,
+      "address": "Historic District, Venice",
+      "category": "Historic Site",
+      "website": "",
+      "hours": "24/7",
+      "photo": ""
+    },
+    {
+      "name": "Venice Cathedral",
+      "rating": 4.4,
+      "price_level": 0,
+      "address": "Cathedral Square, Venice",
+      "category": "Religious Site",
+      "website": "",
+      "hours": "08:00-18:00",
+      "photo": ""
+    },
+    {
+      "name": "Venice Art Museum",
+      "rating": 4.2,
+      "price_level": 1,
+      "address": "Museum District, Venice",
+      "category": "Museum",
+      "website": "",
+      "hours": "10:00-17:00",
+      "photo": ""
+    }
+  ],
+  "fallback_restaurants": [
+    {
+      "name": "Le Bistro Venice",
+      "rating": 4.5,
+      "price_level": 3,
+      "address": "City Center, Venice",
+      "category": "Restaurant",
+      "cuisine": "French",
+      "website": "https://www.lebistro-venice.com",
+      "hours": "12:00-14:00, 19:00-22:00",
+      "photo": ""
+    },
+    {
+      "name": "Osteria del Venice",
+      "rating": 4.3,
+      "price_level": 2,
+      "address": "Old Town, Venice",
+      "category": "Restaurant",
+      "cuisine": "Italian",
+      "website": "https://www.osteria-venice.com",
+      "hours": "18:00-23:00",
+      "photo": ""
+    },
+    {
+      "name": "Caf\u00e9 Central Venice",
+      "rating": 4.1,
+      "price_level": 1,
+      "address": "Main Square, Venice",
+      "category": "Caf\u00e9",
+      "cuisine": "Coffee & Light Meals",
+      "website": "",
+      "hours": "07:00-19:00",
+      "photo": ""
+    }
+  ],
+  "test_timestamp": "2025-08-01T04:25:03.371007"
+}
