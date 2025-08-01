@@ -17,7 +17,7 @@ class ClaudeAIService:
     def __init__(self):
         self.api_key = os.getenv('ANTHROPIC_API_KEY')
         self.base_url = "https://api.anthropic.com/v1"
-        self.model = "claude-3-sonnet-20240229"
+        self.model = "claude-3-5-sonnet-20241022"
         self.session = None
         
         if not self.api_key:
@@ -35,7 +35,7 @@ class ClaudeAIService:
             
             headers = {
                 'Content-Type': 'application/json',
-                'X-API-Key': self.api_key,
+                'x-api-key': self.api_key,
                 'anthropic-version': '2023-06-01'
             }
             
@@ -73,7 +73,7 @@ class ClaudeAIService:
             
             headers = {
                 'Content-Type': 'application/json',
-                'X-API-Key': self.api_key,
+                'x-api-key': self.api_key,
                 'anthropic-version': '2023-06-01'
             }
             
