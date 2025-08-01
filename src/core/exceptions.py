@@ -39,3 +39,8 @@ class AuthenticationError(TravelPlannerException):
 class RateLimitError(TravelPlannerException):
     """Raised when rate limits are exceeded."""
     pass
+
+
+class ServiceError(TravelPlannerException):
+    """Raised when service operations fail."""
+    pass

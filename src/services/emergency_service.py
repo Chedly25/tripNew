@@ -5,8 +5,8 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import json
 import structlog
-from src.core.database import get_database
-from src.core.exceptions import ValidationError, ServiceError
+from ..core.database import get_database
+from ..core.exceptions import ValidationError, ServiceError
 
 logger = structlog.get_logger(__name__)
 

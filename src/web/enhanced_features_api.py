@@ -11,7 +11,7 @@ try:
     from ..services.journal_service import JournalService
     from ..services.packing_service import PackingService
     from ..services.transportation_service import TransportationService
-    from ..services.emergency_service import get_emergency_service
+    from ..services.emergency_service import EmergencyService
     from ..services.marketplace_service import MarketplaceService
     from ..services.optimization_service import ItineraryOptimizationService as OptimizationService
     from ..core.exceptions import ValidationError, ServiceError
@@ -21,7 +21,7 @@ except ImportError:
     JournalService = None
     PackingService = None
     TransportationService = None
-    get_emergency_service = lambda: None
+    EmergencyService = None
     MarketplaceService = None
     OptimizationService = None
     ValidationError = Exception
@@ -37,7 +37,7 @@ budget_service = BudgetService() if BudgetService else None
 journal_service = JournalService() if JournalService else None
 packing_service = PackingService() if PackingService else None
 transportation_service = TransportationService() if TransportationService else None
-emergency_service = get_emergency_service() if get_emergency_service else None
+emergency_service = EmergencyService() if EmergencyService else None
 marketplace_service = MarketplaceService() if MarketplaceService else None
 optimization_service = OptimizationService() if OptimizationService else None
 
@@ -256,7 +256,7 @@ def get_emergency_contacts():
         country = request.args.get('country')
         service_type = request.args.get('service_type')
         
-        contacts = emergency_service.get_official_emergency_contacts(country, service_type)
+        contacts = emergency_service.get_emergency_contacts(country, service_type)
         return jsonify({'contacts': contacts})
         
     except Exception as e:
@@ -271,7 +271,7 @@ def get_safety_tips(country):
         require_auth()
         activity_type = request.args.get('activity_type')
         
-        tips = emergency_service.get_safety_tips(country, activity_type)
+        tips = emergency_service.get_safety_tips(country, activity_type or 'road_trip')
         return jsonify(tips)
         
     except Exception as e:
