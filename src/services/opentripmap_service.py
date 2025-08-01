@@ -170,7 +170,7 @@ class OpenTripMapService:
                     if isinstance(data, list):
                         attractions = []
                         for attraction in data:
-                            attraction_data = {
+                            basic_data = {
                                 'xid': attraction.get('xid'),
                                 'name': attraction.get('name', ''),
                                 'kinds': attraction.get('kinds', '').split(','),
@@ -183,7 +183,26 @@ class OpenTripMapService:
                                 'wikidata': attraction.get('wikidata'),
                                 'source': 'opentripmap'
                             }
-                            attractions.append(attraction_data)
+                            
+                            # Fetch detailed information including images for this attraction
+                            if attraction.get('xid'):
+                                try:
+                                    detailed_info = await self.get_attraction_details(attraction.get('xid'))
+                                    if detailed_info:
+                                        # Enhance with detailed information
+                                        basic_data.update({
+                                            'wikipedia': detailed_info.get('wikipedia'),
+                                            'image': detailed_info.get('image'),
+                                            'preview': detailed_info.get('preview', {}),
+                                            'address': detailed_info.get('address', ''),
+                                            'info': detailed_info.get('info', {})
+                                        })
+                                        # Rate limiting
+                                        await asyncio.sleep(0.1)
+                                except Exception as e:
+                                    logger.warning(f"Failed to get details for attraction {attraction.get('xid')}: {e}")
+                            
+                            attractions.append(basic_data)
                         
                         return attractions
                 

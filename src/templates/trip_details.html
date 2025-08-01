@@ -825,10 +825,25 @@
                     const websiteLink = hotel.website || hotel.url ? 
                         `<br><a href="${hotel.website || hotel.url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Visit Website</a>` : '';
                     
+                    // Add image if available
+                    const imageHTML = hotel.photo ? 
+                        `<div class="hotel-image mb-2"><img src="${hotel.photo}" alt="${hotel.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 5px;" onerror="this.style.display='none'" loading="lazy"></div>` : '';
+                    
+                    // Add description if available
+                    const descriptionHTML = hotel.description ? 
+                        `<div class="hotel-description mb-2"><small class="text-muted">${hotel.description}</small></div>` : '';
+                    
+                    // Add source badge
+                    const sourceBadge = hotel.source ? 
+                        `<small class="badge ${hotel.source === 'fallback' ? 'bg-warning' : 'bg-success'} mb-2">${hotel.source}</small>` : '';
+                    
                     hotelHTML += `
                         <div class="activity-card">
+                            ${imageHTML}
                             <div class="activity-type">Hotel - ${cityName}</div>
                             <div class="activity-name">${hotel.name}</div>
+                            ${sourceBadge}
+                            ${descriptionHTML}
                             <div class="activity-details">
                                 ${stars} ${formatNumber(hotel.rating)}/5 (${hotel.review_count} reviews)<br>
                                 <i class="fas fa-euro-sign me-1"></i>${formatNumber(hotel.price_per_night)} per night<br>
@@ -859,10 +874,25 @@
                     const websiteLink = restaurant.website || restaurant.url ? 
                         `<br><a href="${restaurant.website || restaurant.url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Visit Website</a>` : '';
                     
+                    // Add image if available
+                    const imageHTML = restaurant.photo ? 
+                        `<div class="restaurant-image mb-2"><img src="${restaurant.photo}" alt="${restaurant.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 5px;" onerror="this.style.display='none'" loading="lazy"></div>` : '';
+                    
+                    // Add description if available
+                    const descriptionHTML = restaurant.description ? 
+                        `<div class="restaurant-description mb-2"><small class="text-muted">${restaurant.description}</small></div>` : '';
+                    
+                    // Add source badge
+                    const sourceBadge = restaurant.source ? 
+                        `<small class="badge ${restaurant.source === 'fallback' ? 'bg-warning' : 'bg-success'} mb-2">${restaurant.source}</small>` : '';
+                    
                     restaurantHTML += `
                         <div class="activity-card">
+                            ${imageHTML}
                             <div class="activity-type">Restaurant - ${cityName}</div>
                             <div class="activity-name">${restaurant.name}</div>
+                            ${sourceBadge}
+                            ${descriptionHTML}
                             <div class="activity-details">
                                 ${stars} ${formatNumber(restaurant.rating)}/5<br>
                                 <i class="fas fa-utensils me-1"></i>${restaurant.cuisine}<br>
@@ -894,10 +924,25 @@
                     const websiteLink = activity.website || activity.url ? 
                         `<br><a href="${activity.website || activity.url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Visit Website</a>` : '';
                     
+                    // Add image if available
+                    const imageHTML = activity.photo ? 
+                        `<div class="activity-image mb-2"><img src="${activity.photo}" alt="${activity.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 5px;" onerror="this.style.display='none'" loading="lazy"></div>` : '';
+                    
+                    // Add description if available
+                    const descriptionHTML = activity.description ? 
+                        `<div class="activity-description mb-2"><small class="text-muted">${activity.description}</small></div>` : '';
+                    
+                    // Add source badge for transparency about data source
+                    const sourceBadge = activity.source ? 
+                        `<small class="badge ${activity.source === 'fallback' ? 'bg-warning' : 'bg-success'} mb-2">${activity.source}</small>` : '';
+                    
                     activityHTML += `
                         <div class="activity-card">
+                            ${imageHTML}
                             <div class="activity-type">${activity.category} - ${cityName}</div>
                             <div class="activity-name">${activity.name}</div>
+                            ${sourceBadge}
+                            ${descriptionHTML}
                             <div class="activity-details">
                                 ${stars} ${formatNumber(activity.rating)}/5<br>
                                 <i class="fas fa-euro-sign me-1"></i>${priceLevel}<br>

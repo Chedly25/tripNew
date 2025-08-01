@@ -30,6 +30,7 @@ from ..services.emergency_service import get_emergency_service
 from ..services.memory_service import get_memory_service
 from ..services.opentripmap_service import get_opentripmap_service
 from ..services.amadeus_service import get_amadeus_service
+from ..services.eventbrite_service import get_eventbrite_service
 from ..core.exceptions import TravelPlannerException, ValidationError
 
 # Configure logging
@@ -101,6 +102,7 @@ def create_app() -> Flask:
     memory_service = get_memory_service()
     opentripmap_service = get_opentripmap_service()
     amadeus_service = get_amadeus_service()
+    eventbrite_service = get_eventbrite_service()
     
     travel_planner = TravelPlannerServiceImpl(
         city_service, route_service, validation_service
@@ -327,7 +329,7 @@ def create_app() -> Flask:
                         
                         # Fetch restaurants and activities
                         try:
-                            # Use async methods for both Foursquare and OpenTripMap
+                            # Use async methods for Foursquare, OpenTripMap, and Eventbrite
                             async def get_combined_data():
                                 # Get restaurants from Foursquare
                                 restaurants = await foursquare_service.find_restaurants(city_coords, city_name, limit=10)
@@ -341,27 +343,52 @@ def create_app() -> Flask:
                                         kinds='cultural,historic,architecture,museums,churches,monuments'
                                     )
                                 
+                                # Get events from Eventbrite
+                                async with eventbrite_service:
+                                    eventbrite_events = await eventbrite_service.find_events_by_location(
+                                        coordinates=city_coords,
+                                        city_name=city_name,
+                                        limit=5
+                                    )
+                                
                                 # Format OpenTripMap data to match expected format
                                 formatted_activities = []
                                 for attraction in opentripmap_activities:
                                     if attraction.get('xid'):  # Real OpenTripMap data
+                                        # Get the best available image
+                                        photo_url = ''
+                                        if attraction.get('image'):
+                                            photo_url = attraction.get('image')
+                                        elif attraction.get('preview', {}).get('source'):
+                                            photo_url = attraction.get('preview', {}).get('source')
+                                        
+                                        # Get better address information
+                                        address = attraction.get('address', '')
+                                        if not address:
+                                            address = f"{city_name}, {', '.join(attraction.get('kinds', [])[:2])}"
+                                        
                                         formatted_activities.append({
                                             'name': attraction.get('name', 'Unknown Attraction'),
                                             'rating': attraction.get('rating', 4),
                                             'price_level': 0,  # Most attractions are free
-                                            'address': f"{city_name}, {attraction.get('kinds', [])}",
+                                            'address': address,
                                             'category': get_category_from_kinds(attraction.get('kinds', [])),
                                             'website': attraction.get('wikipedia') or '',
                                             'url': attraction.get('wikipedia') or '',
                                             'hours': 'Check local listings',
-                                            'photo': attraction.get('preview', {}).get('source', ''),
-                                            'source': 'opentripmap'
+                                            'photo': photo_url,
+                                            'source': 'opentripmap',
+                                            'description': attraction.get('info', {}).get('descr', '')[:200] + '...' if attraction.get('info', {}).get('descr') else f"Historic attraction in {city_name}"
                                         })
                                 
+                                # Add Eventbrite events to activities
+                                for event in eventbrite_events:
+                                    formatted_activities.append(event)
+                                
                                 # If no real OpenTripMap data, try Foursquare activities as backup
-                                if not formatted_activities:
+                                if len(formatted_activities) < 5:  # Only add Foursquare if we need more activities
                                     foursquare_activities = await foursquare_service.find_activities(city_coords, city_name, limit=10)
-                                    formatted_activities = foursquare_activities
+                                    formatted_activities.extend(foursquare_activities)
                                 
                                 return restaurants, formatted_activities
                             
@@ -373,12 +400,20 @@ def create_app() -> Flask:
                             else:
                                 logger.warning(f"Using {len(restaurants)} FALLBACK restaurants for {city_name} - Foursquare API returned no real data")
                                 
-                            if activities and activities[0].get('source') == 'opentripmap':
-                                logger.info(f"Successfully fetched {len(activities)} REAL attractions from OpenTripMap for {city_name}")
-                            elif activities and activities[0].get('source') == 'foursquare':
-                                logger.info(f"Successfully fetched {len(activities)} REAL activities from Foursquare for {city_name}")
-                            else:
-                                logger.warning(f"Using {len(activities)} FALLBACK activities for {city_name} - Both APIs returned no real data")
+                            # Count different types of activities
+                            opentripmap_count = sum(1 for a in activities if a.get('source') == 'opentripmap')
+                            eventbrite_count = sum(1 for a in activities if a.get('source') == 'eventbrite')
+                            foursquare_count = sum(1 for a in activities if a.get('source') == 'foursquare')
+                            fallback_count = sum(1 for a in activities if a.get('source') == 'fallback')
+                            
+                            if opentripmap_count > 0:
+                                logger.info(f"Successfully fetched {opentripmap_count} REAL attractions from OpenTripMap for {city_name}")
+                            if eventbrite_count > 0:
+                                logger.info(f"Successfully fetched {eventbrite_count} REAL events from Eventbrite for {city_name}")
+                            if foursquare_count > 0:
+                                logger.info(f"Successfully fetched {foursquare_count} REAL activities from Foursquare for {city_name}")
+                            if fallback_count > 0:
+                                logger.warning(f"Using {fallback_count} FALLBACK activities for {city_name} - Some APIs returned no real data")
                                 
                         except Exception as e:
                             logger.warning(f"Combined API calls failed for {city_name}: {e}")
