@@ -39,18 +39,37 @@ class Database:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     email TEXT UNIQUE NOT NULL,
                     username TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    salt TEXT NOT NULL,
+                    password_hash TEXT,
+                    salt TEXT,
                     first_name TEXT,
                     last_name TEXT,
                     profile_image TEXT,
                     travel_preferences TEXT, -- JSON
+                    oauth_provider TEXT, -- 'google', 'facebook', etc.
+                    oauth_id TEXT, -- OAuth provider user ID
+                    profile_picture TEXT, -- OAuth profile picture URL
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_login TIMESTAMP,
                     is_active BOOLEAN DEFAULT 1,
                     email_verified BOOLEAN DEFAULT 0
                 )
             ''')
+            
+            # Add OAuth columns to existing users table if they don't exist
+            try:
+                conn.execute('ALTER TABLE users ADD COLUMN oauth_provider TEXT')
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+            
+            try:
+                conn.execute('ALTER TABLE users ADD COLUMN oauth_id TEXT')
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+                
+            try:
+                conn.execute('ALTER TABLE users ADD COLUMN profile_picture TEXT')
+            except sqlite3.OperationalError:
+                pass  # Column already exists
             
             # User sessions table
             conn.execute('''
@@ -176,17 +195,25 @@ class UserManager:
         password_hash, _ = self.hash_password(password, salt)
         return password_hash == hash_hex
     
-    def create_user(self, email: str, username: str, password: str, 
-                   first_name: str = None, last_name: str = None) -> Optional[int]:
+    def create_user(self, email: str, username: str, password: str = None, 
+                   first_name: str = None, last_name: str = None,
+                   oauth_provider: str = None, oauth_id: str = None,
+                   profile_picture: str = None) -> Optional[int]:
         """Create a new user account."""
         try:
-            password_hash, salt = self.hash_password(password)
+            # Hash password only for regular users (not OAuth)
+            if password:
+                password_hash, salt = self.hash_password(password)
+            else:
+                password_hash, salt = None, None
             
             with self.db.get_connection() as conn:
                 cursor = conn.execute('''
-                    INSERT INTO users (email, username, password_hash, salt, first_name, last_name)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (email, username, password_hash, salt, first_name, last_name))
+                    INSERT INTO users (email, username, password_hash, salt, first_name, last_name,
+                                     oauth_provider, oauth_id, profile_picture)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (email, username, password_hash, salt, first_name, last_name,
+                      oauth_provider, oauth_id, profile_picture))
                 
                 user_id = cursor.lastrowid
                 
@@ -221,6 +248,32 @@ class UserManager:
                 return dict(user)
         
         return None
+    
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        """Get user by email."""
+        with self.db.get_connection() as conn:
+            user = conn.execute('''
+                SELECT * FROM users WHERE email = ? AND is_active = 1
+            ''', (email,)).fetchone()
+            
+            return dict(user) if user else None
+    
+    def get_user_by_username(self, username: str) -> Optional[Dict]:
+        """Get user by username."""
+        with self.db.get_connection() as conn:
+            user = conn.execute('''
+                SELECT * FROM users WHERE username = ? AND is_active = 1
+            ''', (username,)).fetchone()
+            
+            return dict(user) if user else None
+    
+    def update_last_login(self, user_id: int):
+        """Update user's last login timestamp."""
+        with self.db.get_connection() as conn:
+            conn.execute('''
+                UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?
+            ''', (user_id,))
+            conn.commit()
     
     def create_session(self, user_id: int) -> str:
         """Create a new user session."""

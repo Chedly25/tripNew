@@ -4,6 +4,10 @@ Authentication routes for user registration, login, and profile management.
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, session, flash
 from functools import wraps
 import re
+import os
+import secrets
+import requests
+from urllib.parse import urlencode
 from typing import Optional, Dict
 import structlog
 from ..core.database import get_user_manager, get_trip_manager
@@ -294,3 +298,184 @@ def delete_trip(trip_id):
         })
     else:
         return jsonify({'error': 'Trip not found or permission denied'}), 404
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid_configuration"
+
+def get_google_provider_cfg():
+    """Get Google OAuth provider configuration."""
+    try:
+        response = requests.get(GOOGLE_DISCOVERY_URL)
+        return response.json()
+    except:
+        return {
+            "authorization_endpoint": "https://accounts.google.com/o/oauth2/auth",
+            "token_endpoint": "https://oauth2.googleapis.com/token",
+            "userinfo_endpoint": "https://openidconnect.googleapis.com/v1/userinfo"
+        }
+
+@auth_bp.route('/google')
+def google_login():
+    """Initiate Google OAuth login."""
+    if not GOOGLE_CLIENT_ID:
+        flash('Google OAuth is not configured. Please use regular login.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    # Find out what URL to hit for Google login
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+    
+    # Generate state token for security
+    state = secrets.token_urlsafe(32)
+    session['oauth_state'] = state
+    
+    # Use library to construct the request for Google login and provide
+    # scopes that let you retrieve user's profile from Google
+    request_uri = authorization_endpoint + "?" + urlencode({
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": request.url_root + "auth/google/callback",
+        "scope": "openid email profile",
+        "state": state,
+        "response_type": "code",
+    })
+    
+    return redirect(request_uri)
+
+@auth_bp.route('/google/callback')
+def google_callback():
+    """Handle Google OAuth callback."""
+    if not GOOGLE_CLIENT_ID:
+        flash('Google OAuth is not configured.', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Verify state token
+    if request.args.get('state') != session.get('oauth_state'):
+        flash('Invalid state token. Please try again.', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Get authorization code Google sent back
+    code = request.args.get("code")
+    if not code:
+        flash('Authorization denied by Google.', 'error')
+        return redirect(url_for('auth.login'))
+    
+    try:
+        # Find out what URL to hit to get tokens that allow you to ask for
+        # things on behalf of a user
+        google_provider_cfg = get_google_provider_cfg()
+        token_endpoint = google_provider_cfg["token_endpoint"]
+        
+        # Prepare and send request to get tokens
+        token_url, headers, body = prepare_token_request(
+            token_endpoint,
+            authorization_response=request.url,
+            redirect_url=request.url_root + "auth/google/callback",
+            code=code,
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET
+        )
+        
+        token_response = requests.post(
+            token_url,
+            headers=headers,
+            data=body,
+            auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+        )
+        
+        # Parse the tokens
+        tokens = token_response.json()
+        
+        if 'access_token' not in tokens:
+            raise Exception("Failed to get access token")
+        
+        # Now that you have tokens, find and hit the URL
+        # from Google that gives you the user's profile information,
+        # including their Google profile image and email
+        userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+        uri, headers, body = add_token_to_request(userinfo_endpoint, tokens["access_token"])
+        
+        userinfo_response = requests.get(uri, headers=headers, data=body)
+        
+        if userinfo_response.status_code != 200:
+            raise Exception("Failed to get user info")
+        
+        userinfo = userinfo_response.json()
+        
+        # Extract user information
+        google_id = userinfo["sub"]
+        email = userinfo["email"]
+        name = userinfo.get("name", "")
+        given_name = userinfo.get("given_name", "")
+        family_name = userinfo.get("family_name", "")
+        picture = userinfo.get("picture", "")
+        
+        # Create or get user
+        user_manager = get_user_manager()
+        
+        # Check if user exists with this email
+        existing_user = user_manager.get_user_by_email(email)
+        
+        if existing_user:
+            # User exists, log them in
+            user_id = existing_user['id']
+            username = existing_user['username']
+            user_manager.update_last_login(user_id)
+        else:
+            # Create new user
+            # Generate username from email or name
+            username = email.split('@')[0]
+            if user_manager.get_user_by_username(username):
+                username = f"{username}_{secrets.token_hex(4)}"
+            
+            # Create user with Google OAuth info
+            user_id = user_manager.create_user(
+                email=email,
+                username=username,
+                password=None,  # No password for OAuth users
+                first_name=given_name,
+                last_name=family_name,
+                oauth_provider='google',
+                oauth_id=google_id,
+                profile_picture=picture
+            )
+            
+            if not user_id:
+                flash('Failed to create user account. Please try again.', 'error')
+                return redirect(url_for('auth.login'))
+        
+        # Create session
+        session_token = user_manager.create_session(user_id)
+        session['user_id'] = user_id
+        session['username'] = username
+        session['session_token'] = session_token
+        
+        # Clean up OAuth session data
+        session.pop('oauth_state', None)
+        
+        logger.info(f"User logged in via Google OAuth: {username}")
+        flash(f'Welcome back, {given_name or username}!', 'success')
+        return redirect(url_for('index'))
+        
+    except Exception as e:
+        logger.error(f"Google OAuth error: {e}")
+        flash('Login with Google failed. Please try again or use regular login.', 'error')
+        return redirect(url_for('auth.login'))
+
+def prepare_token_request(token_url, authorization_response, redirect_url, code, client_id, client_secret):
+    """Prepare token request (simplified OAuth2 implementation)."""
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}
+    body = urlencode({
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': redirect_url,
+        'client_id': client_id,
+        'client_secret': client_secret,
+    })
+    return token_url, headers, body
+
+def add_token_to_request(uri, token):
+    """Add token to request (simplified OAuth2 implementation)."""
+    headers = {'Authorization': f'Bearer {token}'}
+    return uri, headers, None

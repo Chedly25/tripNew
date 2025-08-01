@@ -931,36 +931,15 @@
                 const data = await response.json();
                 
                 if (data.success && data.destinations) {
-                    let message = '🤖 AI Analysis Results:\n\n';
-                    message += `Based on your photo, here are similar European destinations:\n\n`;
-                    
-                    if (Array.isArray(data.destinations)) {
-                        data.destinations.forEach((dest, index) => {
-                            if (typeof dest === 'string') {
-                                message += `${index + 1}. ${dest}\n`;
-                            } else {
-                                message += `${index + 1}. ${dest.destination || dest.name}, ${dest.country || 'Europe'}\n`;
-                                if (dest.best_time_to_visit) {
-                                    message += `   Best time: ${dest.best_time_to_visit}\n`;
-                                }
-                                if (dest.highlights && Array.isArray(dest.highlights)) {
-                                    message += `   Highlights: ${dest.highlights.join(', ')}\n`;
-                                }
-                                message += '\n';
-                            }
-                        });
-                    } else {
-                        message += data.destinations;
-                    }
-                    
-                    alert(message);
+                    // Show results in a beautiful modal instead of alert
+                    showPhotoAnalysisResults(data.destinations);
                 } else {
-                    alert('AI photo analysis failed. Please try uploading a clearer image of a travel destination.');
+                    showErrorModal('AI photo analysis failed. Please try uploading a clearer image of a travel destination.');
                 }
                 
             } catch (error) {
                 console.error('Photo analysis error:', error);
-                alert('Photo analysis service is currently unavailable. Please try again later.');
+                showErrorModal('Photo analysis service is currently unavailable. Please try again later.');
             } finally {
                 // Reset UI state
                 document.querySelector('.photo-upload p').textContent = originalText;
@@ -1017,6 +996,422 @@
                 }
             });
         });
+        
+        // Photo Analysis Results Modal Functions
+        function showPhotoAnalysisResults(destinations) {
+            let destinationsHtml = '';
+            
+            if (Array.isArray(destinations)) {
+                destinations.forEach((dest, index) => {
+                    if (typeof dest === 'string') {
+                        destinationsHtml += `
+                            <div class="destination-card">
+                                <div class="destination-name">${dest}</div>
+                                <div class="destination-actions">
+                                    <button class="btn-create-trip" onclick="createTripFromDestination('${dest}', 'Europe')">
+                                        <i class="fas fa-route"></i> Plan Trip Here
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        const confidence = dest.image_match_confidence || 'medium';
+                        const reasons = dest.similarity_reasons ? dest.similarity_reasons.join(', ') : 'Similar visual features';
+                        
+                        destinationsHtml += `
+                            <div class="destination-card ${confidence}-confidence">
+                                <div class="destination-header">
+                                    <div class="destination-name">${dest.destination || dest.name}</div>
+                                    <div class="destination-country">${dest.country || 'Europe'}</div>
+                                    <div class="confidence-badge confidence-${confidence}">${confidence} match</div>
+                                </div>
+                                <div class="destination-details">
+                                    <div class="similarity-reasons">
+                                        <strong>Why it matches:</strong> ${reasons}
+                                    </div>
+                                    ${dest.best_time_to_visit ? `<div class="best-time"><strong>Best time:</strong> ${dest.best_time_to_visit}</div>` : ''}
+                                    ${dest.highlights && dest.highlights.length ? `<div class="highlights"><strong>Highlights:</strong> ${dest.highlights.join(', ')}</div>` : ''}
+                                </div>
+                                <div class="destination-actions">
+                                    <button class="btn-create-trip" onclick="createTripFromDestination('${dest.destination || dest.name}', '${dest.country || 'Europe'}')">
+                                        <i class="fas fa-route"></i> Plan Trip to ${dest.destination || dest.name}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                destinationsHtml = `<div class="destination-card"><div class="destination-name">${destinations}</div></div>`;
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'photo-analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-camera"></i> AI Photo Analysis Results</h2>
+                        <button class="modal-close" onclick="closeModal(this)">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="analysis-intro">Based on your photo, here are similar European destinations you might love:</p>
+                        <div class="destinations-grid">
+                            ${destinationsHtml}
+                        </div>
+                        <div class="create-custom-trip">
+                            <button class="btn-custom-trip" onclick="createCustomTrip()">
+                                <i class="fas fa-magic"></i> Create Custom Trip with All Destinations
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Store destinations for custom trip creation
+            window.photoAnalysisDestinations = destinations;
+        }
+        
+        function showErrorModal(message) {
+            const modal = document.createElement('div');
+            modal.className = 'photo-analysis-modal error-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-exclamation-triangle"></i> Analysis Failed</h2>
+                        <button class="modal-close" onclick="closeModal(this)">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>${message}</p>
+                        <button class="btn btn-primary" onclick="closeModal(this)">Try Again</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function closeModal(element) {
+            const modal = element.closest('.photo-analysis-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Trip Creation Functions
+        function createTripFromDestination(destination, country) {
+            // Use user's current location or a default European city as start
+            const startLocation = 'Paris, France'; // Could be improved to detect user location
+            const endLocation = `${destination}, ${country}`;
+            
+            // Fill the form and submit
+            document.getElementById('startLocation').value = startLocation;
+            document.getElementById('endLocation').value = endLocation;
+            
+            // Close modal
+            const modal = document.querySelector('.photo-analysis-modal');
+            if (modal) modal.remove();
+            
+            // Smooth scroll to form
+            document.getElementById('tripPlannerForm').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // Highlight the form briefly
+            const form = document.getElementById('tripPlannerForm');
+            form.style.background = 'rgba(99, 102, 241, 0.1)';
+            form.style.borderRadius = '20px';
+            form.style.padding = '2rem';
+            form.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+                form.style.background = '';
+                form.style.padding = '';
+            }, 3000);
+        }
+        
+        function createCustomTrip() {
+            if (!window.photoAnalysisDestinations || !Array.isArray(window.photoAnalysisDestinations)) {
+                return;
+            }
+            
+            // Take top 3 destinations and create a multi-city trip
+            const top3 = window.photoAnalysisDestinations.slice(0, 3);
+            const startLocation = 'Paris, France'; // Could be improved
+            const endDestination = top3[top3.length - 1];
+            const endLocation = typeof endDestination === 'string' ? 
+                endDestination : 
+                `${endDestination.destination || endDestination.name}, ${endDestination.country || 'Europe'}`;
+            
+            // Fill the form
+            document.getElementById('startLocation').value = startLocation;
+            document.getElementById('endLocation').value = endLocation;
+            
+            // Close modal
+            const modal = document.querySelector('.photo-analysis-modal');
+            if (modal) modal.remove();
+            
+            // Show message about the custom route
+            const customMessage = document.createElement('div');
+            customMessage.className = 'custom-trip-message';
+            customMessage.innerHTML = `
+                <div class="message-content">
+                    <i class="fas fa-magic"></i>
+                    <span>Creating a custom route through ${top3.length} destinations based on your photo!</span>
+                    <button onclick="this.parentElement.parentElement.remove()">&times;</button>
+                </div>
+            `;
+            
+            document.body.appendChild(customMessage);
+            
+            setTimeout(() => {
+                if (customMessage.parentElement) {
+                    customMessage.remove();
+                }
+            }, 5000);
+            
+            // Scroll to form
+            document.getElementById('tripPlannerForm').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
     </script>
+    
+    <style>
+        /* Photo Analysis Modal Styles */
+        .photo-analysis-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 2rem;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #6366f1;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .modal-close:hover {
+            color: #ef4444;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .analysis-intro {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        
+        .destinations-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .destination-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border-left: 4px solid #6366f1;
+            transition: all 0.3s ease;
+        }
+        
+        .destination-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+        }
+        
+        .destination-card.high-confidence {
+            border-left-color: #10b981;
+        }
+        
+        .destination-card.medium-confidence {
+            border-left-color: #f59e0b;
+        }
+        
+        .destination-card.low-confidence {
+            border-left-color: #6b7280;
+        }
+        
+        .destination-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .destination-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .destination-country {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .confidence-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .confidence-high {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .confidence-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .confidence-low {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .destination-details {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .destination-details > div {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+        
+        .destination-actions {
+            text-align: center;
+        }
+        
+        .btn-create-trip, .btn-custom-trip {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-create-trip:hover, .btn-custom-trip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-custom-trip {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+        }
+        
+        .create-custom-trip {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 16px;
+        }
+        
+        .custom-trip-message {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10001;
+            max-width: 400px;
+        }
+        
+        .message-content {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        }
+        
+        .message-content button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .photo-analysis-modal {
+                padding: 1rem;
+            }
+            
+            .modal-header, .modal-body {
+                padding: 1rem;
+            }
+            
+            .destinations-grid {
+                gap: 1rem;
+            }
+            
+            .destination-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
 </body>
 </html>
