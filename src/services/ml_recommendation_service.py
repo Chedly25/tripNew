@@ -3,7 +3,6 @@ ML-based trip recommendation service using collaborative filtering and content-b
 """
 import json
 import math
-import random
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass

@@ -80,4 +80,4 @@ node_modules/
 .ipynb_checkpoints
 
 # Local development
-local_settings.py
+local_settings.pytrip/

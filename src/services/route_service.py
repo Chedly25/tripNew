@@ -48,9 +48,29 @@ class ProductionRouteService(RouteService):
         if len(cities) < 2:
             return ServiceResult.error_result("Need at least 2 cities")
         
+        # Debug: Log city coordinates
+        logger.info(f"Optimizing route through {len(cities)} cities:")
+        for i, city in enumerate(cities):
+            coords_info = "NO COORDS"
+            if city.coordinates:
+                if city.coordinates.latitude is not None and city.coordinates.longitude is not None:
+                    coords_info = f"({city.coordinates.latitude}, {city.coordinates.longitude})"
+                else:
+                    coords_info = f"(lat={city.coordinates.latitude}, lon={city.coordinates.longitude})"
+            logger.info(f"  {i+1}. {city.name} - {coords_info}")
+        
+        # Filter out cities with invalid coordinates
+        valid_cities = []
+        for city in cities:
+            if city.coordinates and city.coordinates.latitude is not None and city.coordinates.longitude is not None:
+                valid_cities.append(city)
+        
+        if len(valid_cities) < 2:
+            return ServiceResult.error_result("Need at least 2 cities with valid coordinates")
+        
         try:
             # Use nearest neighbor algorithm for TSP approximation
-            optimized_order = self._nearest_neighbor_tsp(cities)
+            optimized_order = self._nearest_neighbor_tsp(valid_cities)
             
             # Calculate segments for optimized route
             segments = []
@@ -113,6 +133,15 @@ class ProductionRouteService(RouteService):
         total_duration = 0
         
         for i in range(len(all_cities) - 1):
+            # Check for valid coordinates
+            if (not all_cities[i].coordinates or 
+                all_cities[i].coordinates.latitude is None or 
+                all_cities[i].coordinates.longitude is None or
+                not all_cities[i + 1].coordinates or 
+                all_cities[i + 1].coordinates.latitude is None or 
+                all_cities[i + 1].coordinates.longitude is None):
+                continue
+                
             distance = geodesic(
                 (all_cities[i].coordinates.latitude, all_cities[i].coordinates.longitude),
                 (all_cities[i + 1].coordinates.latitude, all_cities[i + 1].coordinates.longitude)
@@ -136,12 +165,34 @@ class ProductionRouteService(RouteService):
         if not cities:
             return []
         
+        # Ensure the starting city has valid coordinates
+        if not cities[0].coordinates or cities[0].coordinates.latitude is None or cities[0].coordinates.longitude is None:
+            logger.warning(f"Starting city {cities[0].name} has invalid coordinates, skipping TSP")
+            return cities  # Return original order if first city has no coordinates
+        
         unvisited = cities[1:]  # Start with first city
         route = [cities[0]]
         current = cities[0]
         
         while unvisited:
-            nearest = min(unvisited, key=lambda c: geodesic(
+            # Ensure current city has valid coordinates
+            if not current.coordinates or current.coordinates.latitude is None or current.coordinates.longitude is None:
+                logger.warning(f"Current city {current.name} has invalid coordinates, stopping TSP")
+                # Add remaining cities to route without optimization
+                route.extend(unvisited)
+                break
+            
+            # Filter cities with valid coordinates for comparison
+            valid_unvisited = [c for c in unvisited if c.coordinates and 
+                             c.coordinates.latitude is not None and 
+                             c.coordinates.longitude is not None]
+            
+            if not valid_unvisited:
+                # Add remaining cities (even with invalid coordinates) to preserve route
+                route.extend(unvisited)
+                break
+                
+            nearest = min(valid_unvisited, key=lambda c: geodesic(
                 (current.coordinates.latitude, current.coordinates.longitude),
                 (c.coordinates.latitude, c.coordinates.longitude)
             ).kilometers)

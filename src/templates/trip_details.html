@@ -707,7 +707,12 @@
                         availableRestaurants = restaurants;
                     }
                     
-                    const restaurant = availableRestaurants[Math.floor(Math.random() * availableRestaurants.length)];
+                    // Select best available restaurant by rating
+                    const restaurant = availableRestaurants.reduce((best, current) => {
+                        const bestRating = best.rating || 0;
+                        const currentRating = current.rating || 0;
+                        return currentRating > bestRating ? current : best;
+                    });
                     usedRestaurants.add(restaurant.name);
                     return restaurant.name;
                 }
@@ -728,7 +733,12 @@
                         availableAttractions = activities;
                     }
                     
-                    const attraction = availableAttractions[Math.floor(Math.random() * availableAttractions.length)];
+                    // Select best available attraction by rating
+                    const attraction = availableAttractions.reduce((best, current) => {
+                        const bestRating = best.rating || 0;
+                        const currentRating = current.rating || 0;
+                        return currentRating > bestRating ? current : best;
+                    });
                     usedAttractions.add(attraction.name);
                     return attraction.name;
                 }

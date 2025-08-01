@@ -1151,6 +1151,907 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Route Selection UI Styles */
+        .route-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .route-option-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-radius: 20px;
+            border: 2px solid var(--glass-border);
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .route-option-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-blue);
+            box-shadow: 0 10px 40px rgba(102, 204, 255, 0.3);
+        }
+
+        .route-option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--bright-cyan));
+        }
+
+        .route-option-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .route-option-header i {
+            font-size: 2rem;
+            color: var(--electric-blue);
+        }
+
+        .route-option-header h3 {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+        }
+
+        .route-type-badge {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .route-option-details {
+            margin-bottom: 2rem;
+        }
+
+        .route-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .route-highlights h4,
+        .route-cities h4 {
+            color: var(--bright-cyan);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .route-highlights ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .route-highlights li {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            padding: 0.2rem 0;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .route-highlights li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+        }
+
+        .cities-list {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .city-name {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .cities-list i {
+            color: var(--electric-blue);
+            font-size: 0.8rem;
+        }
+
+        .route-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .route-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .route-stats .stat i {
+            color: var(--bright-cyan);
+        }
+
+        .route-option-action {
+            text-align: center;
+        }
+
+        .select-route-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+        }
+
+        .select-route-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 204, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--electric-blue);
+        }
+
+        @media (max-width: 768px) {
+            .route-selection-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .route-option-card {
+                padding: 1.5rem;
+            }
+            
+            .route-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Route Selection Cards CSS */
+        .route-selection-card {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .route-selection-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--coastal-mint), var(--tuscan-gold), var(--sunset-orange));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .route-selection-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .route-selection-card:hover::before {
+            opacity: 1;
+        }
+
+        .route-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .route-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .route-card-title i {
+            color: var(--coastal-mint);
+            font-size: 1.5rem;
+        }
+
+        .route-card-title h3 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .route-card-badge {
+            background: linear-gradient(135deg, var(--sunset-orange), var(--coral-pink));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .route-card-description {
+            margin-bottom: 1.5rem;
+        }
+
+        .route-card-description p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .route-card-highlights {
+            margin-bottom: 1.5rem;
+        }
+
+        .route-card-highlights h4 {
+            color: white;
+            font-size: 1.1rem;
+            margin: 0 0 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .route-card-highlights i {
+            color: var(--tuscan-gold);
+        }
+
+        .highlights-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .highlight-tag {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .route-card-cities {
+            margin-bottom: 1.5rem;
+        }
+
+        .route-card-cities h4 {
+            color: white;
+            font-size: 1.1rem;
+            margin: 0 0 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .route-card-cities i {
+            color: var(--coastal-mint);
+        }
+
+        .cities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .city-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .city-number {
+            background: var(--tuscan-gold);
+            color: var(--midnight-navy);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .city-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .city-name {
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .city-country {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+
+        .route-card-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .route-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .route-stat i {
+            color: var(--coastal-mint);
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .route-stat span {
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .route-card-ideal-for {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid var(--sunset-orange);
+        }
+
+        .route-card-ideal-for p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .route-card-ideal-for i {
+            color: var(--coral-pink);
+            margin-right: 0.5rem;
+        }
+
+        .route-card-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .route-select-btn, .route-save-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .route-select-btn {
+            background: linear-gradient(135deg, var(--coastal-mint), var(--tuscan-gold));
+            color: var(--midnight-navy);
+        }
+
+        .route-select-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(6, 255, 165, 0.3);
+        }
+
+        .route-save-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .route-save-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Detailed Route View CSS */
+        .route-details-container {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        .route-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+
+        .back-to-routes-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-to-routes-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .detailed-route-card {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detailed-route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .route-title-section h2 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .route-title-section .route-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .route-overview-section {
+            margin-bottom: 2rem;
+        }
+
+        .route-map-section {
+            margin-bottom: 2rem;
+        }
+
+        .route-map-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .route-map-detailed {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Day-by-day section - make it more prominent */
+        .day-by-day-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .day-by-day-section h3 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(6, 255, 165, 0.3);
+        }
+
+        .day-by-day-section h3 i {
+            color: var(--coastal-mint);
+            font-size: 1.5rem;
+        }
+
+        .travel-toolkit-section {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .travel-toolkit-section h3 {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .travel-toolkit-section h3:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .travel-toolkit-section h3 i {
+            color: rgba(255, 210, 63, 0.6);
+        }
+
+        .travel-toolkit-section h3::after {
+            content: '▼';
+            margin-left: auto;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .travel-toolkit-section.collapsed h3::after {
+            transform: rotate(-90deg);
+        }
+
+        .travel-toolkit-section .toolkit-grid {
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
+        }
+
+        .travel-toolkit-section.collapsed .toolkit-grid {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .toolkit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+        }
+
+        /* Modal Styles */
+        .route-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        .route-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .route-modal-content {
+            position: relative;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        .route-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 2.5rem;
+            background: linear-gradient(135deg, var(--coastal-mint), var(--tuscan-gold));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .route-modal-header h2 {
+            color: var(--midnight-navy);
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .route-modal-header h2 i {
+            margin-right: 0.5rem;
+        }
+
+        .route-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: var(--midnight-navy);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .route-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .route-modal-body {
+            padding: 0;
+            max-height: calc(90vh - 100px);
+            overflow-y: auto;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.9) translateY(50px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .route-modal-content {
+                width: 98%;
+                max-height: 95vh;
+                margin: 1rem;
+            }
+            
+            .route-modal-header {
+                padding: 1.5rem;
+            }
+            
+            .route-modal-header h2 {
+                font-size: 1.4rem;
+            }
+        }
+
+        .toolkit-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toolkit-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .toolkit-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            opacity: 0.8;
+        }
+
+        .toolkit-info {
+            flex: 1;
+        }
+
+        .toolkit-title {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+            margin-bottom: 0.125rem;
+            font-size: 0.9rem;
+        }
+
+        .toolkit-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+        }
+
+        /* Enhanced daily program styling */
+        .daily-program {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .day-item.detailed {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .day-item.detailed:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .day-item.detailed .day-header h4 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-item.detailed .day-location {
+            color: var(--coastal-mint);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .day-item.detailed .activity-item.detailed {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .day-item.detailed .activity-time {
+            background: var(--tuscan-gold);
+            color: var(--midnight-navy);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .day-item.detailed .activity-content {
+            flex: 1;
+        }
+
+        .day-item.detailed .activity-name {
+            color: white;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .day-item.detailed .activity-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .day-item.detailed .activity-duration {
+            color: var(--coral-pink);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .day-item.detailed .day-accommodation {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--sunset-orange);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -1174,32 +2075,34 @@
             Plan Another Adventure
         </a>
 
-        <!-- Premium Travel Assistant -->
-        <div class="travel-assistant-section">
-            <div class="assistant-hero">
-                <!-- Decorative travel elements -->
-                <div class="travel-decoration plane">
-                    <i class="fas fa-plane"></i>
-                </div>
-                <div class="travel-decoration car">
-                    <i class="fas fa-car-side"></i>
-                </div>
-                <div class="travel-decoration compass">
-                    <i class="fas fa-compass"></i>
-                </div>
-                
-                <div class="hero-content">
-                    <h2>
-                        <span class="gradient-text">🎒 Your Travel Toolkit</span>
-                    </h2>
-                    <p class="hero-subtitle">Enhance your journey with premium travel features</p>
-                    <div class="hero-cta">
-                        <small>✨ Click any card to explore advanced features</small>
+        
+        <!-- ML Recommendations Section -->
+        <div id="ml-recommendations" style="margin-bottom: 3rem; display: none;">
+            <div style="background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 25px; 
+                        border: 1px solid var(--glass-border); padding: 2.5rem; box-shadow: var(--glass-shadow);">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: var(--accent-gradient); border-radius: 50%; width: 60px; height: 60px; 
+                                display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-brain" style="color: var(--midnight-navy); font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="color: white; margin: 0; font-size: 1.5rem;">🤖 AI-Powered Recommendations</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0;">
+                            Personalized suggestions based on your preferences and travel patterns
+                        </p>
                     </div>
                 </div>
+                <div id="ml-recommendations-list"></div>
             </div>
+        </div>
 
-            <!-- Feature Grid -->
+        <!-- Trip Itineraries Section -->
+        <div id="itineraries-container">
+            <!-- Itineraries will be loaded here by JavaScript -->
+        </div>
+
+        <!-- Travel Features Section -->
+        <div class="travel-features-wrapper" style="margin: 3rem 0;">
             <div class="features-grid">
                 <!-- Budget Tracker Card -->
                 <div class="feature-card budget-card" onclick="openBudgetModal()">
@@ -1327,31 +2230,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- ML Recommendations Section -->
-        <div id="ml-recommendations" style="margin-bottom: 3rem; display: none;">
-            <div style="background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 25px; 
-                        border: 1px solid var(--glass-border); padding: 2.5rem; box-shadow: var(--glass-shadow);">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="background: var(--accent-gradient); border-radius: 50%; width: 60px; height: 60px; 
-                                display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-brain" style="color: var(--midnight-navy); font-size: 1.5rem;"></i>
-                    </div>
-                    <div>
-                        <h3 style="color: white; margin: 0; font-size: 1.5rem;">🤖 AI-Powered Recommendations</h3>
-                        <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0;">
-                            Personalized suggestions based on your preferences and travel patterns
-                        </p>
-                    </div>
-                </div>
-                <div id="ml-recommendations-list"></div>
-            </div>
-        </div>
-
-        <!-- Trip Itineraries Section -->
-        <div id="itineraries-container">
-            <!-- Itineraries will be loaded here by JavaScript -->
-        </div>
     </div>
 
     <!-- Scripts -->
@@ -1439,6 +2317,21 @@
                 toast.classList.remove('show');
                 setTimeout(() => document.body.removeChild(toast), 300);
             }, 3000);
+        }
+
+        // Calculate realistic drive time based on European distances
+        function calculateDriveTime(currentDay, totalDays) {
+            // Use data from route if available, otherwise estimate based on typical European routes
+            if (window.routeData && window.routeData.segments && window.routeData.segments[currentDay - 1]) {
+                const segment = window.routeData.segments[currentDay - 1];
+                return Math.round(segment.duration || 3);
+            }
+            
+            // Fallback: estimate based on trip length and position
+            const progressRatio = currentDay / totalDays;
+            if (progressRatio < 0.3) return 3; // Shorter drives at start
+            if (progressRatio > 0.7) return 2; // Shorter drives at end
+            return 4; // Longer drives in middle
         }
 
         // Initialize page
@@ -1695,7 +2588,7 @@
             // In a full implementation, this would modify the active route
         }
 
-        // Load and display itineraries
+        // Phase 1: Load and display route selection cards
         function loadItineraries() {
             const container = document.getElementById('itineraries-container');
             const routeSummary = document.getElementById('route-summary');
@@ -1710,14 +2603,14 @@
                 }
             }
             
-            const itineraries = data.data ? data.data.routes || [] : [];
+            const routes = data.data ? data.data.routes || [] : [];
             
-            if (itineraries.length === 0) {
+            if (routes.length === 0) {
                 container.innerHTML = `
-                    <div class="itinerary-card" style="text-align: center; padding: 4rem 2rem;">
+                    <div class="route-selection-card" style="text-align: center; padding: 4rem 2rem;">
                         <h3 style="color: white; margin-bottom: 1rem;">🗺️ No Trip Results Available</h3>
                         <p style="color: rgba(255,255,255,0.8); margin-bottom: 2rem;">
-                            Please go back and plan a new adventure to see your custom itineraries here.
+                            Please go back and plan a new adventure to see your custom routes here.
                         </p>
                         <a href="/" class="btn" style="text-decoration: none;">
                             <i class="fas fa-arrow-left"></i>
@@ -1728,124 +2621,220 @@
                 return;
             }
 
-            // Update summary
-            routeSummary.textContent = `${itineraries.length} amazing itineraries crafted just for you`;
+            // Update summary for route selection phase
+            routeSummary.textContent = `Choose from ${routes.length} expertly crafted route${routes.length > 1 ? 's' : ''} for your journey`;
 
-            // Display each itinerary with superior layout
-            container.innerHTML = itineraries.map((itinerary, index) => `
-                <div class="itinerary-card">
-                    <!-- Route Header -->
-                    <div class="route-header">
-                        <div>
-                            <h2 class="route-title">
-                                <i class="fas fa-${getRouteIcon(itinerary.route_type)}"></i>
-                                Route ${index + 1}: ${itinerary.start_city?.name || 'Start'} → ${itinerary.end_city?.name || 'Destination'}
-                            </h2>
-                            <div class="route-type-badge">${itinerary.route_type}</div>
+            // Display route selection cards
+            container.innerHTML = routes.map((route, index) => `
+                <div class="route-selection-card" data-route-index="${index}">
+                    <div class="route-card-header">
+                        <div class="route-card-title">
+                            <i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i>
+                            <h3>${route.name || `${route.route_type || 'Custom'} Route`}</h3>
                         </div>
-                        <div class="route-actions">
-                            <a href="#" class="action-btn" onclick="selectRoute(${index})">
-                                <i class="fas fa-eye"></i> View Details
-                            </a>
-                            <a href="#" class="action-btn" onclick="saveRoute(${index})">
-                                <i class="fas fa-heart"></i> Save Route
-                            </a>
+                        <div class="route-card-badge">${route.route_type || 'custom'}</div>
+                    </div>
+                    
+                    <div class="route-card-description">
+                        <p>${route.description || 'A carefully planned route through beautiful European destinations.'}</p>
+                    </div>
+                    
+                    <div class="route-card-highlights">
+                        <h4><i class="fas fa-star"></i> Highlights</h4>
+                        <div class="highlights-grid">
+                            ${(route.highlights || ['Scenic views', 'Local culture', 'Great food', 'Historic sites']).map(highlight => 
+                                `<span class="highlight-tag">${highlight}</span>`
+                            ).join('')}
                         </div>
                     </div>
                     
-                    <!-- Top Section: Trip Overview + Small Map -->
-                    <div class="trip-overview-section">
-                        <!-- Left: Trip Overview -->
-                        <div class="trip-overview">
-                            <h3><i class="fas fa-info-circle"></i> Trip Overview</h3>
-                            <div class="overview-stats">
-                                <div class="stat-item">
-                                    <div class="stat-value">${Math.round(itinerary.total_distance || 700)} km</div>
-                                    <div class="stat-label">Total Distance</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${Math.round((itinerary.total_duration || 525) / 60)} hrs</div>
-                                    <div class="stat-label">Driving Time</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">€${Math.round(itinerary.estimated_fuel_cost || 73)}</div>
-                                    <div class="stat-label">Fuel Cost</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${(itinerary.intermediate_cities?.length || 0) + 2}</div>
-                                    <div class="stat-label">Cities</div>
-                                </div>
-                            </div>
-                            
-                            <div class="trip-highlights">
-                                <h4><i class="fas fa-star"></i> Trip Highlights</h4>
-                                <ul>
-                                    <li><i class="fas fa-map-marker-alt"></i> Scenic Mediterranean coastal route</li>
-                                    <li><i class="fas fa-camera"></i> Instagram-worthy stops in French Riviera</li>
-                                    <li><i class="fas fa-utensils"></i> Authentic Italian cuisine experiences</li>
-                                    <li><i class="fas fa-building"></i> Historic architecture and culture</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <!-- Right: Small Map with Trajectory -->
-                        <div class="compact-map">
-                            <h3><i class="fas fa-route"></i> Your Route</h3>
-                            <div class="route-map-small" id="map-${index}"></div>
+                    <div class="route-card-cities">
+                        <h4><i class="fas fa-map-marker-alt"></i> Cities You'll Visit</h4>
+                        <div class="cities-list">
+                            ${generateCitiesList(route)}
                         </div>
                     </div>
                     
-                    <!-- Day by Day Program Section -->
-                    <div class="day-by-day-section">
-                        <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
-                        <div class="daily-program">
-                            ${generateDayByDayProgram(itinerary, index)}
+                    <div class="route-card-stats">
+                        <div class="route-stat">
+                            <i class="fas fa-road"></i>
+                            <span>${Math.round(route.total_distance_km || 700)} km</span>
+                        </div>
+                        <div class="route-stat">
+                            <i class="fas fa-clock"></i>
+                            <span>${Math.round(route.total_duration_hours || 8.5)} hrs</span>
+                        </div>
+                        <div class="route-stat">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>${(route.intermediate_cities?.length || 2) + 2} cities</span>
+                        </div>
+                        <div class="route-stat">
+                            <i class="fas fa-euro-sign"></i>
+                            <span>${route.estimated_cost?.total_estimate || '450-650'}</span>
                         </div>
                     </div>
                     
-                    <!-- Advanced Features Section -->
-                    <div class="advanced-features-section">
-                        <h3><i class="fas fa-tools"></i> Advanced Planning Tools</h3>
-                        <div class="features-grid-compact">
-                            <div class="feature-item" onclick="openBudgetTracker()">
-                                <div class="feature-icon">💰</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Smart Budget</div>
-                                    <div class="feature-desc">Track expenses in real-time</div>
-                                </div>
-                            </div>
-                            <div class="feature-item" onclick="openPackingAssistant()">
-                                <div class="feature-icon">🎒</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Packing Assistant</div>
-                                    <div class="feature-desc">Never forget essentials</div>
-                                </div>
-                            </div>
-                            <div class="feature-item" onclick="openTravelJournal()">
-                                <div class="feature-icon">📔</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Travel Journal</div>
-                                    <div class="feature-desc">Capture memories</div>
-                                </div>
-                            </div>
-                            <div class="feature-item" onclick="openTransportGuide()">
-                                <div class="feature-icon">🚊</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Transport Guide</div>
-                                    <div class="feature-desc">Local transport info</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="route-card-ideal-for">
+                        <p><i class="fas fa-heart"></i> <strong>Ideal for:</strong> ${route.ideal_for || 'Adventure seekers and culture enthusiasts'}</p>
+                    </div>
+                    
+                    <div class="route-card-actions">
+                        <button class="route-select-btn" onclick="selectRoute(${index})">
+                            <i class="fas fa-eye"></i>
+                            View Detailed Itinerary
+                        </button>
+                        <button class="route-save-btn" onclick="saveRouteForLater(${index})">
+                            <i class="fas fa-bookmark"></i>
+                            Save for Later
+                        </button>
                     </div>
                 </div>
             `).join('');
 
-            // Initialize maps
+            // Store routes globally for route selection
+            window.availableRoutes = routes;
+        }
+
+        // Phase 2: Show detailed itinerary for selected route
+        function selectRoute(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            if (!route) {
+                console.error('Route not found:', routeIndex);
+                return;
+            }
+
+            // Update summary for detailed view
+            const routeSummary = document.getElementById('route-summary');
+            routeSummary.textContent = `Your Selected Route: ${route.name || `${route.route_type || 'Custom'} Route`}`;
+
+            // Show detailed itinerary
+            showRouteDetails(route, routeIndex);
+        }
+
+        // New function to show detailed route information in a modal
+        function showRouteDetails(route, routeIndex) {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.className = 'route-modal';
+            modal.id = `route-modal-${routeIndex}`;
+            
+            modal.innerHTML = `
+                <div class="route-modal-overlay" onclick="closeRouteModal(${routeIndex})"></div>
+                <div class="route-modal-content">
+                    <div class="route-modal-header">
+                        <h2><i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i> ${route.name || `${route.route_type || 'Custom'} Route`}</h2>
+                        <button class="route-modal-close" onclick="closeRouteModal(${routeIndex})">&times;</button>
+                    </div>
+                    <div class="route-modal-body">
+                        <!-- Route Description -->
+                        <p class="route-modal-description">${route.description || 'A carefully crafted journey through Europe.'}</p>
+                        
+                        <!-- Route Overview Stats -->
+                        <div class="route-modal-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${Math.round(route.total_distance_km || 700)} km</div>
+                                <div class="stat-label">Distance</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${Math.round(route.total_duration_hours || 8.5)} hrs</div>
+                                <div class="stat-label">Drive Time</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">€${route.estimated_cost?.total_estimate || '450-650'}</div>
+                                <div class="stat-label">Est. Cost</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(route.intermediate_cities?.length || 2) + 2}</div>
+                                <div class="stat-label">Cities</div>
+                            </div>
+                        </div>
+
+                        <!-- Route Map -->
+                        <div class="route-modal-map">
+                            <h3><i class="fas fa-map"></i> Route Map</h3>
+                            <div class="route-map-detailed" id="modal-map-${routeIndex}"></div>
+                        </div>
+                        
+                        <!-- Day by Day Itinerary -->
+                        <div class="route-modal-itinerary">
+                            <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
+                            <div class="daily-program">
+                                ${generateDetailedDayByDay(route, routeIndex)}
+                            </div>
+                        </div>
+                        
+                        <!-- Travel Toolkit (collapsed by default) -->
+                        <div class="travel-toolkit-section collapsed" id="modal-toolkit-section-${routeIndex}">
+                            <h3 onclick="toggleModalToolkit(${routeIndex})"><i class="fas fa-toolbox"></i> Additional Travel Tools</h3>
+                            <div class="toolkit-grid">
+                                <div class="toolkit-item" onclick="openBudgetTracker()">
+                                    <div class="toolkit-icon">💰</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Smart Budget Tracker</div>
+                                        <div class="toolkit-desc">Track expenses in real-time</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openPackingAssistant()">
+                                    <div class="toolkit-icon">🎒</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">AI Packing Assistant</div>
+                                        <div class="toolkit-desc">Never forget essentials</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openTravelJournal()">
+                                    <div class="toolkit-icon">📔</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Travel Journal</div>
+                                        <div class="toolkit-desc">Capture memories</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openWeatherForecast()">
+                                    <div class="toolkit-icon">🌤️</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Weather Forecast</div>
+                                        <div class="toolkit-desc">7-day travel forecast</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openOfflineGuide()">
+                                    <div class="toolkit-icon">📱</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Offline Guide</div>
+                                        <div class="toolkit-desc">Download for offline use</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openEmergencyInfo()">
+                                    <div class="toolkit-icon">🚨</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Emergency Info</div>
+                                        <div class="toolkit-desc">Important contacts & tips</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Modal Actions -->
+                        <div class="route-modal-actions">
+                            <button class="route-action-btn primary" onclick="saveRouteForLater(${routeIndex})">
+                                <i class="fas fa-bookmark"></i> Save Route
+                            </button>
+                            <button class="route-action-btn secondary" onclick="shareRoute(${routeIndex})">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+            // Initialize detailed map
             setTimeout(() => {
-                itineraries.forEach((itinerary, index) => {
-                    initializeMap(itinerary, index);
-                });
+                initializeDetailedMap(route, routeIndex);
             }, 100);
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Helper functions
@@ -1854,9 +2843,242 @@
                 'scenic': 'mountain',
                 'cultural': 'landmark',
                 'adventure': 'hiking',
-                'culinary': 'utensils'
+                'culinary': 'utensils',
+                'romantic': 'heart',
+                'hidden_gems': 'gem'
             };
             return icons[routeType] || 'route';
+        }
+
+        function generateCitiesList(route) {
+            const cities = [];
+            
+            // Add start city
+            if (route.start_city) {
+                cities.push(route.start_city);
+            }
+            
+            // Add intermediate cities
+            if (route.intermediate_cities && route.intermediate_cities.length > 0) {
+                cities.push(...route.intermediate_cities);
+            }
+            
+            // Add end city
+            if (route.end_city) {
+                cities.push(route.end_city);
+            }
+            
+            // Fallback if no cities data
+            if (cities.length === 0) {
+                return '<div class="city-item">Route cities will be displayed here</div>';
+            }
+            
+            return cities.map((city, index) => {
+                const cityName = city.name || city;
+                const country = city.country || '';
+                return `
+                    <div class="city-item">
+                        <div class="city-number">${index + 1}</div>
+                        <div class="city-info">
+                            <span class="city-name">${cityName}</span>
+                            ${country ? `<span class="city-country">${country}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateDetailedDayByDay(route, routeIndex) {
+            // Use actual daily_itinerary if available, otherwise generate based on route data
+            if (route.daily_itinerary && route.daily_itinerary.length > 0) {
+                return route.daily_itinerary.map((day, index) => `
+                    <div class="day-item detailed">
+                        <div class="day-number">
+                            <div class="day-circle">${day.day}</div>
+                        </div>
+                        <div class="day-content">
+                            <div class="day-header">
+                                <h4><i class="fas fa-calendar-day"></i> ${day.title}</h4>
+                                <div class="day-type">${day.type.replace('_', ' ')}</div>
+                            </div>
+                            <div class="day-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${day.location.city || day.location.from + ' → ' + day.location.to}</span>
+                            </div>
+                            <div class="day-activities">
+                                ${day.activities.map(activity => `
+                                    <div class="activity-item detailed">
+                                        <span class="activity-time">${activity.time}</span>
+                                        <div class="activity-content">
+                                            <span class="activity-name">${activity.activity}</span>
+                                            <span class="activity-description">${activity.description}</span>
+                                        </div>
+                                        <span class="activity-duration">${activity.duration}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ${day.accommodation ? `
+                                <div class="day-accommodation">
+                                    <i class="fas fa-bed"></i>
+                                    <span>${day.accommodation.type} in ${day.accommodation.city}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                // Fallback to generate basic itinerary from route data
+                return generateDayByDayProgram(route, routeIndex);
+            }
+        }
+
+        function initializeDetailedMap(route, routeIndex) {
+            try {
+                const mapId = `detailed-map-${routeIndex}`;
+                const mapElement = document.getElementById(mapId);
+                
+                if (!mapElement) return;
+
+                const map = L.map(mapId, {
+                    zoomControl: true,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    boxZoom: true,
+                    keyboard: true,
+                    dragging: true
+                }).setView([45.4408, 12.3155], 6);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Create route coordinates from city data
+                const routeCoordinates = [];
+                
+                if (route.start_city && route.start_city.coordinates) {
+                    routeCoordinates.push([route.start_city.coordinates.latitude || route.start_city.coordinates[0], 
+                                         route.start_city.coordinates.longitude || route.start_city.coordinates[1]]);
+                }
+                
+                if (route.intermediate_cities) {
+                    route.intermediate_cities.forEach(city => {
+                        if (city.coordinates) {
+                            routeCoordinates.push([city.coordinates.latitude || city.coordinates[0], 
+                                                 city.coordinates.longitude || city.coordinates[1]]);
+                        }
+                    });
+                }
+                
+                if (route.end_city && route.end_city.coordinates) {
+                    routeCoordinates.push([route.end_city.coordinates.latitude || route.end_city.coordinates[0], 
+                                         route.end_city.coordinates.longitude || route.end_city.coordinates[1]]);
+                }
+
+                // Draw route line if coordinates are available
+                if (routeCoordinates.length > 1) {
+                    const routeLine = L.polyline(routeCoordinates, {
+                        color: '#FF6B35',
+                        weight: 4,
+                        opacity: 0.8,
+                        dashArray: '10, 5'
+                    }).addTo(map);
+                    
+                    // Fit map to show entire route
+                    map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
+                    
+                    // Add markers for each point
+                    routeCoordinates.forEach((coords, index) => {
+                        let markerIcon, popupText;
+                        
+                        if (index === 0) {
+                            // Start marker
+                            markerIcon = L.divIcon({
+                                html: `<div style="background: var(--coastal-mint); 
+                                       width: 35px; height: 35px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: var(--midnight-navy); font-weight: bold; font-size: 1rem;
+                                       box-shadow: 0 4px 15px rgba(6, 255, 165, 0.4);">
+                                       🏁
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [35, 35],
+                                iconAnchor: [17, 17]
+                            });
+                            popupText = `<b>🏁 Start</b><br>${route.start_city?.name || 'Starting Point'}`;
+                        } else if (index === routeCoordinates.length - 1) {
+                            // End marker
+                            markerIcon = L.divIcon({
+                                html: `<div style="background: var(--sunset-orange); 
+                                       width: 35px; height: 35px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: white; font-weight: bold; font-size: 1rem;
+                                       box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">
+                                       🎯
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [35, 35],
+                                iconAnchor: [17, 17]
+                            });
+                            popupText = `<b>🎯 Destination</b><br>${route.end_city?.name || 'Final Destination'}`;
+                        } else {
+                            // Intermediate marker
+                            markerIcon = L.divIcon({
+                                html: `<div style="background: var(--tuscan-gold); 
+                                       width: 30px; height: 30px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: var(--midnight-navy); font-weight: bold; font-size: 0.9rem;
+                                       box-shadow: 0 3px 10px rgba(255, 210, 63, 0.4);">
+                                       ${index}
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [30, 30],
+                                iconAnchor: [15, 15]
+                            });
+                            const cityName = route.intermediate_cities[index - 1]?.name || `Stop ${index}`;
+                            popupText = `<b>📍 ${cityName}</b><br>Intermediate stop`;
+                        }
+                        
+                        L.marker(coords, { icon: markerIcon }).addTo(map)
+                            .bindPopup(popupText);
+                    });
+                } else {
+                    // Fallback map view
+                    map.setView([45.4408, 12.3155], 6);
+                }
+                
+            } catch (error) {
+                console.error('Error initializing detailed map:', error);
+            }
+        }
+
+        // Additional functions for route actions
+        function saveRouteForLater(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            // In a real implementation, this would save to user's account or localStorage
+            showToast(`Route "${route.name || 'Route ' + (routeIndex + 1)}" saved for later! 📌`, 'success');
+        }
+
+        function shareRoute(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            // In a real implementation, this would generate a shareable link
+            if (navigator.share) {
+                navigator.share({
+                    title: route.name || 'Amazing European Route',
+                    text: route.description || 'Check out this amazing route through Europe!',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('Route link copied to clipboard! 📋', 'success');
+            }
+        }
+
+        // Toggle toolkit visibility
+        function toggleToolkit(routeIndex) {
+            const section = document.getElementById(`toolkit-section-${routeIndex}`);
+            if (section) {
+                section.classList.toggle('collapsed');
+            }
         }
 
         function generateDayByDayProgram(itinerary, routeIndex) {
@@ -1898,7 +3120,7 @@
                         </div>
                         <div class="day-content">
                             <div class="day-header">
-                                <h4><i class="fas fa-map-marker-alt"></i> ${city.name}, ${city.country}</h4>
+                                <h4><i class="fas fa-map-marker-alt"></i> ${city.name}${city.country ? ', ' + city.country : ''}</h4>
                                 <div class="day-type">${getDayType(day, totalDays)}</div>
                             </div>
                             <div class="day-activities">
@@ -1912,7 +3134,7 @@
                                 ${day < totalDays ? `
                                 <div class="logistics-item">
                                     <i class="fas fa-car"></i>
-                                    <span>Drive to next city: ~${Math.floor(Math.random() * 3 + 2)} hours</span>
+                                    <span>Drive to next city: ~${calculateDriveTime(day, totalDays)} hours</span>
                                 </div>
                                 ` : ''}
                             </div>
@@ -2116,20 +3338,20 @@
             }
         }
 
-        function selectRoute(index) {
-            const itineraries = getItineraries();
-            if (itineraries[index]) {
-                sessionStorage.setItem('selectedRoute', JSON.stringify(itineraries[index]));
-                showToast('Route selected! 🗺️', 'success');
+        // Modal control functions
+        function closeRouteModal(routeIndex) {
+            const modal = document.getElementById(`route-modal-${routeIndex}`);
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto'; // Restore background scrolling
             }
         }
 
-        function saveRoute(index) {
-            if (!isAuthenticated) {
-                showAuthRequired();
-                return;
+        function toggleModalToolkit(routeIndex) {
+            const section = document.getElementById(`modal-toolkit-section-${routeIndex}`);
+            if (section) {
+                section.classList.toggle('collapsed');
             }
-            showToast('Route saved to your favorites! ❤️', 'success');
         }
 
         // Add parallax effect

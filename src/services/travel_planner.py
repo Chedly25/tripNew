@@ -10,6 +10,8 @@ from ..core.exceptions import TravelPlannerException
 from .google_places_city_service import GooglePlacesCityService
 from .route_service import ProductionRouteService
 from .validation_service import ValidationService
+from .itinerary_generator import ItineraryGenerator
+from .hidden_gems_service import HiddenGemsService
 
 logger = structlog.get_logger(__name__)
 
@@ -22,6 +24,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         self.city_service = city_service
         self.route_service = route_service
         self.validation_service = validation_service
+        # Initialize itinerary generator
+        hidden_gems_service = HiddenGemsService(city_service)
+        self.itinerary_generator = ItineraryGenerator(city_service, hidden_gems_service)
         self._route_strategies = self._initialize_route_strategies()
     
     def generate_routes(self, request: TripRequest) -> ServiceResult:
@@ -181,8 +186,8 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 description=strategy['description']
             )
             
-            # Enrich with additional data
-            enriched_route = self._enrich_route_data(travel_route, request, strategy)
+            # Enrich with additional data and generate complete itinerary
+            enriched_route = await self._enrich_route_with_itinerary(travel_route, request, strategy, start_city, end_city)
             
             return ServiceResult.success_result(enriched_route)
             
@@ -219,8 +224,8 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 description=strategy['description']
             )
             
-            # Enrich with additional data
-            enriched_route = self._enrich_route_data(travel_route, request)
+            # Enrich with additional data and generate complete itinerary
+            enriched_route = self._enrich_route_with_itinerary_sync(travel_route, request, strategy, start_city, end_city)
             
             return ServiceResult.success_result(enriched_route)
             
@@ -359,8 +364,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         
         # Add randomization for variety in route generation
         # Create pools of high-quality and all candidates
+        # Sort by rating/popularity if available (handle None ratings)
         sorted_candidates = sorted(candidates, 
-                                 key=lambda c: getattr(c, 'rating', 0), 
+                                 key=lambda c: getattr(c, 'rating', None) or 0, 
                                  reverse=True)
         
         # Take top candidates (e.g., top 75% by rating) for quality selection
@@ -378,9 +384,12 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             if len(selected) >= max_cities:
                 break
             
-            if city.country not in used_countries:
+            # Handle None country values
+            city_country = city.country if city.country is not None else 'Unknown'
+            
+            if city_country not in used_countries:
                 selected.append(city)
-                used_countries.add(city.country)
+                used_countries.add(city_country)
         
         # If we still need more cities, randomly select from remaining quality candidates
         remaining_slots = max_cities - len(selected)
@@ -439,8 +448,10 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             'intermediate_cities': [
                 {
                     'name': city.name,
+                    'country': city.country,
                     'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
-                    'types': city.types
+                    'types': city.types,
+                    'region': city.region
                 }
                 for city in route.intermediate_cities
             ],
@@ -449,6 +460,82 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             'season_tips': self._get_season_tips(route, request.season),
             'estimated_cost': self._estimate_route_cost(route, request)
         }
+    
+    async def _enrich_route_with_itinerary(self, route: TravelRoute, request: TripRequest, 
+                                         strategy: Dict, start_city, end_city) -> Dict[str, Any]:
+        """Enrich route with complete itinerary data."""
+        # Get basic route enrichment
+        enriched_route = self._enrich_route_data(route, request, strategy)
+        
+        # Convert intermediate cities to format expected by itinerary generator
+        intermediate_cities_for_itinerary = []
+        for city in route.intermediate_cities:
+            intermediate_cities_for_itinerary.append({
+                'city': {
+                    'name': city.name,
+                    'country': city.country,
+                    'region': city.region,
+                    'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
+                    'types': city.types
+                },
+                'stay_duration': {'recommended_nights': 1},
+                'recommendation_score': 4.0,
+                'why_visit': [f'Perfect for {strategy["name"].lower()} experience'],
+                'best_for': strategy.get('highlights', []),
+            })
+        
+        # Generate complete day-by-day itinerary for this specific route
+        itinerary_result = await self.itinerary_generator.generate_complete_itinerary(
+            start_city, end_city, request, trip_type="away"
+        )
+        
+        if itinerary_result.success:
+            itinerary_data = itinerary_result.data
+            # Use route-specific intermediate cities instead of generic ones
+            enriched_route['daily_itinerary'] = await self.itinerary_generator._create_daily_itinerary(
+                start_city, end_city, intermediate_cities_for_itinerary, request
+            )
+            enriched_route['trip_summary'] = itinerary_data.get('trip_summary', {})
+            enriched_route['travel_tips'] = itinerary_data.get('travel_tips', {})
+        
+        return enriched_route
+    
+    def _enrich_route_with_itinerary_sync(self, route: TravelRoute, request: TripRequest, 
+                                        strategy: Dict, start_city, end_city) -> Dict[str, Any]:
+        """Enrich route with complete itinerary data (sync version)."""
+        # Get basic route enrichment
+        enriched_route = self._enrich_route_data(route, request, strategy)
+        
+        # Convert intermediate cities to format expected by itinerary generator
+        intermediate_cities_for_itinerary = []
+        for city in route.intermediate_cities:
+            intermediate_cities_for_itinerary.append({
+                'city': {
+                    'name': city.name,
+                    'country': city.country,
+                    'region': city.region,
+                    'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
+                    'types': city.types
+                },
+                'stay_duration': {'recommended_nights': 1},
+                'recommendation_score': 4.0,
+                'why_visit': [f'Perfect for {strategy["name"].lower()} experience'],
+                'best_for': strategy.get('highlights', []),
+            })
+        
+        # Generate complete day-by-day itinerary for this specific route (sync version)
+        try:
+            # Use asyncio.run for the async itinerary generation
+            import asyncio
+            itinerary_data = asyncio.run(self.itinerary_generator._create_daily_itinerary(
+                start_city, end_city, intermediate_cities_for_itinerary, request
+            ))
+            enriched_route['daily_itinerary'] = itinerary_data
+        except Exception as e:
+            logger.error(f"Failed to generate sync itinerary: {e}")
+            enriched_route['daily_itinerary'] = []
+        
+        return enriched_route
     
     def _get_season_tips(self, route: TravelRoute, season) -> List[str]:
         """Get season-specific tips for the route."""

@@ -316,42 +316,47 @@ class WeatherService:
         }
     
     def _get_fallback_weather(self, city_name: str) -> Dict:
-        """Fallback weather data when API is unavailable."""
+        """Fallback when weather API is unavailable - returns minimal data indicating unavailable service."""
+        logger.warning(f"Weather service unavailable for {city_name}. Returning minimal fallback data.")
         return {
             'city': city_name,
-            'temperature': 18,
-            'feels_like': 19,
-            'humidity': 65,
-            'pressure': 1013,
-            'condition': 'partly cloudy',
-            'condition_icon': '02d',
-            'wind_speed': 8,
-            'wind_direction': 180,
-            'visibility': 10,
-            'uv_index': 4,
-            'timestamp': datetime.now().isoformat()
+            'temperature': None,
+            'feels_like': None,
+            'humidity': None,
+            'pressure': None,
+            'condition': 'Weather data unavailable',
+            'condition_icon': '',
+            'wind_speed': None,
+            'wind_direction': None,
+            'visibility': None,
+            'uv_index': None,
+            'timestamp': datetime.now().isoformat(),
+            'error': 'Weather service unavailable'
         }
     
     def _get_fallback_forecast(self, city_name: str, days: int) -> Dict:
-        """Fallback forecast data when API is unavailable."""
+        """Fallback when forecast API is unavailable - returns minimal data indicating unavailable service."""
+        logger.warning(f"Weather forecast service unavailable for {city_name}. Returning minimal fallback data.")
         daily_forecasts = []
         for i in range(days):
             date = datetime.now() + timedelta(days=i)
             daily_forecasts.append({
                 'date': date.date().isoformat(),
-                'temperature': 18 + i % 3,  # Slight variation
-                'min_temperature': 12 + i % 3,
-                'max_temperature': 24 + i % 3,
-                'condition': 'partly cloudy',
-                'humidity': 65,
-                'wind_speed': 8,
-                'precipitation_chance': 20
+                'temperature': None,
+                'min_temperature': None,
+                'max_temperature': None,
+                'condition': 'Weather data unavailable',
+                'humidity': None,
+                'wind_speed': None,
+                'precipitation_chance': None,
+                'error': 'Weather service unavailable'
             })
         
         return {
             'city': city_name,
             'daily': daily_forecasts,
-            'hourly': []  # Simplified fallback
+            'hourly': [],
+            'error': 'Weather service unavailable'
         }
     
     async def close(self):

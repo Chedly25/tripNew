@@ -183,85 +183,14 @@ class FoursquareService:
         return ''
     
     def _get_fallback_restaurants(self, city_name: str, limit: int) -> List[Dict]:
-        """Fallback restaurant data when API is unavailable."""
-        restaurants = [
-            {
-                'name': f'Le Bistro {city_name}',
-                'rating': 4.5,
-                'price_level': 3,
-                'address': f'City Center, {city_name}',
-                'category': 'Restaurant',
-                'cuisine': 'French',
-                'website': f'https://www.lebistro-{city_name.lower().replace(" ", "-")}.com',
-                'hours': '12:00-14:00, 19:00-22:00',
-                'photo': '',
-                'source': 'fallback'
-            },
-            {
-                'name': f'Osteria del {city_name}',
-                'rating': 4.3,
-                'price_level': 2,
-                'address': f'Old Town, {city_name}',
-                'category': 'Restaurant',
-                'cuisine': 'Italian',
-                'website': f'https://www.osteria-{city_name.lower().replace(" ", "-")}.com',
-                'hours': '18:00-23:00',
-                'photo': '',
-                'source': 'fallback'
-            },
-            {
-                'name': f'Café Central {city_name}',
-                'rating': 4.1,
-                'price_level': 1,
-                'address': f'Main Square, {city_name}',
-                'category': 'Café',
-                'cuisine': 'Coffee & Light Meals',
-                'website': '',
-                'hours': '07:00-19:00',
-                'photo': '',
-                'source': 'fallback'
-            }
-        ]
-        return restaurants[:limit]
+        """Fallback when restaurant API is unavailable - returns empty list to indicate no data."""
+        logger.warning(f"Foursquare restaurant service unavailable for {city_name}. No fallback data provided.")
+        return []
     
     def _get_fallback_activities(self, city_name: str, limit: int) -> List[Dict]:
-        """Fallback activity data when API is unavailable."""
-        activities = [
-            {
-                'name': f'{city_name} Historic Center',
-                'rating': 4.6,
-                'price_level': 0,
-                'address': f'Historic District, {city_name}',
-                'category': 'Historic Site',
-                'website': '',
-                'hours': '24/7',
-                'photo': '',
-                'source': 'fallback'
-            },
-            {
-                'name': f'{city_name} Cathedral',
-                'rating': 4.4,
-                'price_level': 0,
-                'address': f'Cathedral Square, {city_name}',
-                'category': 'Religious Site',
-                'website': '',
-                'hours': '08:00-18:00',
-                'photo': '',
-                'source': 'fallback'
-            },
-            {
-                'name': f'{city_name} Art Museum',
-                'rating': 4.2,
-                'price_level': 1,
-                'address': f'Museum District, {city_name}',
-                'category': 'Museum',
-                'website': '',
-                'hours': '10:00-17:00',
-                'photo': '',
-                'source': 'fallback'
-            }
-        ]
-        return activities[:limit]
+        """Fallback when activities API is unavailable - returns empty list to indicate no data."""
+        logger.warning(f"Foursquare activities service unavailable for {city_name}. No fallback data provided.")
+        return []
     
     async def close(self):
         """Close aiohttp session."""

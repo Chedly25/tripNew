@@ -206,66 +206,9 @@ class BookingService:
         return amenity_names or ['WiFi', 'Parking']
     
     def _get_fallback_hotels(self, city_name: str, limit: int) -> List[Dict]:
-        """Fallback hotel data when API is unavailable."""
-        hotels = [
-            {
-                'name': f'Grand Hotel {city_name}',
-                'rating': 4.5,
-                'review_count': 1250,
-                'price_per_night': 150,
-                'currency': 'EUR',
-                'address': f'City Center, {city_name}',
-                'distance_to_center': 0.5,
-                'amenities': ['WiFi', 'Parking', 'Restaurant', 'Spa', 'Room Service'],
-                'photo': '',
-                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
-                'stars': 4,
-                'description': f'Luxury hotel in the heart of {city_name} with exceptional service and amenities.'
-            },
-            {
-                'name': f'Boutique Hotel {city_name}',
-                'rating': 4.3,
-                'review_count': 890,
-                'price_per_night': 120,
-                'currency': 'EUR',
-                'address': f'Historic District, {city_name}',
-                'distance_to_center': 0.8,
-                'amenities': ['WiFi', 'Breakfast', 'Concierge', 'Bar'],
-                'photo': '',
-                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
-                'stars': 4,
-                'description': f'Charming boutique hotel with unique character in historic {city_name}.'
-            },
-            {
-                'name': f'Hotel Central {city_name}',
-                'rating': 4.1,
-                'review_count': 650,
-                'price_per_night': 90,
-                'currency': 'EUR',
-                'address': f'Main Street, {city_name}',
-                'distance_to_center': 0.3,
-                'amenities': ['WiFi', 'Parking', 'Restaurant'],
-                'photo': '',
-                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
-                'stars': 3,
-                'description': f'Comfortable and convenient hotel perfectly located in {city_name}.'
-            },
-            {
-                'name': f'Budget Inn {city_name}',
-                'rating': 3.8,
-                'review_count': 420,
-                'price_per_night': 65,
-                'currency': 'EUR',
-                'address': f'Near Train Station, {city_name}',
-                'distance_to_center': 1.2,
-                'amenities': ['WiFi', 'Breakfast'],
-                'photo': '',
-                'url': f'https://www.booking.com/hotel/grand-{city_name.lower().replace(" ", "-")}.html',
-                'stars': 3,
-                'description': f'Clean and affordable accommodation with easy transport links in {city_name}.'
-            }
-        ]
-        return hotels[:limit]
+        """Fallback when hotel API is unavailable - returns empty list to indicate no data."""
+        logger.warning(f"Hotel booking service unavailable for {city_name}. No fallback data provided.")
+        return []
     
     async def close(self):
         """Close aiohttp session."""

@@ -467,7 +467,7 @@ def create_app() -> Flask:
                 'duration_days': travel_days,
                 'nights_at_destination': nights_at_destination,
                 'season': season,
-                'travel_style': travel_style
+                'travel_style': primary_travel_style
             }
             
             # Sanitize output
