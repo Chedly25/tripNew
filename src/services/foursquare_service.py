@@ -17,7 +17,7 @@ class FoursquareService:
     
     def __init__(self):
         self.api_key = os.getenv('FOURSQUARE_API_KEY')
-        self.base_url = "https://api.foursquare.com/v3/places"
+        self.base_url = "https://places-api.foursquare.com/places"
         self.session = None
         
         if not self.api_key:
@@ -42,8 +42,9 @@ class FoursquareService:
             }
             
             headers = {
-                'Authorization': self.api_key,
-                'Accept': 'application/json'
+                'Authorization': f'Bearer {self.api_key}',
+                'Accept': 'application/json',
+                'X-Places-Api-Version': '2025-06-17'
             }
             
             async with self.session.get(url, params=params, headers=headers) as response:
@@ -51,7 +52,8 @@ class FoursquareService:
                     data = await response.json()
                     return self._format_restaurants(data.get('results', []))
                 else:
-                    logger.error(f"Foursquare API error: {response.status}")
+                    error_text = await response.text()
+                    logger.error(f"Foursquare API error: {response.status} - {error_text}")
                     return self._get_fallback_restaurants(city_name, limit)
                     
         except Exception as e:
@@ -77,8 +79,9 @@ class FoursquareService:
             }
             
             headers = {
-                'Authorization': self.api_key,
-                'Accept': 'application/json'
+                'Authorization': f'Bearer {self.api_key}',
+                'Accept': 'application/json',
+                'X-Places-Api-Version': '2025-06-17'
             }
             
             async with self.session.get(url, params=params, headers=headers) as response:
@@ -86,7 +89,8 @@ class FoursquareService:
                     data = await response.json()
                     return self._format_activities(data.get('results', []))
                 else:
-                    logger.error(f"Foursquare API error: {response.status}")
+                    error_text = await response.text()
+                    logger.error(f"Foursquare API error: {response.status} - {error_text}")
                     return self._get_fallback_activities(city_name, limit)
                     
         except Exception as e:

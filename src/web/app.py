@@ -290,10 +290,16 @@ def create_app() -> Flask:
                         
                         # Fetch restaurants and activities
                         try:
-                            restaurants = foursquare_service.search_restaurants(city_coords, city_name)
-                            activities = foursquare_service.search_activities(city_coords, city_name)
-                        except:
-                            # If async methods, use fallback data directly
+                            # Use async methods properly
+                            async def get_foursquare_data():
+                                restaurants = await foursquare_service.find_restaurants(city_coords, city_name, limit=10)
+                                activities = await foursquare_service.find_activities(city_coords, city_name, limit=10)
+                                return restaurants, activities
+                            
+                            restaurants, activities = asyncio.run(get_foursquare_data())
+                        except Exception as e:
+                            logger.warning(f"Foursquare API failed for {city_name}: {e}")
+                            # Use fallback data if API fails
                             restaurants = foursquare_service._get_fallback_restaurants(city_name, 10)
                             activities = foursquare_service._get_fallback_activities(city_name, 10)
                         
