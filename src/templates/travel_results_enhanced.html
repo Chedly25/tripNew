@@ -522,193 +522,707 @@
             background: linear-gradient(135deg, #6366f1, #4f46e5);
         }
 
-        /* Enhanced Features Styles */
-        .enhanced-features-section {
-            margin-top: 3rem;
+        /* Premium Travel Assistant Styles */
+        .travel-assistant-section {
+            margin-top: 4rem;
+            position: relative;
         }
 
-        .section-title {
+        .assistant-hero {
+            position: relative;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            border-radius: 32px;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.9) 0%, 
+                rgba(118, 75, 162, 0.9) 50%, 
+                rgba(240, 147, 251, 0.9) 100%);
+            backdrop-filter: blur(20px);
+        }
+
+        .hero-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="travel-elements" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/><path d="M5,20 Q15,15 25,20 T45,20" stroke="rgba(255,255,255,0.08)" stroke-width="0.5" fill="none"/><polygon points="35,35 40,30 45,35 40,40" fill="rgba(255,255,255,0.05)"/><circle cx="40" cy="10" r="0.5" fill="rgba(255,255,255,0.08)"/><path d="M15,40 L20,35 L25,40 L20,45 Z" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="200" height="200" fill="url(%23travel-elements)"/></svg>') repeat;
+            opacity: 0.4;
+        }
+
+        /* Add floating travel elements */
+        .hero-background::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><g opacity="0.1"><circle cx="100" cy="100" r="2" fill="white"/><circle cx="700" cy="150" r="1.5" fill="white"/><circle cx="200" cy="500" r="1" fill="white"/><circle cx="600" cy="450" r="2.5" fill="white"/><path d="M150,200 Q250,150 350,200 T550,200" stroke="white" stroke-width="1" fill="none"/><polygon points="650,300 660,290 670,300 660,310" fill="white"/><path d="M50,350 L100,300 L150,350 L100,400 Z" stroke="white" stroke-width="0.5" fill="none"/></g></svg>') no-repeat center;
+            background-size: cover;
+            pointer-events: none;
+            animation: floatElements 20s ease-in-out infinite;
+        }
+
+        @keyframes floatElements {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(1deg); }
+            50% { transform: translateY(-5px) rotate(-0.5deg); }
+            75% { transform: translateY(-15px) rotate(0.5deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 2.2rem;
+            font-size: clamp(2.5rem, 5vw, 4rem);
             font-weight: 700;
+            margin-bottom: 1rem;
             text-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        .feature-tab {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
-            margin: 0 0.25rem;
-            border-radius: 20px !important;
-            padding: 0.75rem 1.5rem !important;
-            font-weight: 500;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+        .gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .feature-tab:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
         }
 
-        .feature-tab.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
-            border-color: transparent !important;
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 0 1rem;
         }
 
-        .budget-summary {
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid rgba(99, 102, 241, 0.2);
+        .feature-card {
+            position: relative;
+            background: var(--glass-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+            min-height: 280px;
         }
 
-        .budget-stat {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .budget-stat:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
-        .budget-stat .label {
-            font-weight: 500;
-            color: var(--gray-600);
+        .feature-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 
+                0 32px 64px rgba(0,0,0,0.2),
+                0 0 0 1px rgba(255,255,255,0.3);
         }
 
-        .budget-stat .value {
-            font-weight: 700;
-            color: var(--primary);
+        .card-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.15;
+            border-radius: 24px;
+            transition: opacity 0.3s ease;
         }
 
-        .expense-item {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border: 1px solid var(--gray-200);
-            transition: all 0.2s ease;
+        .feature-card:hover .card-background {
+            opacity: 0.25;
         }
 
-        .expense-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .journal-entry {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--gray-200);
-            transition: all 0.2s ease;
-        }
-
-        .journal-entry:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        }
-
-        .packing-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid var(--gray-200);
-            transition: all 0.2s ease;
-        }
-
-        .packing-item:hover {
-            background: var(--gray-50);
-        }
-
-        .packing-item.packed {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: var(--success);
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-
-        .packing-checkbox {
-            margin-right: 1rem;
-        }
-
-        .transport-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--gray-200);
-        }
-
-        .transport-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        .card-icon {
+            position: relative;
+            z-index: 2;
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.25rem;
-        }
-
-        .emergency-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--danger);
-        }
-
-        .experience-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--gray-200);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
 
-        .experience-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        /* Card backgrounds with travel-inspired imagery */
+        .budget-card {
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.1), 
+                rgba(118, 75, 162, 0.1)), 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10,50 Q30,10 50,50 T90,50" stroke="rgba(102,126,234,0.1)" stroke-width="2" fill="none"/><circle cx="20" cy="20" r="3" fill="rgba(102,126,234,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(102,126,234,0.1)"/></svg>');
+        }
+        
+        .journal-card {
+            background: linear-gradient(135deg, 
+                rgba(245, 87, 108, 0.1), 
+                rgba(229, 62, 62, 0.1)), 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,20 L80,20 L80,80 L20,80 Z" stroke="rgba(245,87,108,0.1)" stroke-width="1" fill="none"/><line x1="30" y1="35" x2="70" y2="35" stroke="rgba(245,87,108,0.1)" stroke-width="1"/><line x1="30" y1="50" x2="60" y2="50" stroke="rgba(245,87,108,0.1)" stroke-width="1"/></svg>');
+        }
+        
+        .packing-card {
+            background: linear-gradient(135deg, 
+                rgba(0, 242, 254, 0.1), 
+                rgba(5, 150, 105, 0.1)), 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="25" y="30" width="50" height="40" rx="5" stroke="rgba(0,242,254,0.1)" stroke-width="2" fill="none"/><rect x="40" y="25" width="20" height="10" stroke="rgba(0,242,254,0.1)" stroke-width="1" fill="none"/><circle cx="30" cy="75" r="3" fill="rgba(0,242,254,0.1)"/><circle cx="70" cy="75" r="3" fill="rgba(0,242,254,0.1)"/></svg>');
+        }
+        
+        .transport-card {
+            background: linear-gradient(135deg, 
+                rgba(254, 214, 227, 0.2), 
+                rgba(251, 191, 36, 0.1)), 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,50 Q50,20 80,50" stroke="rgba(251,191,36,0.1)" stroke-width="2" fill="none"/><circle cx="20" cy="50" r="4" fill="rgba(251,191,36,0.1)"/><circle cx="80" cy="50" r="4" fill="rgba(251,191,36,0.1)"/><path d="M30,40 L70,40 L75,50 L25,50 Z" fill="rgba(254,214,227,0.1)"/></svg>');
+        }
+        
+        .emergency-card {
+            background: linear-gradient(135deg, 
+                rgba(255, 154, 158, 0.1), 
+                rgba(250, 204, 21, 0.1)), 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="25" stroke="rgba(255,154,158,0.1)" stroke-width="2" fill="none"/><path d="M50,35 L55,45 L45,45 Z" fill="rgba(255,154,158,0.1)"/><circle cx="50" cy="55" r="2" fill="rgba(255,154,158,0.1)"/></svg>');
+        }
+        
+        .experiences-card {
+            background: linear-gradient(135deg, 
+                rgba(252, 182, 159, 0.1), 
+                rgba(255, 154, 158, 0.1)), 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,20 60,40 80,40 65,55 70,75 50,65 30,75 35,55 20,40 40,40" fill="rgba(252,182,159,0.1)" stroke="rgba(252,182,159,0.2)" stroke-width="1"/><circle cx="25" cy="25" r="2" fill="rgba(252,182,159,0.1)"/><circle cx="75" cy="80" r="1.5" fill="rgba(252,182,159,0.1)"/></svg>');
         }
 
-        .btn-action {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.2s ease;
+        .budget-card .card-icon { color: #667eea; }
+        .journal-card .card-icon { color: #f5576c; }
+        .packing-card .card-icon { color: #00f2fe; }
+        .transport-card .card-icon { color: #fed6e3; }
+        .emergency-card .card-icon { color: #ff9a9e; }
+        .experiences-card .card-icon { color: #fcb69f; }
+
+        .feature-card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
         }
 
-        .btn-action:hover {
-            transform: translateY(-1px);
+        .card-content {
+            position: relative;
+            z-index: 2;
         }
 
+        .card-content h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-content p {
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+
+        /* Loading and Performance Optimization Styles */
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .loading-spinner i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            color: var(--gray-500);
+            font-style: italic;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        /* Performance: Optimize hover transitions */
+        .feature-card {
+            will-change: transform;
+        }
+
+        .feature-card:hover {
+            will-change: auto;
+        }
+
+        /* Performance: GPU acceleration for animations */
+        .card-icon {
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        .progress-circle {
+            transform: translateZ(0);
+        }
+
+        /* Travel-themed decorative elements */
+        .travel-decoration {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .travel-decoration.plane {
+            top: 15%;
+            right: 10%;
+            animation: flyAcross 15s ease-in-out infinite;
+        }
+
+        .travel-decoration.car {
+            bottom: 20%;
+            left: 5%;
+            animation: driveBy 12s ease-in-out infinite;
+        }
+
+        .travel-decoration.compass {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: spin 20s linear infinite;
+        }
+
+        @keyframes flyAcross {
+            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+            25% { transform: translateX(20px) translateY(-10px) rotate(2deg); }
+            50% { transform: translateX(40px) translateY(-5px) rotate(-1deg); }
+            75% { transform: translateX(20px) translateY(-15px) rotate(1deg); }
+        }
+
+        @keyframes driveBy {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(30px); }
+        }
+
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Card hover effects with travel imagery */
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+            animation: shimmer 1.5s ease-in-out;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg) scale(0.8); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(0.8); }
+        }
+
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            .feature-tab {
-                font-size: 0.85rem;
-                padding: 0.5rem 1rem !important;
-                margin-bottom: 0.5rem;
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0 1rem;
             }
 
-            .nav-pills {
-                flex-wrap: wrap;
+            .feature-card {
+                min-height: 240px;
+                padding: 1.5rem;
             }
 
-            .section-title {
-                font-size: 1.8rem;
+            .card-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
             }
+
+            .card-content h3 {
+                font-size: 1.25rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .card-content p {
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+
+            .card-stats {
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            .premium-travel-features h2 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+
+            .premium-travel-features .subtitle {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            /* Mobile modal optimizations */
+            .modal-content {
+                width: 95vw;
+                max-height: 90vh;
+                margin: 5vh auto;
+                overflow-y: auto;
+            }
+
+            .modal-header h3 {
+                font-size: 1.25rem;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            /* Touch-friendly buttons */
+            .feature-card {
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .btn, .close-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .premium-travel-features {
+                padding: 1rem 0.5rem;
+            }
+
+            .feature-card {
+                padding: 1rem;
+                min-height: 200px;
+            }
+
+            .card-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .card-content h3 {
+                font-size: 1.1rem;
+            }
+
+            .premium-travel-features h2 {
+                font-size: 1.75rem;
+            }
+
+            .modal-content {
+                width: 98vw;
+                margin: 2vh auto;
+            }
+
+            .modal-body {
+                padding: 1rem;
+            }
+        }
+
+        .card-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--primary) 0%, var(--gray-200) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .progress-circle::before {
+            content: '';
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+        }
+
+        .progress-value {
+            position: relative;
+            z-index: 2;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--primary);
+        }
+
+        .progress-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .card-preview {
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .preview-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .transport-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .transport-mode {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .transport-mode i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .emergency-quick-info {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .emergency-number {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            border: 2px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .emergency-number .number {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--danger);
+            line-height: 1;
+        }
+
+        .emergency-number .label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+
+        .experiences-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .experience-tag {
+            padding: 0.375rem 0.75rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .card-action-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .card-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .card-action-btn:active {
+            transform: translateY(0);
+        }
+
+        .card-action-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0 0.5rem;
+            }
+
+            .feature-card {
+                min-height: 240px;
+                padding: 1.5rem;
+            }
+
+            .card-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .assistant-hero {
+                padding: 3rem 0;
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            margin: -12px 0 0 -12px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -735,194 +1249,160 @@
             <!-- Itineraries will be loaded here by JavaScript -->
         </div>
 
-        <!-- Enhanced Trip Features -->
-        <div class="enhanced-features-section mt-5">
-            <div class="section-header text-center mb-4">
-                <h2 class="section-title text-white">
-                    <i class="fas fa-magic me-2"></i>
-                    Enhanced Trip Features
-                </h2>
-                <p class="text-white-50">Manage every aspect of your perfect European adventure</p>
+        <!-- Premium Travel Assistant -->
+        <div class="travel-assistant-section mt-5">
+            <div class="assistant-hero">
+                <div class="hero-background"></div>
+                
+                <!-- Decorative travel elements -->
+                <div class="travel-decoration plane">
+                    <i class="fas fa-plane" style="font-size: 2rem; color: rgba(255,255,255,0.15);"></i>
+                </div>
+                <div class="travel-decoration car">
+                    <i class="fas fa-car-side" style="font-size: 1.5rem; color: rgba(255,255,255,0.12);"></i>
+                </div>
+                <div class="travel-decoration compass">
+                    <i class="fas fa-compass" style="font-size: 3rem; color: rgba(255,255,255,0.08);"></i>
+                </div>
+                
+                <div class="hero-content text-center">
+                    <h2 class="hero-title">
+                        <span class="gradient-text">Your Personal Travel Assistant</span>
+                    </h2>
+                    <p class="hero-subtitle">Everything you need for the perfect European adventure</p>
+                </div>
             </div>
 
-            <!-- Feature Tabs -->
-            <ul class="nav nav-pills justify-content-center mb-4" id="enhanced-features-tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active feature-tab" id="budget-tab" data-bs-toggle="pill" data-bs-target="#budget" type="button" role="tab">
-                        <i class="fas fa-wallet me-2"></i>Budget Tracker
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link feature-tab" id="journal-tab" data-bs-toggle="pill" data-bs-target="#journal" type="button" role="tab">
-                        <i class="fas fa-book me-2"></i>Travel Journal
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link feature-tab" id="packing-tab" data-bs-toggle="pill" data-bs-target="#packing" type="button" role="tab">
-                        <i class="fas fa-suitcase me-2"></i>Smart Packing
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link feature-tab" id="transport-tab" data-bs-toggle="pill" data-bs-target="#transport" type="button" role="tab">
-                        <i class="fas fa-subway me-2"></i>Transportation
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link feature-tab" id="emergency-tab" data-bs-toggle="pill" data-bs-target="#emergency" type="button" role="tab">
-                        <i class="fas fa-shield-alt me-2"></i>Emergency Info
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link feature-tab" id="marketplace-tab" data-bs-toggle="pill" data-bs-target="#marketplace" type="button" role="tab">
-                        <i class="fas fa-store me-2"></i>Experiences
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link feature-tab" id="optimize-tab" data-bs-toggle="pill" data-bs-target="#optimize" type="button" role="tab">
-                        <i class="fas fa-robot me-2"></i>AI Optimize
-                    </button>
-                </li>
-            </ul>
-
-            <!-- Tab Content -->
-            <div class="tab-content" id="enhanced-features-content">
-                <!-- Budget Tracker Tab -->
-                <div class="tab-pane fade show active" id="budget" role="tabpanel">
-                    <div class="itinerary-card">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4><i class="fas fa-wallet me-2 text-primary"></i>Trip Budget & Expenses</h4>
-                            <button class="btn btn-primary" onclick="addExpense()">
-                                <i class="fas fa-plus me-1"></i>Add Expense
-                            </button>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div id="expenses-list">
-                                    <div class="text-center py-4 text-muted">
-                                        <i class="fas fa-receipt fa-2x mb-2"></i>
-                                        <p>No expenses added yet. Start tracking your trip spending!</p>
-                                    </div>
-                                </div>
+            <!-- Feature Grid -->
+            <div class="features-grid">
+                <!-- Budget Tracker Card -->
+                <div class="feature-card budget-card" data-feature="budget">
+                    <div class="card-background" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <div class="card-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Smart Budget</h3>
+                        <p>Track expenses and split costs with travel companions</p>
+                        <div class="card-stats">
+                            <div class="stat">
+                                <div class="stat-value" id="budget-total">€0</div>
+                                <div class="stat-label">Total Spent</div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="budget-summary">
-                                    <h5>Budget Summary</h5>
-                                    <div id="budget-summary-content">
-                                        <div class="budget-stat">
-                                            <span class="label">Total Spent:</span>
-                                            <span class="value" id="total-spent">€0.00</span>
-                                        </div>
-                                        <div class="budget-stat">
-                                            <span class="label">Expenses:</span>
-                                            <span class="value" id="expense-count">0</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="stat">
+                                <div class="stat-value" id="budget-expenses">0</div>
+                                <div class="stat-label">Expenses</div>
                             </div>
                         </div>
+                        <button class="card-action-btn" onclick="openBudgetModal()">
+                            <i class="fas fa-plus"></i> Add Expense
+                        </button>
                     </div>
                 </div>
 
-                <!-- Travel Journal Tab -->
-                <div class="tab-pane fade" id="journal" role="tabpanel">
-                    <div class="itinerary-card">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4><i class="fas fa-book me-2 text-primary"></i>Travel Journal</h4>
-                            <button class="btn btn-primary" onclick="addJournalEntry()">
-                                <i class="fas fa-plus me-1"></i>Add Entry
-                            </button>
-                        </div>
-                        
-                        <div id="journal-entries">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-pen-fancy fa-2x mb-2"></i>
-                                <p>Start documenting your journey! Add photos, thoughts, and memories.</p>
+                <!-- Travel Journal Card -->
+                <div class="feature-card journal-card" data-feature="journal">
+                    <div class="card-background" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <div class="card-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Travel Journal</h3>
+                        <p>Capture memories and create your digital travel diary</p>
+                        <div class="card-preview" id="journal-preview">
+                            <div class="preview-item">
+                                <div class="preview-icon"><i class="fas fa-camera"></i></div>
+                                <span>Share your journey...</span>
                             </div>
                         </div>
+                        <button class="card-action-btn" onclick="openJournalModal()">
+                            <i class="fas fa-pen"></i> Write Entry
+                        </button>
                     </div>
                 </div>
 
-                <!-- Smart Packing Tab -->
-                <div class="tab-pane fade" id="packing" role="tabpanel">
-                    <div class="itinerary-card">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4><i class="fas fa-suitcase me-2 text-primary"></i>Smart Packing Assistant</h4>
-                            <button class="btn btn-primary" onclick="generatePackingList()">
-                                <i class="fas fa-magic me-1"></i>Generate List
-                            </button>
-                        </div>
-                        
-                        <div id="packing-lists">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-luggage-cart fa-2x mb-2"></i>
-                                <p>Generate a smart packing list based on your destination's weather and activities!</p>
+                <!-- Smart Packing Card -->
+                <div class="feature-card packing-card" data-feature="packing">
+                    <div class="card-background" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    <div class="card-icon">
+                        <i class="fas fa-suitcase-rolling"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>AI Packing</h3>
+                        <p>Smart lists based on weather, activities, and trip duration</p>
+                        <div class="card-progress" id="packing-progress">
+                            <div class="progress-circle">
+                                <div class="progress-value">0%</div>
                             </div>
+                            <div class="progress-label">Packed</div>
                         </div>
+                        <button class="card-action-btn" onclick="generateSmartPackingList()">
+                            <i class="fas fa-magic"></i> Generate List
+                        </button>
                     </div>
                 </div>
 
-                <!-- Transportation Tab -->
-                <div class="tab-pane fade" id="transport" role="tabpanel">
-                    <div class="itinerary-card">
-                        <h4><i class="fas fa-subway me-2 text-primary"></i>Local Transportation Guide</h4>
-                        <div id="transportation-info">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-bus fa-2x mb-2"></i>
-                                <p>Select a city from your itinerary to see transportation options</p>
+                <!-- Transportation Card -->
+                <div class="feature-card transport-card" data-feature="transport">
+                    <div class="card-background" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+                    <div class="card-icon">
+                        <i class="fas fa-train"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Local Transport</h3>
+                        <p>Metro, buses, bike shares, and parking info for each city</p>
+                        <div class="transport-preview" id="transport-preview">
+                            <div class="transport-mode">
+                                <i class="fas fa-subway"></i> Metro Available
+                            </div>
+                            <div class="transport-mode">
+                                <i class="fas fa-bicycle"></i> Bike Share
                             </div>
                         </div>
+                        <button class="card-action-btn" onclick="showTransportGuide()">
+                            <i class="fas fa-map"></i> View Guide
+                        </button>
                     </div>
                 </div>
 
-                <!-- Emergency Info Tab -->
-                <div class="tab-pane fade" id="emergency" role="tabpanel">
-                    <div class="itinerary-card">
-                        <h4><i class="fas fa-shield-alt me-2 text-primary"></i>Emergency Information</h4>
-                        <div id="emergency-info">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-phone fa-2x mb-2"></i>
-                                <p>Essential emergency contacts and safety information for your destinations</p>
+                <!-- Emergency Card -->
+                <div class="feature-card emergency-card" data-feature="emergency">
+                    <div class="card-background" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+                    <div class="card-icon">
+                        <i class="fas fa-shield-heart"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Safety First</h3>
+                        <p>Emergency contacts, safety tips, and embassy information</p>
+                        <div class="emergency-quick-info">
+                            <div class="emergency-number">
+                                <span class="number">112</span>
+                                <span class="label">EU Emergency</span>
                             </div>
                         </div>
+                        <button class="card-action-btn" onclick="showEmergencyInfo()">
+                            <i class="fas fa-phone"></i> Show Contacts
+                        </button>
                     </div>
                 </div>
 
-                <!-- Experience Marketplace Tab -->
-                <div class="tab-pane fade" id="marketplace" role="tabpanel">
-                    <div class="itinerary-card">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4><i class="fas fa-store me-2 text-primary"></i>Local Experiences</h4>
-                            <button class="btn btn-primary" onclick="searchExperiences()">
-                                <i class="fas fa-search me-1"></i>Find Experiences
-                            </button>
-                        </div>
-                        
-                        <div id="experiences-list">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-map-marked-alt fa-2x mb-2"></i>
-                                <p>Discover unique local experiences and activities in your destinations</p>
-                            </div>
-                        </div>
+                <!-- Experiences Card -->
+                <div class="feature-card experiences-card" data-feature="experiences">
+                    <div class="card-background" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);"></div>
+                    <div class="card-icon">
+                        <i class="fas fa-compass"></i>
                     </div>
-                </div>
-
-                <!-- AI Optimization Tab -->
-                <div class="tab-pane fade" id="optimize" role="tabpanel">
-                    <div class="itinerary-card">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4><i class="fas fa-robot me-2 text-primary"></i>AI Itinerary Optimization</h4>
-                            <button class="btn btn-primary" onclick="optimizeItinerary()">
-                                <i class="fas fa-magic me-1"></i>Optimize Now
-                            </button>
+                    <div class="card-content">
+                        <h3>Local Experiences</h3>
+                        <p>Discover unique activities, tours, and hidden gems</p>
+                        <div class="experiences-preview" id="experiences-preview">
+                            <div class="experience-tag">Food Tours</div>
+                            <div class="experience-tag">Museums</div>
+                            <div class="experience-tag">Adventures</div>
                         </div>
-                        
-                        <div id="optimization-results">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-brain fa-2x mb-2"></i>
-                                <p>Let AI optimize your itinerary based on your preferences and travel patterns</p>
-                            </div>
-                        </div>
+                        <button class="card-action-btn" onclick="exploreExperiences()">
+                            <i class="fas fa-search"></i> Explore
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1517,40 +1997,431 @@
             return [];
         }
         
-        // Enhanced Features JavaScript Functions
+        // Premium Travel Assistant JavaScript
         let currentTripId = null;
+        let isAuthenticated = false;
+        let currentUser = null;
+        
+        // Performance optimization: Cache for API responses
+        const apiCache = new Map();
+        const cacheTimeout = 5 * 60 * 1000; // 5 minutes
+        
+        // Performance optimization: Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Performance optimization: Request queue to prevent duplicate requests
+        const activeRequests = new Set();
+        
+        // Performance optimization: Cached API wrapper
+        async function cachedFetch(url, options = {}) {
+            const cacheKey = `${url}_${JSON.stringify(options)}`;
+            
+            // Check if request is already active
+            if (activeRequests.has(cacheKey)) {
+                return null; // Skip duplicate requests
+            }
+            
+            // Check cache first
+            const cached = apiCache.get(cacheKey);
+            if (cached && Date.now() - cached.timestamp < cacheTimeout) {
+                return cached.data;
+            }
+            
+            try {
+                activeRequests.add(cacheKey);
+                const response = await fetch(url, {
+                    credentials: 'same-origin',
+                    ...options
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Cache successful response
+                    apiCache.set(cacheKey, {
+                        data: data,
+                        timestamp: Date.now()
+                    });
+                    return data;
+                }
+                return null;
+            } catch (error) {
+                console.log(`API request failed: ${url}`, error);
+                return null;
+            } finally {
+                activeRequests.delete(cacheKey);
+            }
+        }
+
+        // Check authentication status with caching
+        async function checkAuth() {
+            try {
+                const data = await cachedFetch('/auth/check');
+                if (data) {
+                    isAuthenticated = data.authenticated;
+                    currentUser = data.user;
+                    return true;
+                } else {
+                    isAuthenticated = false;
+                    currentUser = null;
+                    return false;
+                }
+            } catch (error) {
+                console.log('Auth check failed, assuming not authenticated');
+                isAuthenticated = false;
+                currentUser = null;
+                return false;
+            }
+        }
+
+        // Show authentication required message
+        function showAuthRequired() {
+            const modal = document.createElement('div');
+            modal.className = 'auth-modal';
+            modal.innerHTML = `
+                <div class="auth-modal-content">
+                    <div class="auth-modal-header">
+                        <h3><i class="fas fa-lock me-2"></i>Login Required</h3>
+                        <button onclick="this.closest('.auth-modal').remove()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="auth-modal-body">
+                        <p>Please log in to access premium travel features and save your data.</p>
+                        <div class="auth-actions">
+                            <a href="/auth/login" class="btn btn-primary">Login</a>
+                            <a href="/auth/register" class="btn btn-outline-primary">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .auth-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                }
+                .auth-modal-content {
+                    background: white;
+                    border-radius: 20px;
+                    max-width: 400px;
+                    width: 90%;
+                    overflow: hidden;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                }
+                .auth-modal-header {
+                    background: linear-gradient(135deg, var(--primary), var(--secondary));
+                    color: white;
+                    padding: 1.5rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .auth-modal-body {
+                    padding: 2rem;
+                    text-align: center;
+                }
+                .auth-actions {
+                    display: flex;
+                    gap: 1rem;
+                    margin-top: 1.5rem;
+                }
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    padding: 0;
+                    width: 30px;
+                    height: 30px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    transition: background 0.2s;
+                }
+                .close-btn:hover {
+                    background: rgba(255,255,255,0.2);
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
         // Initialize enhanced features when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load emergency info for current route
-            loadEmergencyInfo();
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication
+            await checkAuth();
             
             // Initialize trip ID from saved trip data
             const savedTrip = sessionStorage.getItem('selectedRoute');
             if (savedTrip) {
                 try {
                     const tripData = JSON.parse(savedTrip);
-                    currentTripId = tripData.id || 1; // Default to 1 if no ID
+                    currentTripId = tripData.id || 1;
                 } catch (e) {
                     currentTripId = 1;
                 }
             } else {
                 currentTripId = 1;
             }
+
+            // Load initial data for cards with staggered loading for better performance
+            if (isAuthenticated) {
+                // Show loading states immediately
+                showCardLoadingStates();
+                
+                // Load cards with staggered timing to prevent overwhelming the server
+                setTimeout(() => loadBudgetSummaryCard(), 100);
+                setTimeout(() => loadPackingProgressCard(), 200);
+                setTimeout(() => loadTransportPreview(), 300);
+                setTimeout(() => loadJournalPreview(), 400);
+            }
         });
 
-        // Budget Tracker Functions
-        async function addExpense() {
-            const category = prompt('Expense category (transport, food, accommodation, activities, other):');
-            if (!category) return;
+        // Show loading states for all cards
+        function showCardLoadingStates() {
+            const loadingHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>';
             
-            const description = prompt('Description:');
-            if (!description) return;
+            const budgetTotal = document.getElementById('budget-total');
+            const budgetExpenses = document.getElementById('budget-expenses');
+            const progressValue = document.querySelector('.progress-value');
+            const transportPreview = document.getElementById('transport-preview');
+            const journalPreview = document.getElementById('journal-preview');
             
-            const amount = parseFloat(prompt('Amount (EUR):'));
-            if (!amount || isNaN(amount)) return;
-            
+            if (budgetTotal) budgetTotal.innerHTML = loadingHTML;
+            if (budgetExpenses) budgetExpenses.innerHTML = loadingHTML;
+            if (progressValue) progressValue.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            if (transportPreview) transportPreview.innerHTML = loadingHTML;
+            if (journalPreview) journalPreview.innerHTML = loadingHTML;
+        }
+
+        // Card-specific loader functions with performance optimization
+        async function loadBudgetSummaryCard() {
             try {
+                const summary = await cachedFetch(`/api/enhanced/budget/summary/${currentTripId}`);
+                if (summary) {
+                    const budgetTotal = document.getElementById('budget-total');
+                    const budgetExpenses = document.getElementById('budget-expenses');
+                    
+                    if (budgetTotal) budgetTotal.textContent = `€${summary.total_spent?.toFixed(0) || '0'}`;
+                    if (budgetExpenses) budgetExpenses.textContent = summary.expense_count || 0;
+                } else {
+                    // Show default values if no data
+                    const budgetTotal = document.getElementById('budget-total');
+                    const budgetExpenses = document.getElementById('budget-expenses');
+                    
+                    if (budgetTotal) budgetTotal.textContent = '€0';
+                    if (budgetExpenses) budgetExpenses.textContent = '0';
+                }
+            } catch (error) {
+                console.log('Budget summary not available');
+                // Show error state or default values
+                const budgetTotal = document.getElementById('budget-total');
+                const budgetExpenses = document.getElementById('budget-expenses');
+                
+                if (budgetTotal) budgetTotal.textContent = '€0';
+                if (budgetExpenses) budgetExpenses.textContent = '0';
+            }
+        }
+
+        async function loadPackingProgressCard() {
+            try {
+                const data = await cachedFetch(`/api/enhanced/packing/lists/${currentTripId}`);
+                if (data) {
+                    const lists = data.packing_lists || [];
+                    const progressValue = document.querySelector('.progress-value');
+                    const progressCircle = document.querySelector('.progress-circle');
+                    
+                    if (lists.length > 0) {
+                        const totalPacked = lists.reduce((sum, list) => sum + (list.progress?.packed || 0), 0);
+                        const totalItems = lists.reduce((sum, list) => sum + (list.progress?.total || 0), 0);
+                        const percentage = totalItems > 0 ? Math.round((totalPacked / totalItems) * 100) : 0;
+                        
+                        if (progressValue) progressValue.textContent = `${percentage}%`;
+                        if (progressCircle) {
+                            progressCircle.style.background = 
+                                `conic-gradient(from 0deg, var(--primary) ${percentage * 3.6}deg, var(--gray-200) ${percentage * 3.6}deg)`;
+                        }
+                    } else {
+                        if (progressValue) progressValue.textContent = '0%';
+                        if (progressCircle) {
+                            progressCircle.style.background = 'conic-gradient(from 0deg, var(--gray-200) 360deg)';
+                        }
+                    }
+                } else {
+                    // Show default state
+                    const progressValue = document.querySelector('.progress-value');
+                    const progressCircle = document.querySelector('.progress-circle');
+                    
+                    if (progressValue) progressValue.textContent = '0%';
+                    if (progressCircle) {
+                        progressCircle.style.background = 'conic-gradient(from 0deg, var(--gray-200) 360deg)';
+                    }
+                }
+            } catch (error) {
+                console.log('Packing progress not available');
+                // Show default state on error
+                const progressValue = document.querySelector('.progress-value');
+                if (progressValue) progressValue.textContent = '0%';
+            }
+        }
+
+        async function loadTransportPreview() {
+            const itineraries = getItineraries();
+            const preview = document.getElementById('transport-preview');
+            
+            if (itineraries.length === 0 || !preview) {
+                if (preview) {
+                    preview.innerHTML = '<div class="no-data">No route data available</div>';
+                }
+                return;
+            }
+
+            const cities = [itineraries[0].start_city, ...itineraries[0].intermediate_cities, itineraries[0].end_city];
+            if (cities.length > 0) {
+                try {
+                    const data = await cachedFetch(`/api/enhanced/transport/city/${encodeURIComponent(cities[0].name)}`);
+                    if (data && preview) {
+                        preview.innerHTML = `
+                            <div class="transport-mode">
+                                <i class="fas fa-subway"></i> ${data.public_transit?.available ? 'Metro Available' : 'Limited Transit'}
+                            </div>
+                            <div class="transport-mode">
+                                <i class="fas fa-bicycle"></i> ${data.bike_share?.available ? 'Bike Share' : 'No Bike Share'}
+                            </div>
+                        `;
+                    } else if (preview) {
+                        preview.innerHTML = `
+                            <div class="transport-mode">
+                                <i class="fas fa-car"></i> Road transport available
+                            </div>
+                            <div class="transport-mode">
+                                <i class="fas fa-walking"></i> Walking routes
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.log('Transport preview not available');
+                    if (preview) {
+                        preview.innerHTML = '<div class="no-data">Transport info unavailable</div>';
+                    }
+                }
+            }
+        }
+
+        async function loadJournalPreview() {
+            try {
+                const data = await cachedFetch(`/api/enhanced/journal/entries/${currentTripId}`);
+                const preview = document.getElementById('journal-preview');
+                
+                if (data && preview) {
+                    const entries = data.entries || [];
+                    
+                    if (entries.length > 0) {
+                        const latestEntry = entries[0];
+                        preview.innerHTML = `
+                            <div class="preview-item">
+                                <div class="preview-icon"><i class="fas fa-pen"></i></div>
+                                <span>${latestEntry.title.substring(0, 30)}...</span>
+                            </div>
+                        `;
+                    } else {
+                        preview.innerHTML = `
+                            <div class="preview-item">
+                                <div class="preview-icon"><i class="fas fa-plus"></i></div>
+                                <span>Start your travel journal</span>
+                            </div>
+                        `;
+                    }
+                } else if (preview) {
+                    preview.innerHTML = `
+                        <div class="preview-item">
+                            <div class="preview-icon"><i class="fas fa-plus"></i></div>
+                            <span>Start your travel journal</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.log('Journal preview not available');
+                const preview = document.getElementById('journal-preview');
+                if (preview) {
+                    preview.innerHTML = '<div class="no-data">Journal unavailable</div>';
+                }
+            }
+        }
+
+        // Premium Modal Functions
+        function openBudgetModal() {
+            if (!isAuthenticated) {
+                showAuthRequired();
+                return;
+            }
+            
+            const modal = createPremiumModal('Budget Tracker', `
+                <div class="expense-form">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="expense-category" class="form-control">
+                            <option value="transport">🚗 Transport</option>
+                            <option value="food">🍕 Food & Dining</option>
+                            <option value="accommodation">🏨 Accommodation</option>
+                            <option value="activities">🎭 Activities</option>
+                            <option value="shopping">🛍️ Shopping</option>
+                            <option value="other">📦 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="expense-description" class="form-control" placeholder="e.g. Dinner at Italian restaurant">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (EUR)</label>
+                        <input type="number" id="expense-amount" class="form-control" step="0.01" placeholder="25.50">
+                    </div>
+                </div>
+            `, [
+                {
+                    text: 'Add Expense',
+                    class: 'btn-primary',
+                    onclick: 'addExpenseFromModal()'
+                }
+            ]);
+        }
+
+        async function addExpenseFromModal() {
+            const category = document.getElementById('expense-category').value;
+            const description = document.getElementById('expense-description').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+
+            if (!category || !description || !amount) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const btn = event.target;
+                btn.classList.add('loading');
+                btn.disabled = true;
+
                 const response = await fetch('/api/enhanced/budget/expenses', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -1560,7 +2431,7 @@
                         category: category,
                         description: description,
                         amount: amount,
-                        paid_by: 1, // Current user ID - in real app would be from session
+                        paid_by: currentUser?.id || 1,
                         currency: 'EUR'
                     })
                 });
@@ -1568,17 +2439,22 @@
                 if (response.ok) {
                     const result = await response.json();
                     if (result.success) {
-                        alert('Expense added successfully!');
-                        loadExpenses();
+                        showToast('Expense added successfully!', 'success');
+                        loadBudgetSummaryCard();
+                        document.querySelector('.auth-modal').remove();
                     } else {
-                        alert('Error: ' + (result.error || 'Failed to add expense'));
+                        showToast('Error: ' + (result.error || 'Failed to add expense'), 'error');
                     }
                 } else {
-                    alert('Please log in to add expenses');
+                    showToast('Authentication error. Please refresh and try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error adding expense:', error);
-                alert('Error adding expense. Please try again.');
+                showToast('Error adding expense. Please try again.', 'error');
+            } finally {
+                const btn = event.target;
+                btn.classList.remove('loading');
+                btn.disabled = false;
             }
         }
 
@@ -2099,28 +2975,573 @@
             `;
         }
 
-        // Tab event handlers
-        document.addEventListener('shown.bs.tab', function (event) {
-            const target = event.target.getAttribute('data-bs-target');
-            
-            switch (target) {
-                case '#budget':
-                    loadExpenses();
-                    break;
-                case '#journal':
-                    loadJournalEntries();
-                    break;
-                case '#packing':
-                    loadPackingLists();
-                    break;
-                case '#transport':
-                    loadTransportationInfo();
-                    break;
-                case '#emergency':
-                    loadEmergencyInfo();
-                    break;
+        // Additional premium functions for the new UI
+        function openJournalModal() {
+            if (!isAuthenticated) {
+                showAuthRequired();
+                return;
             }
-        });
+            
+            createPremiumModal('Travel Journal', `
+                <div class="journal-form">
+                    <div class="form-group">
+                        <label>Entry Title</label>
+                        <input type="text" id="journal-title" class="form-control" placeholder="Amazing day in Paris!">
+                    </div>
+                    <div class="form-group">
+                        <label>Your Story</label>
+                        <textarea id="journal-content" class="form-control" rows="4" placeholder="Tell us about your adventure..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Entry Type</label>
+                        <select id="journal-type" class="form-control">
+                            <option value="text">📝 Text Entry</option>
+                            <option value="photo">📸 Photo Story</option>
+                            <option value="location">📍 Location Highlight</option>
+                        </select>
+                    </div>
+                </div>
+            `, [
+                {
+                    text: 'Save Entry',
+                    class: 'btn-primary',
+                    onclick: 'addJournalFromModal()'
+                }
+            ]);
+        }
+
+        async function addJournalFromModal() {
+            const title = document.getElementById('journal-title').value;
+            const content = document.getElementById('journal-content').value;
+            const type = document.getElementById('journal-type').value;
+
+            if (!title || !content) {
+                showToast('Please fill in title and content', 'error');
+                return;
+            }
+
+            try {
+                const btn = event.target;
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                const response = await fetch('/api/enhanced/journal/entries', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        trip_id: currentTripId,
+                        entry_type: type,
+                        title: title,
+                        content: content,
+                        is_private: false
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('Journal entry saved!', 'success');
+                        loadJournalPreview();
+                        document.querySelector('.auth-modal').remove();
+                    } else {
+                        showToast('Error: ' + (result.error || 'Failed to save entry'), 'error');
+                    }
+                } else {
+                    showToast('Authentication error. Please refresh and try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving journal entry:', error);
+                showToast('Error saving entry. Please try again.', 'error');
+            } finally {
+                const btn = event.target;
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        async function generateSmartPackingList() {
+            if (!isAuthenticated) {
+                showAuthRequired();
+                return;
+            }
+
+            const itineraries = getItineraries();
+            if (itineraries.length === 0) {
+                showToast('Please plan a trip first to generate a packing list', 'error');
+                return;
+            }
+
+            try {
+                const btn = event.target;
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                const selectedRoute = itineraries[0];
+                const response = await fetch('/api/enhanced/packing/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        trip_id: currentTripId,
+                        trip_data: {
+                            total_duration_hours: selectedRoute.total_duration || 168,
+                            route_type: selectedRoute.route_type,
+                            weather_data: {
+                                average_temperature: 20,
+                                precipitation_chance: 30
+                            },
+                            activities: ['sightseeing', 'cultural']
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('Smart packing list generated!', 'success');
+                        loadPackingProgressCard();
+                    } else {
+                        showToast('Error: ' + (result.error || 'Failed to generate list'), 'error');
+                    }
+                } else {
+                    showToast('Authentication error. Please refresh and try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating packing list:', error);
+                showToast('Error generating list. Please try again.', 'error');
+            } finally {
+                const btn = event.target;
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function showTransportGuide() {
+            if (!isAuthenticated) {
+                showAuthRequired();
+                return;
+            }
+            
+            // Create full-screen transport modal
+            createFullScreenModal('Local Transportation Guide', '<div id="transport-guide-content" class="loading">Loading transportation information...</div>');
+            
+            // Load transport data
+            loadFullTransportGuide();
+        }
+
+        async function loadFullTransportGuide() {
+            const itineraries = getItineraries();
+            if (itineraries.length === 0) return;
+
+            const cities = [itineraries[0].start_city, ...itineraries[0].intermediate_cities, itineraries[0].end_city];
+            const container = document.getElementById('transport-guide-content');
+            
+            let content = '<div class="transport-cities">';
+            
+            for (const city of cities) {
+                try {
+                    const response = await fetch(`/api/enhanced/transport/city/${encodeURIComponent(city.name)}`, {
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        content += createDetailedTransportCard(city.name, data);
+                    }
+                } catch (error) {
+                    console.error(`Error loading transport for ${city.name}:`, error);
+                }
+            }
+            
+            content += '</div>';
+            container.innerHTML = content;
+        }
+
+        function createDetailedTransportCard(cityName, data) {
+            return `
+                <div class="detailed-transport-card">
+                    <h3><i class="fas fa-map-marker-alt me-2"></i>${cityName}</h3>
+                    
+                    <div class="transport-section">
+                        <h4><i class="fas fa-subway me-2"></i>Public Transit</h4>
+                        <div class="transport-details">
+                            <p><strong>Status:</strong> ${data.public_transit?.available ? '✅ Available' : '❌ Limited'}</p>
+                            <p><strong>Single Ticket:</strong> €${data.public_transit?.systems?.[0]?.ticket_types?.[0]?.price || 'N/A'}</p>
+                            <p><strong>Day Pass:</strong> €${data.public_transit?.systems?.[0]?.ticket_types?.[1]?.price || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transport-section">
+                        <h4><i class="fas fa-bicycle me-2"></i>Bike Share</h4>
+                        <div class="transport-details">
+                            <p><strong>Status:</strong> ${data.bike_share?.available ? '✅ Available' : '❌ Not Available'}</p>
+                            ${data.bike_share?.available ? `<p><strong>Price:</strong> €${data.bike_share?.pricing?.[0]?.price || 'N/A'} per 30min</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="transport-section">
+                        <h4><i class="fas fa-car me-2"></i>Parking</h4>
+                        <div class="transport-details">
+                            <p><strong>Street Parking:</strong> €${data.parking?.street_parking?.average_price || 'N/A'}/hour</p>
+                            <p><strong>Garage Parking:</strong> €${data.parking?.parking_garages?.[0]?.price_per_day || 'N/A'}/day</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showEmergencyInfo() {
+            createFullScreenModal('Emergency Information', '<div id="emergency-guide-content" class="loading">Loading emergency information...</div>');
+            loadFullEmergencyGuide();
+        }
+
+        async function loadFullEmergencyGuide() {
+            const itineraries = getItineraries();
+            if (itineraries.length === 0) return;
+
+            const countries = [...new Set([itineraries[0].start_city, ...itineraries[0].intermediate_cities, itineraries[0].end_city]
+                .map(city => getCountryFromCity(city.name)))];
+            
+            const container = document.getElementById('emergency-guide-content');
+            let content = '<div class="emergency-countries">';
+            
+            for (const country of countries) {
+                try {
+                    const response = await fetch(`/api/enhanced/emergency/contacts?country=${encodeURIComponent(country)}`, {
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        content += createDetailedEmergencyCard(country, data.contacts || []);
+                    }
+                } catch (error) {
+                    console.error(`Error loading emergency info for ${country}:`, error);
+                }
+            }
+            
+            content += '</div>';
+            container.innerHTML = content;
+        }
+
+        function createDetailedEmergencyCard(country, contacts) {
+            const contactsHtml = contacts.map(contact => `
+                <div class="emergency-contact">
+                    <div class="contact-header">
+                        <h5>${contact.service_name}</h5>
+                        <span class="contact-number">${contact.phone_number}</span>
+                    </div>
+                    ${contact.address ? `<p class="contact-address">${contact.address}</p>` : ''}
+                    ${contact.languages ? `<p class="contact-languages">Languages: ${JSON.parse(contact.languages).join(', ')}</p>` : ''}
+                </div>
+            `).join('');
+
+            return `
+                <div class="detailed-emergency-card">
+                    <h3><i class="fas fa-flag me-2"></i>${country}</h3>
+                    <div class="emergency-highlight">
+                        <div class="emergency-number-big">
+                            <span class="number">112</span>
+                            <span class="label">EU Emergency Number</span>
+                        </div>
+                    </div>
+                    <div class="emergency-contacts">
+                        ${contactsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function exploreExperiences() {
+            if (!isAuthenticated) {
+                showAuthRequired();
+                return;
+            }
+            
+            createFullScreenModal('Local Experiences', '<div id="experiences-guide-content" class="loading">Loading local experiences...</div>');
+            loadFullExperiencesGuide();
+        }
+
+        async function loadFullExperiencesGuide() {
+            const itineraries = getItineraries();
+            if (itineraries.length === 0) return;
+
+            const cities = [itineraries[0].start_city, ...itineraries[0].intermediate_cities, itineraries[0].end_city];
+            const container = document.getElementById('experiences-guide-content');
+            let content = '<div class="experiences-cities">';
+            
+            for (const city of cities.slice(0, 3)) {
+                try {
+                    const response = await fetch(`/api/enhanced/marketplace/experiences?city=${encodeURIComponent(city.name)}&limit=5`, {
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        content += createDetailedExperiencesSection(city.name, data.experiences || []);
+                    }
+                } catch (error) {
+                    console.error(`Error loading experiences for ${city.name}:`, error);
+                }
+            }
+            
+            content += '</div>';
+            container.innerHTML = content;
+        }
+
+        function createDetailedExperiencesSection(cityName, experiences) {
+            if (experiences.length === 0) {
+                return `
+                    <div class="experiences-section">
+                        <h3><i class="fas fa-map-marker-alt me-2"></i>${cityName}</h3>
+                        <p class="no-experiences">No experiences available for this city yet.</p>
+                    </div>
+                `;
+            }
+
+            const experiencesHtml = experiences.map(exp => `
+                <div class="detailed-experience-card">
+                    <div class="experience-header">
+                        <h5>${exp.title}</h5>
+                        <span class="experience-price">€${exp.price}</span>
+                    </div>
+                    <p class="experience-description">${exp.description}</p>
+                    <div class="experience-meta">
+                        <span class="experience-duration">⏱️ ${exp.duration_hours || 2}h</span>
+                        <span class="experience-participants">👥 Max ${exp.max_participants || 10}</span>
+                        <span class="experience-category">🏷️ ${exp.category}</span>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm experience-book-btn" onclick="bookExperienceDetailed(${exp.id}, '${exp.title}', ${exp.price})">
+                        Book Experience
+                    </button>
+                </div>
+            `).join('');
+
+            return `
+                <div class="experiences-section">
+                    <h3><i class="fas fa-map-marker-alt me-2"></i>${cityName}</h3>
+                    <div class="experiences-grid">
+                        ${experiencesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function bookExperienceDetailed(experienceId, title, price) {
+            const participants = prompt(`How many participants for "${title}" (€${price})?`);
+            if (!participants || isNaN(participants)) return;
+
+            try {
+                const btn = event.target;
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                const response = await fetch(`/api/enhanced/marketplace/experiences/${experienceId}/book`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        participants: parseInt(participants),
+                        booking_date: new Date().toISOString().split('T')[0]
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast(`"${title}" booked successfully!`, 'success');
+                    } else {
+                        showToast('Error: ' + (result.error || 'Failed to book'), 'error');
+                    }
+                } else {
+                    showToast('Authentication error. Please refresh and try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error booking experience:', error);
+                showToast('Error booking experience. Please try again.', 'error');
+            } finally {
+                const btn = event.target;
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        // Utility Functions
+        function createPremiumModal(title, content, buttons = []) {
+            const modal = document.createElement('div');
+            modal.className = 'auth-modal premium-modal';
+            
+            const buttonsHtml = buttons.map(btn => 
+                `<button class="btn ${btn.class}" onclick="${btn.onclick}">${btn.text}</button>`
+            ).join('');
+            
+            modal.innerHTML = `
+                <div class="auth-modal-content premium-modal-content">
+                    <div class="auth-modal-header">
+                        <h3><i class="fas fa-sparkles me-2"></i>${title}</h3>
+                        <button onclick="this.closest('.auth-modal').remove()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="auth-modal-body">
+                        ${content}
+                        <div class="modal-actions">
+                            ${buttonsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            return modal;
+        }
+
+        function createFullScreenModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'fullscreen-modal';
+            modal.innerHTML = `
+                <div class="fullscreen-modal-content">
+                    <div class="fullscreen-modal-header">
+                        <h2><i class="fas fa-sparkles me-2"></i>${title}</h2>
+                        <button onclick="this.closest('.fullscreen-modal').remove()" class="close-btn-large">&times;</button>
+                    </div>
+                    <div class="fullscreen-modal-body">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add styles for fullscreen modal
+            if (!document.getElementById('fullscreen-modal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'fullscreen-modal-styles';
+                style.textContent = `
+                    .fullscreen-modal {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.95);
+                        z-index: 10001;
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .fullscreen-modal-content {
+                        width: 100%;
+                        height: 100%;
+                        background: white;
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .fullscreen-modal-header {
+                        background: linear-gradient(135deg, var(--primary), var(--secondary));
+                        color: white;
+                        padding: 2rem;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .fullscreen-modal-body {
+                        flex: 1;
+                        padding: 2rem;
+                        overflow-y: auto;
+                    }
+                    .close-btn-large {
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 2rem;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 50%;
+                        transition: background 0.2s;
+                    }
+                    .close-btn-large:hover {
+                        background: rgba(255,255,255,0.2);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            return modal;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Add toast styles if not already added
+            if (!document.getElementById('toast-styles')) {
+                const style = document.createElement('style');
+                style.id = 'toast-styles';
+                style.textContent = `
+                    .toast {
+                        position: fixed;
+                        top: 2rem;
+                        right: 2rem;
+                        background: white;
+                        border-radius: 12px;
+                        padding: 1rem 1.5rem;
+                        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                        z-index: 10002;
+                        transform: translateX(400px);
+                        transition: transform 0.3s ease;
+                        border-left: 4px solid var(--primary);
+                    }
+                    .toast.toast-success { border-left-color: var(--success); }
+                    .toast.toast-error { border-left-color: var(--danger); }
+                    .toast-content {
+                        display: flex;
+                        align-items: center;
+                        color: var(--gray-800);
+                        font-weight: 500;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function getCountryFromCity(cityName) {
+            const cityCountryMap = {
+                'Paris': 'France', 'Lyon': 'France', 'Marseille': 'France', 'Nice': 'France',
+                'Rome': 'Italy', 'Milan': 'Italy', 'Venice': 'Italy', 'Florence': 'Italy',
+                'Madrid': 'Spain', 'Barcelona': 'Spain', 'Seville': 'Spain', 'Valencia': 'Spain',
+                'Berlin': 'Germany', 'Munich': 'Germany', 'Hamburg': 'Germany', 'Cologne': 'Germany',
+                'Amsterdam': 'Netherlands', 'Rotterdam': 'Netherlands', 'The Hague': 'Netherlands',
+                'Vienna': 'Austria', 'Salzburg': 'Austria', 'Innsbruck': 'Austria'
+            };
+            return cityCountryMap[cityName] || 'France';
+        }
 
         // Add custom CSS for map icons
         const style = document.createElement('style');
@@ -2134,6 +3555,57 @@
             }
         `;
         document.head.appendChild(style);
+
+        // Mobile optimization: Touch events for better mobile experience
+        if ('ontouchstart' in window) {
+            // Add touch support for feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'translateY(-2px)';
+                }, {passive: true});
+                
+                card.addEventListener('touchend', function(e) {
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                }, {passive: true});
+            });
+
+            // Prevent zoom on double tap for buttons
+            document.querySelectorAll('.btn, .feature-card').forEach(element => {
+                element.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    this.click();
+                });
+            });
+        }
+
+        // Performance: Lazy load images when they come into view
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+
+        // Performance: Debounced scroll handler for better performance
+        let scrollTimer;
+        window.addEventListener('scroll', function() {
+            if (scrollTimer) clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                // Handle scroll events here if needed
+            }, 16); // ~60fps
+        }, {passive: true});
     </script>
 </body>
 </html>

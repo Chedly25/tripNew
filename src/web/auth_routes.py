@@ -201,6 +201,24 @@ def profile():
                          trips=user_trips, 
                          favorites=favorite_trips)
 
+@auth_bp.route('/check', methods=['GET'])
+def check_auth():
+    """Check authentication status."""
+    user = get_current_user()
+    if user:
+        return jsonify({
+            'authenticated': True,
+            'user': {
+                'id': user['id'],
+                'username': user['username'],
+                'email': user['email'],
+                'first_name': user['first_name'],
+                'last_name': user['last_name']
+            }
+        })
+    else:
+        return jsonify({'authenticated': False}), 401
+
 @auth_bp.route('/api/user')
 @login_required
 def get_user_info():
