@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="/static/global-theme.css">
     
     <style>
         * {
@@ -543,14 +545,43 @@
         }
 
         .route-type-badge {
-            background: var(--accent-gradient);
-            color: var(--midnight-navy);
+            background: var(--style-gradient, var(--accent-gradient));
+            color: var(--white);
             padding: 0.4rem 1rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        
+        /* Trip style card enhancements */
+        .route-selection-card {
+            border-left: 4px solid var(--style-color, var(--accent-gradient));
+        }
+        
+        .route-selection-card.trip-romantic {
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .route-selection-card.trip-adventure {
+            background: linear-gradient(145deg, rgba(34, 197, 94, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .route-selection-card.trip-cultural {
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .route-selection-card.trip-scenic {
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .route-selection-card.trip-culinary {
+            background: linear-gradient(145deg, rgba(249, 115, 22, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .route-selection-card.trip-hidden_gems {
+            background: linear-gradient(145deg, rgba(234, 179, 8, 0.1), rgba(255, 255, 255, 0.05));
         }
 
         .route-actions {
@@ -2845,13 +2876,16 @@
 
             // Display route selection cards
             container.innerHTML += routes.map((route, index) => `
-                <div class="route-selection-card" data-route-index="${index}">
+                <div class="route-selection-card trip-${route.route_type || 'scenic'}" data-route-index="${index}">
                     <div class="route-card-header">
                         <div class="route-card-title">
                             <i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i>
                             <h3>${route.name || `${route.route_type || 'Custom'} Route`}</h3>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <button class="btn btn-style" onclick="viewRouteDetails('${route.route_type || 'scenic'}', ${index})" title="View detailed information about this route">
+                                <i class="fas fa-info-circle"></i> More Details
+                            </button>
                             <button class="route-refresh-btn" onclick="refreshRoute('${route.route_type || route.name}', ${index})" title="Generate new cities for this route">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
@@ -3478,6 +3512,24 @@
             } finally {
                 // Remove loading state
                 refreshBtn.classList.remove('loading');
+            }
+        }
+        
+        // View detailed route information
+        function viewRouteDetails(routeType, routeIndex) {
+            try {
+                // Get the route data
+                const route = window.availableRoutes[routeIndex];
+                if (route) {
+                    // Store route data for the detail page
+                    sessionStorage.setItem('selectedRouteData', JSON.stringify(route));
+                }
+                
+                // Navigate to detail page
+                window.location.href = `/trip-detail/${routeType}`;
+            } catch (error) {
+                console.error('Error viewing route details:', error);
+                alert('Unable to view route details. Please try again.');
             }
         }
         

@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.onerror=null; document.head.appendChild(document.createElement('link')).href='/static/fallback.css';">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="/static/global-theme.css">
     <!-- Fallback CSS -->
     <link rel="stylesheet" href="/static/fallback.css">
     
@@ -281,15 +283,15 @@
         }
         
         .route-type-card.selected {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--style-color);
+            background: var(--style-bg);
         }
         
         .route-type-icon {
             width: 48px;
             height: 48px;
             border-radius: 14px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--style-gradient, linear-gradient(135deg, var(--primary), var(--secondary)));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -711,7 +713,11 @@
                 </div>
                 
                 <div class="quick-actions">
-                    <a href="#planner" class="quick-action-btn primary">
+                    <a href="/ai-travel-planner" class="quick-action-btn primary">
+                        <i class="fas fa-magic"></i>
+                        AI Travel Suggestions
+                    </a>
+                    <a href="#planner" class="quick-action-btn">
                         <i class="fas fa-play"></i>
                         Start Planning
                     </a>
@@ -863,42 +869,42 @@
                             Choose Your Adventure Types
                         </label>
                         <div class="route-types">
-                            <div class="route-type-card" data-type="scenic">
+                            <div class="route-type-card trip-scenic" data-type="scenic">
                                 <div class="route-type-icon">
                                     <i class="fas fa-mountain"></i>
                                 </div>
                                 <div class="route-type-name">Scenic</div>
                                 <div class="route-type-desc">Breathtaking landscapes and natural wonders</div>
                             </div>
-                            <div class="route-type-card" data-type="cultural">
+                            <div class="route-type-card trip-cultural" data-type="cultural">
                                 <div class="route-type-icon">
                                     <i class="fas fa-monument"></i>
                                 </div>
                                 <div class="route-type-name">Cultural</div>
                                 <div class="route-type-desc">Historic sites and cultural landmarks</div>
                             </div>
-                            <div class="route-type-card" data-type="adventure">
+                            <div class="route-type-card trip-adventure" data-type="adventure">
                                 <div class="route-type-icon">
                                     <i class="fas fa-hiking"></i>
                                 </div>
                                 <div class="route-type-name">Adventure</div>
                                 <div class="route-type-desc">Thrilling activities and outdoor experiences</div>
                             </div>
-                            <div class="route-type-card" data-type="culinary">
+                            <div class="route-type-card trip-culinary" data-type="culinary">
                                 <div class="route-type-icon">
                                     <i class="fas fa-utensils"></i>
                                 </div>
                                 <div class="route-type-name">Culinary</div>
                                 <div class="route-type-desc">Gastronomic delights and local cuisine</div>
                             </div>
-                            <div class="route-type-card" data-type="romantic">
+                            <div class="route-type-card trip-romantic" data-type="romantic">
                                 <div class="route-type-icon">
                                     <i class="fas fa-heart"></i>
                                 </div>
                                 <div class="route-type-name">Romantic</div>
                                 <div class="route-type-desc">Perfect for couples and romantic getaways</div>
                             </div>
-                            <div class="route-type-card" data-type="hidden_gems">
+                            <div class="route-type-card trip-hidden_gems" data-type="hidden_gems">
                                 <div class="route-type-icon">
                                     <i class="fas fa-gem"></i>
                                 </div>

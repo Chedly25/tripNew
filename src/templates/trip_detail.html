@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if route_type %}{{ route_type.title() }} Trip Details{% else %}Trip Details{% endif %} | EuroRoam</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="/static/global-theme.css">
+    
+    <style>
+        /* Trip Detail Specific Styles */
+        .trip-detail-hero {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trip-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .detail-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+        
+        .detail-title {
+            font-family: var(--font-heading);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .detail-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .back-to-results {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: var(--border-glass);
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition-normal);
+            margin-bottom: 2rem;
+        }
+        
+        .back-to-results:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            color: var(--white);
+        }
+        
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .main-content {
+            background: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .map-container {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-md);
+            height: 300px;
+            position: relative;
+        }
+        
+        .map-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: var(--border-light);
+        }
+        
+        .map-title {
+            font-weight: 600;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        #detailMap {
+            height: 220px;
+            border-radius: var(--border-radius);
+        }
+        
+        .info-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .info-card h3 {
+            color: var(--gray-800);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--border-radius);
+        }
+        
+        .info-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+        
+        .style-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--style-gradient);
+            color: var(--white);
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .cities-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .cities-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .city-card {
+            background: var(--gray-50);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border-left: 4px solid var(--style-color);
+            transition: var(--transition-normal);
+        }
+        
+        .city-card:hover {
+            background: var(--gray-100);
+            transform: translateX(4px);
+        }
+        
+        .city-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .city-info h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.25rem;
+        }
+        
+        .city-location {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        
+        .city-type {
+            background: var(--style-bg);
+            color: var(--style-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .city-description {
+            color: var(--gray-700);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .city-highlights {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .highlight-tag {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--border-radius);
+            font-size: 0.8rem;
+        }
+        
+        .actions-section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .actions-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .action-btn {
+            background: var(--bg-card);
+            border: var(--border-medium);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+            color: var(--gray-800);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-btn:hover {
+            background: var(--style-bg);
+            border-color: var(--style-color);
+            transform: translateY(-2px);
+            color: var(--gray-800);
+        }
+        
+        .action-btn i {
+            font-size: 1.5rem;
+            color: var(--style-color);
+        }
+        
+        .chat-widget {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: var(--z-modal);
+        }
+        
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--style-gradient);
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-normal);
+        }
+        
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .chat-panel {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 400px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            border: var(--border-light);
+            display: none;
+            flex-direction: column;
+        }
+        
+        .chat-panel.active {
+            display: flex;
+        }
+        
+        .chat-header {
+            padding: 1rem;
+            border-bottom: var(--border-light);
+            background: var(--style-gradient);
+            color: var(--white);
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .chat-input-area {
+            padding: 1rem;
+            border-top: var(--border-light);
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: var(--border-medium);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+        }
+        
+        .chat-send {
+            background: var(--style-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem;
+            color: var(--white);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+            
+            .map-container {
+                height: 250px;
+            }
+            
+            #detailMap {
+                height: 170px;
+            }
+            
+            .actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chat-panel {
+                width: 90vw;
+                right: 5vw;
+            }
+        }
+    </style>
+</head>
+<body class="trip-{{ route_type or 'scenic' }}">
+    <div class="trip-detail-hero">
+        <div class="trip-detail-container">
+            <!-- Header -->
+            <a href="/results" class="back-to-results">
+                <i class="fas fa-arrow-left"></i>
+                Back to Results
+            </a>
+            
+            <div class="detail-header">
+                <h1 class="detail-title">
+                    {% if route_type == 'romantic' %}
+                        <i class="fas fa-heart"></i> Romantic Escape Route
+                    {% elif route_type == 'adventure' %}
+                        <i class="fas fa-mountain"></i> Adventure & Activities Route
+                    {% elif route_type == 'cultural' %}
+                        <i class="fas fa-university"></i> Cultural Heritage Route
+                    {% elif route_type == 'scenic' %}
+                        <i class="fas fa-camera"></i> Scenic Mountain & Lakes Route
+                    {% elif route_type == 'culinary' %}
+                        <i class="fas fa-utensils"></i> Culinary & Wine Route
+                    {% elif route_type == 'hidden_gems' %}
+                        <i class="fas fa-gem"></i> Hidden Gems Route
+                    {% else %}
+                        <i class="fas fa-route"></i> European Adventure
+                    {% endif %}
+                </h1>
+                <p class="detail-subtitle">
+                    {% if route_type == 'romantic' %}
+                        Intimate journey through Europe's most romantic destinations, perfect for couples seeking enchanting experiences.
+                    {% elif route_type == 'adventure' %}
+                        Action-packed journey featuring outdoor activities like hiking, skiing, water sports, and unique experiences.
+                    {% elif route_type == 'cultural' %}
+                        Explore UNESCO World Heritage sites, historic city centers, and cultural landmarks spanning centuries of European history.
+                    {% elif route_type == 'scenic' %}
+                        Journey through breathtaking Alpine landscapes, pristine lakes, and mountain vistas. Perfect for nature lovers and photographers.
+                    {% elif route_type == 'culinary' %}
+                        Savor Europe's finest cuisines, visit local markets, wine regions, and discover gastronomic treasures.
+                    {% elif route_type == 'hidden_gems' %}
+                        Discover Europe's best-kept secrets and off-the-beaten-path destinations that most tourists never see.
+                    {% else %}
+                        Discover the perfect European adventure tailored to your travel style and preferences.
+                    {% endif %}
+                </p>
+                <div class="style-badge">
+                    <i class="fas fa-tag"></i>
+                    {{ route_type.replace('_', ' ').title() if route_type else 'Custom' }} Style
+                </div>
+            </div>
+            
+            <!-- Main Content Layout -->
+            <div class="detail-layout">
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- Cities Section -->
+                    <div class="cities-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Your Journey
+                        </h2>
+                        <div class="cities-grid" id="citiesGrid">
+                            <!-- Cities will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Map Container -->
+                    <div class="map-container">
+                        <div class="map-header">
+                            <h3 class="map-title">
+                                <i class="fas fa-map"></i>
+                                Route Overview
+                            </h3>
+                        </div>
+                        <div id="detailMap"></div>
+                    </div>
+                    
+                    <!-- Trip Info -->
+                    <div class="info-card">
+                        <h3>
+                            <i class="fas fa-info-circle"></i>
+                            Trip Information
+                        </h3>
+                        <div class="info-grid" id="tripInfo">
+                            <!-- Trip info will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions Section -->
+            <div class="actions-section">
+                <h2 class="actions-title">Ready to Book Your Adventure?</h2>
+                <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem;">
+                    Choose from our comprehensive toolkit to plan every detail of your trip
+                </p>
+                
+                <div class="actions-grid">
+                    <a href="#" class="action-btn" onclick="saveTrip()">
+                        <i class="fas fa-save"></i>
+                        <span>Save Trip</span>
+                    </a>
+                    <a href="#" class="action-btn" onclick="refreshRoute()">
+                        <i class="fas fa-refresh"></i>
+                        <span>Refresh Route</span>
+                    </a>
+                    <a href="#" class="action-btn" onclick="exportItinerary()">
+                        <i class="fas fa-download"></i>
+                        <span>Export PDF</span>
+                    </a>
+                    <a href="#" class="action-btn" onclick="shareTrip()">
+                        <i class="fas fa-share"></i>
+                        <span>Share Trip</span>
+                    </a>
+                    <a href="#" class="action-btn" onclick="bookHotels()">
+                        <i class="fas fa-bed"></i>
+                        <span>Book Hotels</span>
+                    </a>
+                    <a href="#" class="action-btn" onclick="findRestaurants()">
+                        <i class="fas fa-utensils"></i>
+                        <span>Find Restaurants</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contextual AI Chat Widget -->
+    <div class="chat-widget">
+        <button class="chat-toggle" onclick="toggleChat()">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chat-panel" id="chatPanel">
+            <div class="chat-header">
+                <h4>Trip Assistant</h4>
+                <button class="chat-close" onclick="toggleChat()">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message ai">
+                    Hi! I can help you with questions about this {{ route_type or 'trip' }} route. Ask me about destinations, activities, or travel tips!
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask about this route...">
+                <button class="chat-send" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let routeData = null;
+        let detailMap = null;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRouteData();
+            initializeMap();
+        });
+        
+        function loadRouteData() {
+            // Try to get route data from sessionStorage
+            const storedData = sessionStorage.getItem('selectedRouteData');
+            if (storedData) {
+                routeData = JSON.parse(storedData);
+                populateRouteDetails();
+            } else {
+                // Generate demo data based on route type
+                generateDemoRouteData();
+            }
+        }
+        
+        function generateDemoRouteData() {
+            const routeType = '{{ route_type or "scenic" }}';
+            
+            // Demo route data
+            const demoRoutes = {
+                romantic: {
+                    start_city: { name: 'Paris', country: 'France', coordinates: [48.8566, 2.3522] },
+                    end_city: { name: 'Venice', country: 'Italy', coordinates: [45.4408, 12.3155] },
+                    intermediate_cities: [
+                        {
+                            name: 'Lucerne',
+                            country: 'Switzerland',
+                            coordinates: [47.0502, 8.3093],
+                            types: ['romantic', 'scenic', 'lakes'],
+                            description: 'Enchanting lakeside city with stunning Alpine views and romantic promenades.',
+                            highlights: ['Lake Lucerne', 'Chapel Bridge', 'Mount Pilatus']
+                        },
+                        {
+                            name: 'Verona',
+                            country: 'Italy',
+                            coordinates: [45.4384, 10.9916],
+                            types: ['romantic', 'historic', 'cultural'],
+                            description: 'Shakespeare\'s city of love with beautiful architecture and romantic atmosphere.',
+                            highlights: ['Juliet\'s Balcony', 'Arena di Verona', 'Piazza delle Erbe']
+                        }
+                    ],
+                    total_distance_km: 789,
+                    total_duration_hours: 8.5,
+                    estimated_cost: 1200
+                },
+                adventure: {
+                    start_city: { name: 'Munich', country: 'Germany', coordinates: [48.1351, 11.5820] },
+                    end_city: { name: 'Chamonix', country: 'France', coordinates: [45.9237, 6.8694] },
+                    intermediate_cities: [
+                        {
+                            name: 'Innsbruck',
+                            country: 'Austria',
+                            coordinates: [47.2692, 11.4041],
+                            types: ['adventure', 'alpine', 'winter-sports'],
+                            description: 'Alpine adventure capital with world-class skiing and mountain activities.',
+                            highlights: ['Nordkette Cable Car', 'Ski Jumping', 'Mountain Biking']
+                        },
+                        {
+                            name: 'Interlaken',
+                            country: 'Switzerland',
+                            coordinates: [46.6863, 7.8632],
+                            types: ['adventure', 'alpine', 'outdoor'],
+                            description: 'Adventure playground between two lakes with extreme sports and hiking.',
+                            highlights: ['Jungfraujoch', 'Paragliding', 'Bungee Jumping']
+                        }
+                    ],
+                    total_distance_km: 445,
+                    total_duration_hours: 5.2,
+                    estimated_cost: 980
+                },
+                cultural: {
+                    start_city: { name: 'Rome', country: 'Italy', coordinates: [41.9028, 12.4964] },
+                    end_city: { name: 'Vienna', country: 'Austria', coordinates: [48.2082, 16.3738] },
+                    intermediate_cities: [
+                        {
+                            name: 'Florence',
+                            country: 'Italy',
+                            coordinates: [43.7696, 11.2558],
+                            types: ['cultural', 'renaissance', 'artistic'],
+                            description: 'Renaissance capital with incredible art, architecture, and cultural treasures.',
+                            highlights: ['Uffizi Gallery', 'Duomo', 'Ponte Vecchio']
+                        },
+                        {
+                            name: 'Salzburg',
+                            country: 'Austria',
+                            coordinates: [47.8095, 13.0550],
+                            types: ['cultural', 'historic', 'unesco'],
+                            description: 'Mozart\'s birthplace with baroque architecture and musical heritage.',
+                            highlights: ['Historic Center', 'Mozart Museum', 'Salzburg Festival']
+                        }
+                    ],
+                    total_distance_km: 1156,
+                    total_duration_hours: 12.1,
+                    estimated_cost: 1450
+                }
+            };
+            
+            routeData = demoRoutes[routeType] || demoRoutes.romantic;
+            populateRouteDetails();
+        }
+        
+        function populateRouteDetails() {
+            if (!routeData) return;
+            
+            // Populate cities grid
+            const citiesGrid = document.getElementById('citiesGrid');
+            citiesGrid.innerHTML = '';
+            
+            // Add start city
+            const startCityCard = createCityCard(routeData.start_city, 'Start', true);
+            citiesGrid.appendChild(startCityCard);
+            
+            // Add intermediate cities
+            routeData.intermediate_cities.forEach((city, index) => {
+                const cityCard = createCityCard(city, `Stop ${index + 1}`, false);
+                citiesGrid.appendChild(cityCard);
+            });
+            
+            // Add end city
+            const endCityCard = createCityCard(routeData.end_city, 'Destination', true);
+            citiesGrid.appendChild(endCityCard);
+            
+            // Populate trip info
+            const tripInfo = document.getElementById('tripInfo');
+            tripInfo.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Total Distance</span>
+                    <span class="info-value">${routeData.total_distance_km || 0} km</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Driving Time</span>
+                    <span class="info-value">${routeData.total_duration_hours || 0} hours</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Estimated Cost</span>
+                    <span class="info-value">€${routeData.estimated_cost || 0}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cities</span>
+                    <span class="info-value">${(routeData.intermediate_cities?.length || 0) + 2}</span>
+                </div>
+            `;
+            
+            // Update map
+            if (detailMap) {
+                updateMapWithRoute();
+            }
+        }
+        
+        function createCityCard(city, label, isEndpoint) {
+            const card = document.createElement('div');
+            card.className = 'city-card';
+            
+            const primaryType = city.types ? city.types[0] : 'scenic';
+            const description = city.description || generateCityDescription(city, primaryType);
+            const highlights = city.highlights || generateCityHighlights(city, primaryType);
+            
+            card.innerHTML = `
+                <div class="city-header">
+                    <div class="city-info">
+                        <h4>${city.name}</h4>
+                        <div class="city-location">${city.country} • ${label}</div>
+                    </div>
+                    <div class="city-type">${primaryType}</div>
+                </div>
+                <div class="city-description">${description}</div>
+                <div class="city-highlights">
+                    ${highlights.map(highlight => `<span class="highlight-tag">${highlight}</span>`).join('')}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function generateCityDescription(city, type) {
+            const descriptions = {
+                romantic: `A romantic destination perfect for couples, with charming atmosphere and intimate settings.`,
+                adventure: `An adventure lover's paradise with exciting outdoor activities and natural beauty.`,
+                cultural: `Rich in history and culture, offering fascinating insights into European heritage.`,
+                scenic: `Breathtaking natural beauty with stunning landscapes and picturesque views.`,
+                culinary: `A gastronomic delight with exceptional local cuisine and culinary traditions.`,
+                historic: `Steeped in history with remarkable historical sites and architectural treasures.`
+            };
+            return descriptions[type] || descriptions.scenic;
+        }
+        
+        function generateCityHighlights(city, type) {
+            const highlights = {
+                romantic: ['Romantic Views', 'Intimate Restaurants', 'Couples Activities'],
+                adventure: ['Outdoor Sports', 'Nature Trails', 'Adventure Tours'],
+                cultural: ['Museums', 'Historical Sites', 'Cultural Tours'],
+                scenic: ['Scenic Views', 'Photography Spots', 'Nature Walks'],
+                culinary: ['Local Cuisine', 'Wine Tasting', 'Food Markets'],
+                historic: ['Historic Buildings', 'Heritage Sites', 'Walking Tours']
+            };
+            return highlights[type] || highlights.scenic;
+        }
+        
+        function initializeMap() {
+            detailMap = L.map('detailMap').setView([46.8182, 8.2275], 6);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ' OpenStreetMap contributors'
+            }).addTo(detailMap);
+            
+            // Wait a bit for map to initialize properly
+            setTimeout(() => {
+                detailMap.invalidateSize();
+                updateMapWithRoute();
+            }, 100);
+        }
+        
+        function updateMapWithRoute() {
+            if (!detailMap || !routeData) return;
+            
+            const allCities = [
+                routeData.start_city,
+                ...(routeData.intermediate_cities || []),
+                routeData.end_city
+            ].filter(city => city && city.coordinates);
+            
+            if (allCities.length === 0) return;
+            
+            // Clear existing markers and polylines
+            detailMap.eachLayer(layer => {
+                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                    detailMap.removeLayer(layer);
+                }
+            });
+            
+            // Add markers
+            const routeType = '{{ route_type or "scenic" }}';
+            const markerIcon = getMarkerIcon(routeType);
+            
+            allCities.forEach((city, index) => {
+                const isStart = index === 0;
+                const isEnd = index === allCities.length - 1;
+                const iconColor = isStart ? 'green' : isEnd ? 'red' : 'blue';
+                
+                const marker = L.marker([city.coordinates[0], city.coordinates[1]], {
+                    icon: L.icon({
+                        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(detailMap);
+                
+                const label = isStart ? 'Start' : isEnd ? 'Destination' : `Stop ${index}`;
+                marker.bindPopup(`<b>${city.name}</b><br>${city.country}<br><i>${label}</i>`);
+            });
+            
+            // Add route line
+            const routeCoordinates = allCities.map(city => [city.coordinates[0], city.coordinates[1]]);
+            L.polyline(routeCoordinates, {
+                color: 'var(--style-color)',
+                weight: 4,
+                opacity: 0.8
+            }).addTo(detailMap);
+            
+            // Fit map to show all cities
+            const group = new L.featureGroup(detailMap._layers);
+            if (Object.keys(group._layers).length > 0) {
+                detailMap.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+        
+        function getMarkerIcon(routeType) {
+            const icons = {
+                romantic: 'heart',
+                adventure: 'mountain',
+                cultural: 'landmark',
+                scenic: 'camera',
+                culinary: 'utensils',
+                hidden_gems: 'gem'
+            };
+            return icons[routeType] || 'map-marker';
+        }
+        
+        // Action Functions
+        function saveTrip() {
+            alert('Trip saved to your account!');
+        }
+        
+        function refreshRoute() {
+            if (confirm('Generate a new route with different cities?')) {
+                // In a real app, this would call the refresh API
+                location.reload();
+            }
+        }
+        
+        function exportItinerary() {
+            alert('Exporting detailed itinerary as PDF...');
+        }
+        
+        function shareTrip() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My European Adventure',
+                    text: 'Check out this amazing trip route!',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(window.location.href);
+                alert('Trip link copied to clipboard!');
+            }
+        }
+        
+        function bookHotels() {
+            alert('Redirecting to hotel booking...');
+        }
+        
+        function findRestaurants() {
+            alert('Finding restaurants along your route...');
+        }
+        
+        // Chat Functions
+        function toggleChat() {
+            const chatPanel = document.getElementById('chatPanel');
+            chatPanel.classList.toggle('active');
+        }
+        
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+            
+            // Add thinking indicator
+            addChatMessage('ai', 'Thinking...', true);
+            
+            try {
+                const response = await fetch('/api/ai-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: {
+                            route_type: '{{ route_type }}',
+                            route_data: routeData,
+                            page: 'trip_detail'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove thinking indicator
+                removeChatMessage();
+                
+                if (data.success) {
+                    addChatMessage('ai', data.response);
+                } else {
+                    addChatMessage('ai', 'Sorry, I encountered an error. Please try again.');
+                }
+                
+            } catch (error) {
+                removeChatMessage();
+                addChatMessage('ai', 'Sorry, I\'m having trouble connecting. Please try again later.');
+            }
+        }
+        
+        function addChatMessage(sender, message, isTemporary = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            if (isTemporary) messageDiv.classList.add('temporary');
+            
+            if (sender === 'ai') {
+                messageDiv.innerHTML = `<i class="fas fa-robot"></i> ${message}`;
+            } else {
+                messageDiv.textContent = message;
+                messageDiv.style.background = 'var(--style-color)';
+                messageDiv.style.color = 'white';
+                messageDiv.style.marginLeft = 'auto';
+                messageDiv.style.marginRight = '0';
+                messageDiv.style.maxWidth = '80%';
+                messageDiv.style.borderRadius = 'var(--border-radius)';
+                messageDiv.style.padding = '0.75rem';
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function removeChatMessage() {
+            const chatMessages = document.getElementById('chatMessages');
+            const temporary = chatMessages.querySelector('.temporary');
+            if (temporary) {
+                temporary.remove();
+            }
+        }
+        
+        // Chat input enter key
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+    </script>
+</body>
+</html>

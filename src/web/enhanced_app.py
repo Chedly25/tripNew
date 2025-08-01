@@ -148,6 +148,16 @@ def create_enhanced_app() -> Flask:
         """Trip details page."""
         return render_template('trip_details.html')
     
+    @app.route('/ai-travel-planner')
+    def ai_travel_planner():
+        """AI travel suggestion planner page."""
+        return render_template('ai_travel_planner.html')
+    
+    @app.route('/trip-detail/<route_type>')
+    def trip_detail_page(route_type):
+        """Individual trip style detail page."""
+        return render_template('trip_detail.html', route_type=route_type)
+    
     # Original API endpoints
     @app.route('/api/plan-trip', methods=['POST'])
     async def plan_trip():
@@ -395,13 +405,14 @@ def create_enhanced_app() -> Flask:
         try:
             data = request.get_json()
             user_message = data.get('message', '').strip()
+            context = data.get('context', {})
             
             if not user_message:
                 return jsonify({'error': 'Message is required'}), 400
             
             user = get_current_user()
             chat_history = []
-            user_context = {}
+            user_context = context
             
             if user:
                 # Get recent chat history

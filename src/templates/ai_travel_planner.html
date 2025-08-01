@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Planner | EuroRoam</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="/static/global-theme.css">
+    
+    <style>
+        /* AI Planner Specific Styles */
+        .ai-planner-hero {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .ai-hero-title {
+            font-family: var(--font-heading);
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            line-height: 1.1;
+        }
+        
+        .ai-hero-subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .ai-suggestion-container {
+            background: var(--bg-glass);
+            backdrop-filter: blur(30px);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-glass);
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+        
+        .ai-chat-interface {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .ai-input-group {
+            position: relative;
+        }
+        
+        .ai-input {
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            padding-right: 4rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-lg);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            transition: var(--transition-normal);
+        }
+        
+        .ai-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .ai-input:focus {
+            outline: none;
+            border-color: var(--brand-accent);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+        }
+        
+        .ai-send-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--brand-accent);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem;
+            color: var(--white);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ai-send-btn:hover {
+            background: #d97706;
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .ai-suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .destination-suggestion {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            transition: var(--transition-normal);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        
+        .destination-suggestion:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .destination-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--white);
+        }
+        
+        .destination-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        
+        .destination-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .destination-highlights {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .highlight-tag {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--brand-accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .plan-trip-btn {
+            width: 100%;
+            background: var(--brand-primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .plan-trip-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        .quick-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+        
+        .quick-suggestion-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-lg);
+            padding: 0.75rem 1.5rem;
+            color: var(--white);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            font-size: 0.9rem;
+        }
+        
+        .quick-suggestion-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .ai-thinking {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .ai-thinking.active {
+            display: flex;
+        }
+        
+        .thinking-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .thinking-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--brand-accent);
+            border-radius: 50%;
+            animation: thinkingPulse 1.4s ease-in-out infinite both;
+        }
+        
+        .thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes thinkingPulse {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .floating-element {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .floating-element:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            font-size: 3rem;
+            animation-delay: 0s;
+        }
+        
+        .floating-element:nth-child(2) {
+            top: 60%;
+            right: 15%;
+            font-size: 2.5rem;
+            animation-delay: -5s;
+        }
+        
+        .floating-element:nth-child(3) {
+            bottom: 30%;
+            left: 20%;
+            font-size: 2rem;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(10px) rotate(240deg); }
+        }
+        
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+        }
+        
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            max-width: 80%;
+        }
+        
+        .chat-message.user {
+            background: var(--brand-primary);
+            color: var(--white);
+            margin-left: auto;
+        }
+        
+        .chat-message.ai {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .skip-to-planner {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .skip-btn {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition-normal);
+        }
+        
+        .skip-btn:hover {
+            color: var(--white);
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .ai-suggestion-container {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+            
+            .ai-suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-suggestions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ai-planner-hero">
+        <!-- Floating background elements -->
+        <div class="floating-elements">
+            <div class="floating-element"><i class="fas fa-plane"></i></div>
+            <div class="floating-element"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="floating-element"><i class="fas fa-compass"></i></div>
+        </div>
+        
+        <div class="container">
+            <div class="ai-hero-content">
+                <h1 class="ai-hero-title">
+                    <i class="fas fa-robot animate-bounce"></i>
+                    Discover Your Perfect European Adventure
+                </h1>
+                <p class="ai-hero-subtitle">
+                    Let our AI travel assistant help you discover amazing destinations based on your preferences, 
+                    mood, and travel style. Get personalized recommendations in seconds!
+                </p>
+                
+                <div class="ai-suggestion-container">
+                    <!-- Chat Interface -->
+                    <div class="ai-chat-interface">
+                        <h3 class="text-center text-white font-semibold text-xl mb-4">
+                            Tell me about your dream trip...
+                        </h3>
+                        
+                        <!-- Quick suggestion buttons -->
+                        <div class="quick-suggestions">
+                            <button class="quick-suggestion-btn" onclick="fillQuickSuggestion('romantic getaway for couples')">
+                                <i class="fas fa-heart"></i> Romantic Getaway
+                            </button>
+                            <button class="quick-suggestion-btn" onclick="fillQuickSuggestion('adventure trip with hiking and outdoor activities')">
+                                <i class="fas fa-mountain"></i> Adventure Trip
+                            </button>
+                            <button class="quick-suggestion-btn" onclick="fillQuickSuggestion('cultural exploration with museums and history')">
+                                <i class="fas fa-university"></i> Cultural Exploration
+                            </button>
+                            <button class="quick-suggestion-btn" onclick="fillQuickSuggestion('food and wine tasting tour')">
+                                <i class="fas fa-wine-glass"></i> Culinary Journey
+                            </button>
+                        </div>
+                        
+                        <!-- Chat messages area -->
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-message ai">
+                                <i class="fas fa-robot"></i> Hi! I'm your AI travel assistant. Tell me what kind of European adventure you're dreaming of, and I'll suggest some amazing destinations for you!
+                            </div>
+                        </div>
+                        
+                        <!-- Input form -->
+                        <form class="ai-input-group" onsubmit="sendMessage(event)">
+                            <input 
+                                type="text" 
+                                class="ai-input" 
+                                id="aiInput"
+                                placeholder="e.g., I want a romantic trip with beautiful views and great food..."
+                                required
+                            >
+                            <button type="submit" class="ai-send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- AI Thinking indicator -->
+                    <div class="ai-thinking" id="aiThinking">
+                        <i class="fas fa-robot text-2xl"></i>
+                        <span>AI is thinking</span>
+                        <div class="thinking-dots">
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Suggestions -->
+                    <div class="ai-suggestions-grid" id="aiSuggestions">
+                        <!-- Suggestions will be populated by AI -->
+                    </div>
+                    
+                    <!-- Skip option -->
+                    <div class="skip-to-planner">
+                        <a href="#" class="skip-btn" onclick="skipToMainPlanner()">
+                            <i class="fas fa-forward"></i> Skip AI suggestions and go to trip planner
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chatHistory = [];
+        
+        function fillQuickSuggestion(suggestion) {
+            document.getElementById('aiInput').value = suggestion;
+            document.getElementById('aiInput').focus();
+        }
+        
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessageToChat('user', message);
+            input.value = '';
+            
+            // Show thinking indicator
+            showThinking(true);
+            
+            try {
+                // Send to AI chat endpoint
+                const response = await fetch('/api/ai-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: 'travel_suggestions'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Add AI response to chat
+                    addMessageToChat('ai', data.response);
+                    
+                    // Generate destination suggestions based on AI response
+                    await generateDestinationSuggestions(message, data.response);
+                } else {
+                    addMessageToChat('ai', 'Sorry, I encountered an error. Let me suggest some popular destinations instead!');
+                    generateFallbackSuggestions();
+                }
+                
+            } catch (error) {
+                console.error('AI chat error:', error);
+                addMessageToChat('ai', 'Sorry, I\'m having trouble connecting right now. Here are some popular destinations:');
+                generateFallbackSuggestions();
+            } finally {
+                showThinking(false);
+            }
+        }
+        
+        function addMessageToChat(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            
+            if (sender === 'ai') {
+                messageDiv.innerHTML = `<i class="fas fa-robot"></i> ${message}`;
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            chatHistory.push({ sender, message });
+        }
+        
+        function showThinking(show) {
+            const thinking = document.getElementById('aiThinking');
+            thinking.classList.toggle('active', show);
+        }
+        
+        async function generateDestinationSuggestions(userMessage, aiResponse) {
+            // Extract destination suggestions from AI response or generate based on keywords
+            const suggestions = extractDestinationsFromResponse(userMessage, aiResponse);
+            displayDestinationSuggestions(suggestions);
+        }
+        
+        function extractDestinationsFromResponse(userMessage, aiResponse) {
+            // Simple keyword-based suggestion system (can be enhanced with actual AI parsing)
+            const suggestions = [];
+            
+            if (userMessage.toLowerCase().includes('romantic') || userMessage.toLowerCase().includes('couple')) {
+                suggestions.push({
+                    city: 'Paris',
+                    country: 'France',
+                    description: 'The city of love with iconic landmarks, charming cafés, and romantic Seine river cruises.',
+                    highlights: ['Eiffel Tower', 'Romantic Cafés', 'Seine Cruises'],
+                    icon: 'fa-heart',
+                    style: 'romantic'
+                });
+                suggestions.push({
+                    city: 'Venice',
+                    country: 'Italy',
+                    description: 'Magical canals, gondola rides, and stunning architecture perfect for romantic moments.',
+                    highlights: ['Gondola Rides', 'St. Mark\'s Square', 'Romantic Bridges'],
+                    icon: 'fa-heart',
+                    style: 'romantic'
+                });
+            }
+            
+            if (userMessage.toLowerCase().includes('adventure') || userMessage.toLowerCase().includes('hiking')) {
+                suggestions.push({
+                    city: 'Interlaken',
+                    country: 'Switzerland',
+                    description: 'Alpine paradise with world-class hiking, paragliding, and breathtaking mountain views.',
+                    highlights: ['Jungfraujoch', 'Paragliding', 'Alpine Hiking'],
+                    icon: 'fa-mountain',
+                    style: 'adventure'
+                });
+                suggestions.push({
+                    city: 'Chamonix',
+                    country: 'France',
+                    description: 'Ultimate adventure destination with Mont Blanc, skiing, and extreme sports.',
+                    highlights: ['Mont Blanc', 'Extreme Sports', 'Cable Cars'],
+                    icon: 'fa-mountain',
+                    style: 'adventure'
+                });
+            }
+            
+            if (userMessage.toLowerCase().includes('culture') || userMessage.toLowerCase().includes('history') || userMessage.toLowerCase().includes('museum')) {
+                suggestions.push({
+                    city: 'Rome',
+                    country: 'Italy',
+                    description: 'Eternal city with 2,000 years of history, ancient ruins, and world-class art.',
+                    highlights: ['Colosseum', 'Vatican Museums', 'Roman Forum'],
+                    icon: 'fa-university',
+                    style: 'cultural'
+                });
+                suggestions.push({
+                    city: 'Florence',
+                    country: 'Italy',
+                    description: 'Renaissance capital with incredible art, architecture, and cultural treasures.',
+                    highlights: ['Uffizi Gallery', 'Duomo', 'Renaissance Art'],
+                    icon: 'fa-university',
+                    style: 'cultural'
+                });
+            }
+            
+            if (userMessage.toLowerCase().includes('food') || userMessage.toLowerCase().includes('wine') || userMessage.toLowerCase().includes('culinary')) {
+                suggestions.push({
+                    city: 'Lyon',
+                    country: 'France',
+                    description: 'Gastronomic capital with world-renowned cuisine and traditional bouchons.',
+                    highlights: ['Michelin Restaurants', 'Wine Tastings', 'Traditional Bouchons'],
+                    icon: 'fa-utensils',
+                    style: 'culinary'
+                });
+                suggestions.push({
+                    city: 'San Sebastián',
+                    country: 'Spain',
+                    description: 'Pintxos paradise with innovative Basque cuisine and beautiful coastal views.',
+                    highlights: ['Pintxos Bars', 'Michelin Stars', 'Basque Cuisine'],
+                    icon: 'fa-wine-glass',
+                    style: 'culinary'
+                });
+            }
+            
+            // If no specific matches, add some general popular destinations
+            if (suggestions.length === 0) {
+                suggestions.push({
+                    city: 'Barcelona',
+                    country: 'Spain',
+                    description: 'Vibrant city with stunning architecture, great food, and beautiful Mediterranean beaches.',
+                    highlights: ['Sagrada Familia', 'Park Güell', 'Beach Culture'],
+                    icon: 'fa-sun',
+                    style: 'scenic'
+                });
+                suggestions.push({
+                    city: 'Amsterdam',
+                    country: 'Netherlands',
+                    description: 'Charming canals, world-class museums, and unique cultural experiences.',
+                    highlights: ['Canal Cruises', 'Van Gogh Museum', 'Bike Tours'],
+                    icon: 'fa-bicycle',
+                    style: 'cultural'
+                });
+            }
+            
+            return suggestions.slice(0, 3); // Limit to 3 suggestions
+        }
+        
+        function generateFallbackSuggestions() {
+            const fallbackSuggestions = [
+                {
+                    city: 'Paris',
+                    country: 'France',
+                    description: 'The city of light with iconic landmarks and world-class cuisine.',
+                    highlights: ['Eiffel Tower', 'Louvre Museum', 'Champs-Élysées'],
+                    icon: 'fa-star',
+                    style: 'romantic'
+                },
+                {
+                    city: 'Rome',
+                    country: 'Italy',
+                    description: 'Ancient history meets modern charm in the eternal city.',
+                    highlights: ['Colosseum', 'Vatican City', 'Roman Forum'],
+                    icon: 'fa-landmark',
+                    style: 'cultural'
+                },
+                {
+                    city: 'Barcelona',
+                    country: 'Spain',
+                    description: 'Mediterranean beauty with stunning architecture and vibrant culture.',
+                    highlights: ['Sagrada Familia', 'Park Güell', 'Gothic Quarter'],
+                    icon: 'fa-sun',
+                    style: 'scenic'
+                }
+            ];
+            
+            displayDestinationSuggestions(fallbackSuggestions);
+        }
+        
+        function displayDestinationSuggestions(suggestions) {
+            const container = document.getElementById('aiSuggestions');
+            container.innerHTML = '';
+            
+            suggestions.forEach(suggestion => {
+                const suggestionCard = document.createElement('div');
+                suggestionCard.className = `destination-suggestion trip-${suggestion.style}`;
+                
+                suggestionCard.innerHTML = `
+                    <div class="destination-image">
+                        <i class="fas ${suggestion.icon}"></i>
+                    </div>
+                    <div class="destination-title">${suggestion.city}, ${suggestion.country}</div>
+                    <div class="destination-description">${suggestion.description}</div>
+                    <div class="destination-highlights">
+                        ${suggestion.highlights.map(highlight => `<span class="highlight-tag">${highlight}</span>`).join('')}
+                    </div>
+                    <button class="plan-trip-btn" onclick="planTripToDestination('${suggestion.city}', '${suggestion.country}', '${suggestion.style}')">
+                        <i class="fas fa-route"></i> Plan Trip to ${suggestion.city}
+                    </button>
+                `;
+                
+                container.appendChild(suggestionCard);
+            });
+            
+            // Animate suggestions in
+            container.querySelectorAll('.destination-suggestion').forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+                    
+                    requestAnimationFrame(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    });
+                }, index * 200);
+            });
+        }
+        
+        function planTripToDestination(city, country, style) {
+            // Store the destination and redirect to main planner
+            sessionStorage.setItem('aiSuggestedDestination', JSON.stringify({
+                city: `${city}, ${country}`,
+                style: style,
+                chatHistory: chatHistory
+            }));
+            
+            window.location.href = '/#planner';
+        }
+        
+        function skipToMainPlanner() {
+            window.location.href = '/#planner';
+        }
+        
+        // Add welcome message when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const input = document.getElementById('aiInput');
+                input.focus();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
