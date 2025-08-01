@@ -16,7 +16,7 @@ from ..services.google_places_city_service import GooglePlacesCityService
 from ..services.route_service import ProductionRouteService
 from ..services.validation_service import ValidationService
 from ..services.travel_planner import TravelPlannerServiceImpl
-from ..services.booking_service import BookingService
+# from ..services.booking_service import BookingService  # Replaced with Amadeus
 from ..services.foursquare_service import FoursquareService
 
 # Import new services and features
@@ -62,7 +62,7 @@ def create_app() -> Flask:
     city_service = GooglePlacesCityService()
     route_service = ProductionRouteService(config_service)
     validation_service = ValidationService()
-    booking_service = BookingService()
+    # booking_service = BookingService()  # Replaced with Amadeus
     foursquare_service = FoursquareService()
     claude_service = get_claude_service()
     weather_service = get_weather_service()
@@ -265,28 +265,27 @@ def create_app() -> Flask:
                         from ..core.models import Coordinates
                         city_coords = Coordinates(latitude=coordinates[0], longitude=coordinates[1])
                         try:
-                            # Use Amadeus service (async) - run in event loop
+                            # Use Amadeus service - run async call properly
                             import asyncio
+                            
+                            # Create a proper async function to call Amadeus
+                            async def get_amadeus_hotels():
+                                async with amadeus_service:
+                                    return await amadeus_service.find_hotels(city_coords, city_name)
+                            
+                            # Run the async call and get results
                             try:
-                                # Try to get running loop
-                                loop = asyncio.get_running_loop()
-                                # Create task to run in thread pool
-                                hotels = loop.run_in_executor(
-                                    None, 
-                                    lambda: asyncio.run(amadeus_service.find_hotels(city_coords, city_name))
-                                )
-                                # This is still async, so we need a different approach
-                                hotels_data[city_name] = amadeus_service._get_fallback_hotels(city_name, 10)
-                            except RuntimeError:
-                                # No running loop, can use asyncio.run
-                                async def get_hotels():
-                                    async with amadeus_service:
-                                        return await amadeus_service.find_hotels(city_coords, city_name)
-                                hotels = asyncio.run(get_hotels())
+                                hotels = asyncio.run(get_amadeus_hotels())
                                 hotels_data[city_name] = hotels
+                                logger.info(f"Successfully fetched {len(hotels)} hotels from Amadeus for {city_name}")
+                            except Exception as e:
+                                logger.warning(f"Amadeus API failed for {city_name}: {e}")
+                                # Only use fallback if Amadeus fails
+                                hotels_data[city_name] = amadeus_service._get_fallback_hotels(city_name, 10)
+                                
                         except Exception as e:
-                            logger.warning(f"Amadeus hotel fetch failed for {city_name}: {e}")
-                            # If async method fails, use fallback data directly
+                            logger.error(f"Critical error fetching hotels for {city_name}: {e}")
+                            # If everything fails, use fallback data
                             hotels_data[city_name] = amadeus_service._get_fallback_hotels(city_name, 10)
                         
                         # Fetch restaurants and activities

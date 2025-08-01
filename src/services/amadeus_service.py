@@ -336,7 +336,7 @@ class AmadeusHotelService:
                     'name': offer.get('name', ''),
                     'rating': offer.get('rating', 4.0),
                     'review_count': 100,  # Amadeus doesn't provide this
-                    'price_per_night': float(offer.get('offer', {}).get('price', {}).get('total', 0)),
+                    'price_per_night': float(offer.get('offer', {}).get('price', {}).get('total') or 0),
                     'currency': offer.get('offer', {}).get('price', {}).get('currency', 'EUR'),
                     'address': self._format_address(offer.get('address', {})),
                     'distance_to_center': offer.get('distance', 0),
@@ -344,7 +344,7 @@ class AmadeusHotelService:
                     'photo': self._get_first_image(offer.get('media', [])),
                     'url': f"https://www.amadeus.com/hotel/{offer.get('hotel_id', '')}",
                     'website': f"https://www.amadeus.com/hotel/{offer.get('hotel_id', '')}",
-                    'stars': int(offer.get('rating', 4)),
+                    'stars': int(offer.get('rating') or 4),
                     'description': f"Hotel in {city_name} with modern amenities and comfort.",
                     'amadeus_hotel_id': offer.get('hotel_id'),
                     'amadeus_offer_id': offer.get('offer', {}).get('id'),
