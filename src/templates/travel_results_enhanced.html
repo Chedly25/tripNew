@@ -1720,16 +1720,48 @@
             overflow: hidden;
         }
 
+        /* Day-by-day section - make it more prominent */
+        .day-by-day-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .day-by-day-section h3 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(6, 255, 165, 0.3);
+        }
+
+        .day-by-day-section h3 i {
+            color: var(--coastal-mint);
+            font-size: 1.5rem;
+        }
+
         .travel-toolkit-section {
-            margin-top: 2rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .travel-toolkit-section h3 {
-            color: white;
+            color: rgba(255, 255, 255, 0.9);
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .travel-toolkit-section h3 i {
+            color: var(--tuscan-gold);
         }
 
         .toolkit-grid {
@@ -1773,6 +1805,92 @@
         .toolkit-desc {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
+        }
+
+        /* Enhanced daily program styling */
+        .daily-program {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .day-item.detailed {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .day-item.detailed:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .day-item.detailed .day-header h4 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-item.detailed .day-location {
+            color: var(--coastal-mint);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .day-item.detailed .activity-item.detailed {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .day-item.detailed .activity-time {
+            background: var(--tuscan-gold);
+            color: var(--midnight-navy);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .day-item.detailed .activity-content {
+            flex: 1;
+        }
+
+        .day-item.detailed .activity-name {
+            color: white;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .day-item.detailed .activity-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .day-item.detailed .activity-duration {
+            color: var(--coral-pink);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .day-item.detailed .day-accommodation {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--sunset-orange);
+            color: rgba(255, 255, 255, 0.9);
         }
 
         @keyframes slideInUp {
