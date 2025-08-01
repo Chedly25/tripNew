@@ -426,8 +426,10 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             'intermediate_cities': [
                 {
                     'name': city.name,
+                    'country': city.country,
                     'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
-                    'types': city.types
+                    'types': city.types,
+                    'region': city.region
                 }
                 for city in route.intermediate_cities
             ],

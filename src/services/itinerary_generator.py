@@ -5,7 +5,7 @@ import asyncio
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import structlog
-from ..core.models import City, ServiceResult, TripRequest
+from ..core.models import City, Coordinates, ServiceResult, TripRequest
 from ..core.exceptions import TravelPlannerException
 from .hidden_gems_service import HiddenGemsService
 from .city_service import CityService
@@ -96,8 +96,20 @@ class ItineraryGenerator:
         # Day 1: Departure and travel to first stop
         if intermediate_cities:
             first_stop = intermediate_cities[0]
+            # Convert city dict back to City object for travel calculations
+            first_city_data = first_stop['city']
+            first_city_obj = City(
+                name=first_city_data['name'],
+                coordinates=Coordinates(
+                    latitude=first_city_data['coordinates'][0],
+                    longitude=first_city_data['coordinates'][1]
+                ),
+                country=first_city_data['country'],
+                region=first_city_data.get('region'),
+                types=first_city_data.get('types', [])
+            )
             day_1 = await self._create_travel_day(
-                current_day, start_city, first_stop['city'], 
+                current_day, start_city, first_city_obj, 
                 trip_request, "departure_travel"
             )
         else:
@@ -128,17 +140,47 @@ class ItineraryGenerator:
                 
                 # Travel day to next destination (if not the last intermediate city)
                 if i < len(intermediate_cities) - 1:
-                    next_city = intermediate_cities[i + 1]['city']
+                    next_city_data = intermediate_cities[i + 1]['city']
+                    next_city_obj = City(
+                        name=next_city_data['name'],
+                        coordinates=Coordinates(
+                            latitude=next_city_data['coordinates'][0],
+                            longitude=next_city_data['coordinates'][1]
+                        ),
+                        country=next_city_data['country'],
+                        region=next_city_data.get('region'),
+                        types=next_city_data.get('types', [])
+                    )
+                    current_city_obj = City(
+                        name=city_info['name'],
+                        coordinates=Coordinates(
+                            latitude=city_info['coordinates'][0],
+                            longitude=city_info['coordinates'][1]
+                        ),
+                        country=city_info['country'],
+                        region=city_info.get('region'),
+                        types=city_info.get('types', [])
+                    )
                     travel_day = await self._create_travel_day(
-                        current_day, city_info, next_city,
+                        current_day, current_city_obj, next_city_obj,
                         trip_request, "intermediate_travel"
                     )
                     daily_plan.append(travel_day)
                     current_day += 1
                 else:
                     # Travel to final destination
+                    current_city_obj = City(
+                        name=city_info['name'],
+                        coordinates=Coordinates(
+                            latitude=city_info['coordinates'][0],
+                            longitude=city_info['coordinates'][1]
+                        ),
+                        country=city_info['country'],
+                        region=city_info.get('region'),
+                        types=city_info.get('types', [])
+                    )
                     travel_day = await self._create_travel_day(
-                        current_day, city_info, end_city,
+                        current_day, current_city_obj, end_city,
                         trip_request, "final_approach"
                     )
                     daily_plan.append(travel_day)
