@@ -140,24 +140,39 @@ class HiddenGemsService:
     async def _find_route_cities(self, start_city: City, end_city: City, 
                                max_stops: int) -> List[City]:
         """Find cities along the route between start and end."""
-        # Get all cities within reasonable distance from the route
-        all_cities = list(self.city_service._city_cache.values())
-        route_cities = []
-        
-        for city in all_cities:
-            if city.name in [start_city.name, end_city.name]:
-                continue
-            
-            # Calculate if city is reasonably along the route
-            deviation_km = self._calculate_route_deviation(
-                city.coordinates, start_city.coordinates, end_city.coordinates
+        # Use the comprehensive fallback route cities from google_places_city_service
+        # This ensures we always have diverse, rich city data with proper metadata
+        try:
+            route_cities = self.city_service._get_fallback_route_cities(
+                start_city.coordinates, end_city.coordinates, 
+                max_deviation_km=120, route_type=None  # Get all types for later filtering
             )
             
-            # Include cities within 100km of the direct route
-            if deviation_km <= 100:
-                route_cities.append(city)
-        
-        return route_cities[:max_stops * 3]  # Get more candidates than needed
+            logger.info(f"Found {len(route_cities)} candidate cities for route", 
+                       start=start_city.name, end=end_city.name)
+            
+            return route_cities[:max_stops * 4]  # Get more candidates for better selection
+            
+        except Exception as e:
+            logger.error(f"Failed to get route cities from fallback: {e}")
+            # Fallback to cache if available
+            all_cities = list(self.city_service._city_cache.values())
+            route_cities = []
+            
+            for city in all_cities:
+                if city.name in [start_city.name, end_city.name]:
+                    continue
+                
+                # Calculate if city is reasonably along the route
+                deviation_km = self._calculate_route_deviation(
+                    city.coordinates, start_city.coordinates, end_city.coordinates
+                )
+                
+                # Include cities within 100km of the direct route
+                if deviation_km <= 100:
+                    route_cities.append(city)
+            
+            return route_cities[:max_stops * 3]
     
     def _calculate_route_deviation(self, point: Coordinates, 
                                  start: Coordinates, end: Coordinates) -> float:

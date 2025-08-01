@@ -1913,7 +1913,7 @@
                         </div>
                         <div class="day-content">
                             <div class="day-header">
-                                <h4><i class="fas fa-map-marker-alt"></i> ${city.name}, ${city.country}</h4>
+                                <h4><i class="fas fa-map-marker-alt"></i> ${city.name}${city.country ? ', ' + city.country : ''}</h4>
                                 <div class="day-type">${getDayType(day, totalDays)}</div>
                             </div>
                             <div class="day-activities">
