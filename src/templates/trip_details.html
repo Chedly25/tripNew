@@ -452,6 +452,9 @@
                 const cityIndex = Math.floor((day - 1) * cities.length / days);
                 const currentCity = cities[Math.min(cityIndex, cities.length - 1)];
                 
+                // Generate realistic activities based on city and day
+                const activities = generateDayActivities(currentCity, day, days);
+                
                 timelineHTML += `
                     <div class="day-item">
                         <div class="day-header">
@@ -459,22 +462,190 @@
                             Day ${day} - ${currentCity.name}
                         </div>
                         <div class="activity-grid">
-                            <div class="activity-card">
-                                <div class="activity-type">Morning</div>
-                                <div class="activity-name">Explore ${currentCity.name}</div>
-                                <div class="activity-details">Visit main attractions and historic sites</div>
-                            </div>
-                            <div class="activity-card">
-                                <div class="activity-type">Afternoon</div>
-                                <div class="activity-name">Local Experience</div>
-                                <div class="activity-details">Enjoy local cuisine and cultural activities</div>
-                            </div>
+                            ${activities.map(activity => `
+                                <div class="activity-card">
+                                    <div class="activity-type">${activity.time}</div>
+                                    <div class="activity-name">${activity.name}</div>
+                                    <div class="activity-details">${activity.details}</div>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
             }
             
             timeline.innerHTML = timelineHTML;
+        }
+
+        function generateDayActivities(city, day, totalDays) {
+            const cityName = city.name;
+            const isFirstDay = day === 1;
+            const isLastDay = day === totalDays;
+            const isMiddleDay = !isFirstDay && !isLastDay;
+            
+            // Base activities that work for any city
+            const baseActivities = {
+                morning: [
+                    `Start with breakfast at a local café`,
+                    `Visit ${cityName} Historic Center`,
+                    `Walking tour of Old Town`,
+                    `Explore the main square and cathedral`,
+                    `Visit local markets and shops`
+                ],
+                midday: [
+                    `Lunch at a traditional restaurant`,
+                    `Visit ${cityName} Museum`,
+                    `Explore local art galleries`,
+                    `Take photos at iconic landmarks`,
+                    `Rest and people-watch in central park`
+                ],
+                afternoon: [
+                    `Continue city exploration`,
+                    `Visit ${cityName} Castle or fortress`,
+                    `Stroll through historic neighborhoods`,
+                    `Shopping for local souvenirs`,
+                    `Visit panoramic viewpoints`
+                ],
+                evening: [
+                    `Dinner at highly-rated restaurant`,
+                    `Evening stroll along waterfront`,
+                    `Experience local nightlife`,
+                    `Enjoy sunset from city walls`,
+                    `Traditional music or cultural show`
+                ]
+            };
+            
+            // City-specific activities
+            const citySpecific = getCitySpecificActivities(cityName);
+            
+            let activities = [];
+            
+            if (isFirstDay) {
+                // Arrival day - lighter schedule
+                activities = [
+                    {
+                        time: "Morning",
+                        name: `Arrive in ${cityName}`,
+                        details: "Check into hotel, freshen up, and get oriented with the city center"
+                    },
+                    {
+                        time: "Afternoon", 
+                        name: citySpecific.main || `Explore ${cityName} Historic Center`,
+                        details: "First impressions tour of the main attractions and city landmarks"
+                    },
+                    {
+                        time: "Evening",
+                        name: "Welcome Dinner",
+                        details: `Enjoy traditional cuisine at a local restaurant and plan tomorrow's adventures`
+                    }
+                ];
+            } else if (isLastDay) {
+                // Departure day - morning activities
+                activities = [
+                    {
+                        time: "Morning",
+                        name: citySpecific.morning || `Final ${cityName} Exploration`,
+                        details: "Visit any missed attractions, last-minute shopping, and photo opportunities"
+                    },
+                    {
+                        time: "Midday",
+                        name: "Departure Preparation", 
+                        details: "Check out, grab lunch, and begin journey to next destination"
+                    }
+                ];
+            } else {
+                // Full day in city
+                activities = [
+                    {
+                        time: "Morning",
+                        name: citySpecific.morning || baseActivities.morning[day % baseActivities.morning.length],
+                        details: `Start the day exploring ${cityName}'s most iconic attractions and historic sites`
+                    },
+                    {
+                        time: "Midday",
+                        name: citySpecific.lunch || "Local Cuisine Experience",
+                        details: baseActivities.midday[day % baseActivities.midday.length]
+                    },
+                    {
+                        time: "Afternoon", 
+                        name: citySpecific.afternoon || baseActivities.afternoon[day % baseActivities.afternoon.length],
+                        details: `Discover hidden gems and experience authentic ${cityName} culture`
+                    },
+                    {
+                        time: "Evening",
+                        name: citySpecific.evening || "Dinner & Evening Exploration",
+                        details: baseActivities.evening[day % baseActivities.evening.length]
+                    }
+                ];
+            }
+            
+            return activities;
+        }
+        
+        function getCitySpecificActivities(cityName) {
+            const city = cityName.toLowerCase();
+            
+            // City-specific attractions and activities
+            const cityActivities = {
+                'paris': {
+                    main: 'Visit Eiffel Tower & Champs-Élysées',
+                    morning: 'Louvre Museum & Seine River Walk',
+                    lunch: 'French Bistro Experience',
+                    afternoon: 'Montmartre & Sacré-Cœur',
+                    evening: 'Seine Evening Cruise'
+                },
+                'rome': {
+                    main: 'Colosseum & Roman Forum',
+                    morning: 'Vatican City & St. Peter\'s Basilica',
+                    lunch: 'Authentic Italian Trattoria',
+                    afternoon: 'Pantheon & Trevi Fountain',
+                    evening: 'Trastevere Night Walking Tour'
+                },
+                'florence': {
+                    main: 'Duomo & Ponte Vecchio',
+                    morning: 'Uffizi Gallery & Renaissance Art',
+                    lunch: 'Tuscan Wine & Food Tasting',
+                    afternoon: 'Palazzo Pitti & Boboli Gardens',
+                    evening: 'Sunset from Piazzale Michelangelo'
+                },
+                'venice': {
+                    main: 'St. Mark\'s Square & Basilica',
+                    morning: 'Doge\'s Palace & Bridge of Sighs',
+                    lunch: 'Venetian Cicchetti Tour',
+                    afternoon: 'Gondola Ride & Hidden Canals',
+                    evening: 'Murano Glass Workshop Visit'
+                },
+                'barcelona': {
+                    main: 'Sagrada Familia & Park Güell',
+                    morning: 'Gothic Quarter Walking Tour',
+                    lunch: 'Tapas & Paella Experience',
+                    afternoon: 'Las Ramblas & Boqueria Market',
+                    evening: 'Barcelona Beach & Sunset'
+                },
+                'madrid': {
+                    main: 'Prado Museum & Royal Palace',
+                    morning: 'Retiro Park & Crystal Palace',
+                    lunch: 'Traditional Spanish Tavern',
+                    afternoon: 'Sol & Gran Via Shopping',
+                    evening: 'Flamenco Show & Dinner'
+                },
+                'lyon': {
+                    main: 'Vieux Lyon & Basilique Notre-Dame',
+                    morning: 'Traboules Secret Passages Tour',
+                    lunch: 'Bouchon Traditional Restaurant',
+                    afternoon: 'Presqu\'île & Place Bellecour',
+                    evening: 'Fourvière Hill Night Views'
+                },
+                'milan': {
+                    main: 'Duomo & La Scala Opera House',
+                    morning: 'Brera Art District & Fashion Quarter',
+                    lunch: 'Milanese Risotto Experience',
+                    afternoon: 'Navigli Canals & Aperitivo',
+                    evening: 'Quadrilatero Fashion Shopping'
+                }
+            };
+            
+            return cityActivities[city] || {};
         }
 
         function populateHotels(hotelsData) {

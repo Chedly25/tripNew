@@ -59,6 +59,10 @@ class FoursquareService:
         except Exception as e:
             logger.error(f"Restaurant search error: {e}")
             return self._get_fallback_restaurants(city_name, limit)
+        finally:
+            if self.session:
+                await self.session.close()
+                self.session = None
     
     async def find_activities(self, coordinates: Coordinates, city_name: str, limit: int = 10) -> List[Dict]:
         """Find top activities and attractions near the given coordinates."""
@@ -96,6 +100,10 @@ class FoursquareService:
         except Exception as e:
             logger.error(f"Activities search error: {e}")
             return self._get_fallback_activities(city_name, limit)
+        finally:
+            if self.session:
+                await self.session.close()
+                self.session = None
     
     def _format_restaurants(self, results: List[Dict]) -> List[Dict]:
         """Format Foursquare restaurant data."""
@@ -114,7 +122,8 @@ class FoursquareService:
                     'website': website_url,
                     'url': website_url,  # Add url field for consistency
                     'hours': place.get('hours', {}).get('display', 'Hours not available'),
-                    'photo': self._extract_photo(place.get('photos', []))
+                    'photo': self._extract_photo(place.get('photos', [])),
+                    'source': 'foursquare'
                 })
             except Exception as e:
                 logger.error(f"Error formatting restaurant: {e}")
@@ -137,7 +146,8 @@ class FoursquareService:
                     'website': website_url,
                     'url': website_url,  # Add url field for consistency
                     'hours': place.get('hours', {}).get('display', 'Hours not available'),
-                    'photo': self._extract_photo(place.get('photos', []))
+                    'photo': self._extract_photo(place.get('photos', [])),
+                    'source': 'foursquare'
                 })
             except Exception as e:
                 logger.error(f"Error formatting activity: {e}")
@@ -184,7 +194,8 @@ class FoursquareService:
                 'cuisine': 'French',
                 'website': f'https://www.lebistro-{city_name.lower().replace(" ", "-")}.com',
                 'hours': '12:00-14:00, 19:00-22:00',
-                'photo': ''
+                'photo': '',
+                'source': 'fallback'
             },
             {
                 'name': f'Osteria del {city_name}',
@@ -195,7 +206,8 @@ class FoursquareService:
                 'cuisine': 'Italian',
                 'website': f'https://www.osteria-{city_name.lower().replace(" ", "-")}.com',
                 'hours': '18:00-23:00',
-                'photo': ''
+                'photo': '',
+                'source': 'fallback'
             },
             {
                 'name': f'Café Central {city_name}',
@@ -206,7 +218,8 @@ class FoursquareService:
                 'cuisine': 'Coffee & Light Meals',
                 'website': '',
                 'hours': '07:00-19:00',
-                'photo': ''
+                'photo': '',
+                'source': 'fallback'
             }
         ]
         return restaurants[:limit]
@@ -222,7 +235,8 @@ class FoursquareService:
                 'category': 'Historic Site',
                 'website': '',
                 'hours': '24/7',
-                'photo': ''
+                'photo': '',
+                'source': 'fallback'
             },
             {
                 'name': f'{city_name} Cathedral',
@@ -232,7 +246,8 @@ class FoursquareService:
                 'category': 'Religious Site',
                 'website': '',
                 'hours': '08:00-18:00',
-                'photo': ''
+                'photo': '',
+                'source': 'fallback'
             },
             {
                 'name': f'{city_name} Art Museum',
@@ -242,7 +257,8 @@ class FoursquareService:
                 'category': 'Museum',
                 'website': '',
                 'hours': '10:00-17:00',
-                'photo': ''
+                'photo': '',
+                'source': 'fallback'
             }
         ]
         return activities[:limit]

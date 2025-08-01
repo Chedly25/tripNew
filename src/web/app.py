@@ -277,11 +277,18 @@ def create_app() -> Flask:
                             try:
                                 hotels = asyncio.run(get_amadeus_hotels())
                                 hotels_data[city_name] = hotels
-                                logger.info(f"Successfully fetched {len(hotels)} hotels from Amadeus for {city_name}")
+                                
+                                # Check if we got real data or fallback data
+                                if hotels and hotels[0].get('source') == 'amadeus':
+                                    logger.info(f"Successfully fetched {len(hotels)} REAL hotels from Amadeus for {city_name}")
+                                else:
+                                    logger.warning(f"Using {len(hotels)} FALLBACK hotels for {city_name} - Amadeus API returned no real data")
+                                    
                             except Exception as e:
                                 logger.warning(f"Amadeus API failed for {city_name}: {e}")
                                 # Only use fallback if Amadeus fails
                                 hotels_data[city_name] = amadeus_service._get_fallback_hotels(city_name, 10)
+                                logger.warning(f"Using {len(hotels_data[city_name])} FALLBACK hotels for {city_name} due to API error")
                                 
                         except Exception as e:
                             logger.error(f"Critical error fetching hotels for {city_name}: {e}")
@@ -297,11 +304,24 @@ def create_app() -> Flask:
                                 return restaurants, activities
                             
                             restaurants, activities = asyncio.run(get_foursquare_data())
+                            
+                            # Check if we got real data or fallback data
+                            if restaurants and restaurants[0].get('source') == 'foursquare':
+                                logger.info(f"Successfully fetched {len(restaurants)} REAL restaurants from Foursquare for {city_name}")
+                            else:
+                                logger.warning(f"Using {len(restaurants)} FALLBACK restaurants for {city_name} - Foursquare API returned no real data")
+                                
+                            if activities and activities[0].get('source') == 'foursquare':
+                                logger.info(f"Successfully fetched {len(activities)} REAL activities from Foursquare for {city_name}")
+                            else:
+                                logger.warning(f"Using {len(activities)} FALLBACK activities for {city_name} - Foursquare API returned no real data")
+                                
                         except Exception as e:
                             logger.warning(f"Foursquare API failed for {city_name}: {e}")
                             # Use fallback data if API fails
                             restaurants = foursquare_service._get_fallback_restaurants(city_name, 10)
                             activities = foursquare_service._get_fallback_activities(city_name, 10)
+                            logger.warning(f"Using {len(restaurants)} FALLBACK restaurants and {len(activities)} FALLBACK activities for {city_name} due to API error")
                         
                         restaurants_data[city_name] = restaurants
                         activities_data[city_name] = activities
