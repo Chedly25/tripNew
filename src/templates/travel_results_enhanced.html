@@ -1800,6 +1800,122 @@
             gap: 0.75rem;
         }
 
+        /* Modal Styles */
+        .route-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        .route-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .route-modal-content {
+            position: relative;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        .route-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 2.5rem;
+            background: linear-gradient(135deg, var(--coastal-mint), var(--tuscan-gold));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .route-modal-header h2 {
+            color: var(--midnight-navy);
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .route-modal-header h2 i {
+            margin-right: 0.5rem;
+        }
+
+        .route-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: var(--midnight-navy);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .route-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .route-modal-body {
+            padding: 0;
+            max-height: calc(90vh - 100px);
+            overflow-y: auto;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.9) translateY(50px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .route-modal-content {
+                width: 98%;
+                max-height: 95vh;
+                margin: 1rem;
+            }
+            
+            .route-modal-header {
+                padding: 1.5rem;
+            }
+            
+            .route-modal-header h2 {
+                font-size: 1.4rem;
+            }
+        }
+
         .toolkit-item {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -1959,32 +2075,34 @@
             Plan Another Adventure
         </a>
 
-        <!-- Premium Travel Assistant -->
-        <div class="travel-assistant-section">
-            <div class="assistant-hero">
-                <!-- Decorative travel elements -->
-                <div class="travel-decoration plane">
-                    <i class="fas fa-plane"></i>
-                </div>
-                <div class="travel-decoration car">
-                    <i class="fas fa-car-side"></i>
-                </div>
-                <div class="travel-decoration compass">
-                    <i class="fas fa-compass"></i>
-                </div>
-                
-                <div class="hero-content">
-                    <h2>
-                        <span class="gradient-text">🎒 Your Travel Toolkit</span>
-                    </h2>
-                    <p class="hero-subtitle">Enhance your journey with premium travel features</p>
-                    <div class="hero-cta">
-                        <small>✨ Click any card to explore advanced features</small>
+        
+        <!-- ML Recommendations Section -->
+        <div id="ml-recommendations" style="margin-bottom: 3rem; display: none;">
+            <div style="background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 25px; 
+                        border: 1px solid var(--glass-border); padding: 2.5rem; box-shadow: var(--glass-shadow);">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: var(--accent-gradient); border-radius: 50%; width: 60px; height: 60px; 
+                                display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-brain" style="color: var(--midnight-navy); font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="color: white; margin: 0; font-size: 1.5rem;">🤖 AI-Powered Recommendations</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0;">
+                            Personalized suggestions based on your preferences and travel patterns
+                        </p>
                     </div>
                 </div>
+                <div id="ml-recommendations-list"></div>
             </div>
+        </div>
 
-            <!-- Feature Grid -->
+        <!-- Trip Itineraries Section -->
+        <div id="itineraries-container">
+            <!-- Itineraries will be loaded here by JavaScript -->
+        </div>
+
+        <!-- Travel Features Section -->
+        <div class="travel-features-wrapper" style="margin: 3rem 0;">
             <div class="features-grid">
                 <!-- Budget Tracker Card -->
                 <div class="feature-card budget-card" onclick="openBudgetModal()">
@@ -2111,31 +2229,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- ML Recommendations Section -->
-        <div id="ml-recommendations" style="margin-bottom: 3rem; display: none;">
-            <div style="background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 25px; 
-                        border: 1px solid var(--glass-border); padding: 2.5rem; box-shadow: var(--glass-shadow);">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="background: var(--accent-gradient); border-radius: 50%; width: 60px; height: 60px; 
-                                display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-brain" style="color: var(--midnight-navy); font-size: 1.5rem;"></i>
-                    </div>
-                    <div>
-                        <h3 style="color: white; margin: 0; font-size: 1.5rem;">🤖 AI-Powered Recommendations</h3>
-                        <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0;">
-                            Personalized suggestions based on your preferences and travel patterns
-                        </p>
-                    </div>
-                </div>
-                <div id="ml-recommendations-list"></div>
-            </div>
-        </div>
-
-        <!-- Trip Itineraries Section -->
-        <div id="itineraries-container">
-            <!-- Itineraries will be loaded here by JavaScript -->
         </div>
     </div>
 
@@ -2618,129 +2711,122 @@
             showRouteDetails(route, routeIndex);
         }
 
-        // New function to show detailed route information
+        // New function to show detailed route information in a modal
         function showRouteDetails(route, routeIndex) {
-            const container = document.getElementById('itineraries-container');
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.className = 'route-modal';
+            modal.id = `route-modal-${routeIndex}`;
             
-            container.innerHTML = `
-                <div class="route-details-container">
-                    <!-- Back to route selection -->
-                    <div class="route-navigation">
-                        <button class="back-to-routes-btn" onclick="loadItineraries()">
-                            <i class="fas fa-arrow-left"></i>
-                            Back to Route Selection
-                        </button>
-                        <div class="route-actions">
-                            <button class="action-btn" onclick="saveRouteForLater(${routeIndex})">
-                                <i class="fas fa-bookmark"></i> Save Route
-                            </button>
-                            <button class="action-btn" onclick="shareRoute(${routeIndex})">
-                                <i class="fas fa-share-alt"></i> Share
-                            </button>
-                        </div>
+            modal.innerHTML = `
+                <div class="route-modal-overlay" onclick="closeRouteModal(${routeIndex})"></div>
+                <div class="route-modal-content">
+                    <div class="route-modal-header">
+                        <h2><i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i> ${route.name || `${route.route_type || 'Custom'} Route`}</h2>
+                        <button class="route-modal-close" onclick="closeRouteModal(${routeIndex})">&times;</button>
                     </div>
-
-                    <!-- Detailed Route Card -->
-                    <div class="detailed-route-card">
-                        <!-- Route Header -->
-                        <div class="detailed-route-header">
-                            <div class="route-title-section">
-                                <h2 class="detailed-route-title">
-                                    <i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i>
-                                    ${route.name || `${route.route_type || 'Custom'} Route`}
-                                </h2>
-                                <p class="route-description">${route.description || 'A carefully crafted journey through Europe.'}</p>
-                            </div>
-                            <div class="route-type-badge detailed">${route.route_type || 'custom'}</div>
-                        </div>
+                    <div class="route-modal-body">
+                        <!-- Route Description -->
+                        <p class="route-modal-description">${route.description || 'A carefully crafted journey through Europe.'}</p>
                         
-                        <!-- Route Overview Section -->
-                        <div class="route-overview-section">
-                            <div class="overview-stats">
-                                <div class="stat-item">
-                                    <div class="stat-value">${Math.round(route.total_distance_km || 700)} km</div>
-                                    <div class="stat-label">Total Distance</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${Math.round(route.total_duration_hours || 8.5)} hrs</div>
-                                    <div class="stat-label">Driving Time</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">€${route.estimated_cost?.total_estimate || '450-650'}</div>
-                                    <div class="stat-label">Est. Total Cost</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${(route.intermediate_cities?.length || 2) + 2}</div>
-                                    <div class="stat-label">Cities</div>
-                                </div>
+                        <!-- Route Overview Stats -->
+                        <div class="route-modal-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${Math.round(route.total_distance_km || 700)} km</div>
+                                <div class="stat-label">Distance</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${Math.round(route.total_duration_hours || 8.5)} hrs</div>
+                                <div class="stat-label">Drive Time</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">€${route.estimated_cost?.total_estimate || '450-650'}</div>
+                                <div class="stat-label">Est. Cost</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(route.intermediate_cities?.length || 2) + 2}</div>
+                                <div class="stat-label">Cities</div>
                             </div>
                         </div>
 
                         <!-- Route Map -->
-                        <div class="route-map-section">
-                            <h3><i class="fas fa-map"></i> Your Route Map</h3>
-                            <div class="route-map-detailed" id="detailed-map-${routeIndex}"></div>
+                        <div class="route-modal-map">
+                            <h3><i class="fas fa-map"></i> Route Map</h3>
+                            <div class="route-map-detailed" id="modal-map-${routeIndex}"></div>
                         </div>
                         
                         <!-- Day by Day Itinerary -->
-                        <div class="day-by-day-section">
+                        <div class="route-modal-itinerary">
                             <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
                             <div class="daily-program">
                                 ${generateDetailedDayByDay(route, routeIndex)}
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Travel Toolkit at the bottom of the page -->
-                    <div class="travel-toolkit-section collapsed" id="toolkit-section-${routeIndex}">
-                        <h3 onclick="toggleToolkit(${routeIndex})"><i class="fas fa-toolbox"></i> Additional Travel Tools</h3>
-                        <div class="toolkit-grid">
-                            <div class="toolkit-item" onclick="openBudgetTracker()">
-                                <div class="toolkit-icon">💰</div>
-                                <div class="toolkit-info">
-                                    <div class="toolkit-title">Smart Budget Tracker</div>
-                                    <div class="toolkit-desc">Track expenses in real-time</div>
+                        
+                        <!-- Travel Toolkit (collapsed by default) -->
+                        <div class="travel-toolkit-section collapsed" id="modal-toolkit-section-${routeIndex}">
+                            <h3 onclick="toggleModalToolkit(${routeIndex})"><i class="fas fa-toolbox"></i> Additional Travel Tools</h3>
+                            <div class="toolkit-grid">
+                                <div class="toolkit-item" onclick="openBudgetTracker()">
+                                    <div class="toolkit-icon">💰</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Smart Budget Tracker</div>
+                                        <div class="toolkit-desc">Track expenses in real-time</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openPackingAssistant()">
+                                    <div class="toolkit-icon">🎒</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">AI Packing Assistant</div>
+                                        <div class="toolkit-desc">Never forget essentials</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openTravelJournal()">
+                                    <div class="toolkit-icon">📔</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Travel Journal</div>
+                                        <div class="toolkit-desc">Capture memories</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openWeatherForecast()">
+                                    <div class="toolkit-icon">🌤️</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Weather Forecast</div>
+                                        <div class="toolkit-desc">7-day travel forecast</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openOfflineGuide()">
+                                    <div class="toolkit-icon">📱</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Offline Guide</div>
+                                        <div class="toolkit-desc">Download for offline use</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openEmergencyInfo()">
+                                    <div class="toolkit-icon">🚨</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Emergency Info</div>
+                                        <div class="toolkit-desc">Important contacts & tips</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="toolkit-item" onclick="openPackingAssistant()">
-                                <div class="toolkit-icon">🎒</div>
-                                <div class="toolkit-info">
-                                    <div class="toolkit-title">AI Packing Assistant</div>
-                                    <div class="toolkit-desc">Never forget essentials</div>
-                                </div>
-                            </div>
-                            <div class="toolkit-item" onclick="openTravelJournal()">
-                                <div class="toolkit-icon">📔</div>
-                                <div class="toolkit-info">
-                                    <div class="toolkit-title">Travel Journal</div>
-                                    <div class="toolkit-desc">Capture memories</div>
-                                </div>
-                            </div>
-                            <div class="toolkit-item" onclick="openWeatherForecast()">
-                                <div class="toolkit-icon">🌤️</div>
-                                <div class="toolkit-info">
-                                    <div class="toolkit-title">Weather Forecast</div>
-                                    <div class="toolkit-desc">7-day travel forecast</div>
-                                </div>
-                            </div>
-                            <div class="toolkit-item" onclick="openOfflineGuide()">
-                                <div class="toolkit-icon">📱</div>
-                                <div class="toolkit-info">
-                                    <div class="toolkit-title">Offline Guide</div>
-                                    <div class="toolkit-desc">Download for offline use</div>
-                                </div>
-                            </div>
-                            <div class="toolkit-item" onclick="openEmergencyInfo()">
-                                <div class="toolkit-icon">🚨</div>
-                                <div class="toolkit-info">
-                                    <div class="toolkit-title">Emergency Info</div>
-                                    <div class="toolkit-desc">Important contacts & tips</div>
-                                </div>
-                            </div>
+                        </div>
+                        
+                        <!-- Modal Actions -->
+                        <div class="route-modal-actions">
+                            <button class="route-action-btn primary" onclick="saveRouteForLater(${routeIndex})">
+                                <i class="fas fa-bookmark"></i> Save Route
+                            </button>
+                            <button class="route-action-btn secondary" onclick="shareRoute(${routeIndex})">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
+            
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
             // Initialize detailed map
             setTimeout(() => {
@@ -3252,6 +3338,21 @@
             }
         }
 
+        // Modal control functions
+        function closeRouteModal(routeIndex) {
+            const modal = document.getElementById(`route-modal-${routeIndex}`);
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto'; // Restore background scrolling
+            }
+        }
+
+        function toggleModalToolkit(routeIndex) {
+            const section = document.getElementById(`modal-toolkit-section-${routeIndex}`);
+            if (section) {
+                section.classList.toggle('collapsed');
+            }
+        }
 
         // Add parallax effect
         window.addEventListener('scroll', () => {
