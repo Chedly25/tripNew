@@ -62,6 +62,46 @@ class ClaudeAIService:
             logger.error(f"Claude API request failed: {e}")
             return None
     
+    def _make_request_sync(self, messages: List[Dict], max_tokens: int = 1000, 
+                          system_prompt: str = None) -> Optional[str]:
+        """Make a synchronous request to Claude API."""
+        if not self.api_key:
+            return None
+        
+        try:
+            import requests
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'X-API-Key': self.api_key,
+                'anthropic-version': '2023-06-01'
+            }
+            
+            payload = {
+                'model': self.model,
+                'max_tokens': max_tokens,
+                'messages': messages
+            }
+            
+            if system_prompt:
+                payload['system'] = system_prompt
+            
+            response = requests.post(f"{self.base_url}/messages", 
+                                   headers=headers, 
+                                   json=payload,
+                                   timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data['content'][0]['text'] if data.get('content') else None
+            else:
+                logger.error(f"Claude API error: {response.status_code}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Claude API sync request failed: {e}")
+            return None
+    
     async def travel_chat_assistant(self, user_message: str, chat_history: List[Dict] = None, 
                                   user_context: Dict = None) -> str:
         """AI travel assistant for general travel questions and advice."""
@@ -230,48 +270,113 @@ class ClaudeAIService:
             'timing_suggestions': []
         }
     
-    async def analyze_photo_for_destinations(self, photo_description: str) -> List[Dict]:
-        """Analyze photo descriptions to suggest similar destinations."""
-        system_prompt = """You are a destination recommendation AI. Based on photo descriptions, 
-        suggest similar European destinations that match the aesthetic, atmosphere, or features 
-        described in the image.
+    def analyze_photo_for_destinations(self, image_data: str = None, photo_description: str = None) -> List[Dict]:
+        """Analyze photo or photo descriptions to suggest similar destinations."""
         
-        Return a JSON array of destinations with this structure:
-        [
-            {
-                "destination": "City/Location Name",
-                "country": "Country",
-                "similarity_reasons": ["reason1", "reason2"],
-                "best_time_to_visit": "Season/Months",
-                "highlights": ["attraction1", "attraction2"],
-                "driving_distance_from_major_cities": {"Paris": "500km", "Munich": "300km"}
-            }
-        ]"""
-        
-        user_prompt = f"""Based on this photo description, suggest similar European destinations for a road trip:
-        
-        Photo Description: {photo_description}
-        
-        Find places with similar landscapes, architecture, atmosphere, or cultural features."""
-        
-        messages = [{'role': 'user', 'content': user_prompt}]
-        
-        response = await self._make_request(messages, max_tokens=2000, system_prompt=system_prompt)
-        
-        if response:
+        if image_data:
+            # Use Claude's vision capabilities for actual image analysis
+            system_prompt = """You are an expert travel destination recommendation AI with visual analysis capabilities. 
+            Analyze the uploaded image and suggest 3-5 similar European destinations that match what you see in the photo.
+            
+            Look for:
+            - Architectural styles (Gothic, Renaissance, Medieval, Modern, etc.)
+            - Natural features (mountains, lakes, coastlines, forests, etc.)
+            - Urban vs rural settings
+            - Cultural elements and atmosphere
+            - Historical periods and influences
+            
+            Return a JSON array with this exact structure:
+            [
+                {
+                    "destination": "City/Location Name",
+                    "country": "Country",
+                    "similarity_reasons": ["specific reason based on what you see in the image"],
+                    "best_time_to_visit": "Season/Months",
+                    "highlights": ["attraction1", "attraction2", "attraction3"],
+                    "image_match_confidence": "high/medium/low"
+                }
+            ]"""
+            
             try:
-                return json.loads(response)
-            except json.JSONDecodeError:
-                pass
+                # Create message with image for Claude's vision API
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/jpeg",  # Will be updated based on actual image type
+                                    "data": image_data
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": "Analyze this travel destination image and suggest similar European destinations I could visit. Focus on architectural style, natural features, and overall atmosphere."
+                            }
+                        ]
+                    }
+                ]
+                
+                response = self._make_request_sync(messages, max_tokens=1500, system_prompt=system_prompt)
+                
+                try:
+                    destinations = json.loads(response) if response else []
+                    return destinations if isinstance(destinations, list) else []
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, return the response as a simple text suggestion
+                    return [{"destination": "AI Analysis", "country": "Europe", "description": response or "Unable to analyze image"}]
+                    
+            except Exception as e:
+                logger.error(f"Image analysis failed: {e}")
+                return [{"destination": "Analysis Error", "country": "Europe", "description": "Unable to analyze the uploaded image. Please try again with a clearer photo."}]
+        
+        elif photo_description:
+            # Fallback to text-based analysis
+            system_prompt = """You are a destination recommendation AI. Based on photo descriptions, 
+            suggest similar European destinations that match the aesthetic, atmosphere, or features 
+            described in the image.
+            
+            Return a JSON array of destinations with this structure:
+            [
+                {
+                    "destination": "City/Location Name",
+                    "country": "Country",
+                    "similarity_reasons": ["reason1", "reason2"],
+                    "best_time_to_visit": "Season/Months",
+                    "highlights": ["attraction1", "attraction2"],
+                    "driving_distance_from_major_cities": {"Paris": "500km", "Munich": "300km"}
+                }
+            ]"""
+        
+            user_prompt = f"""Based on this photo description, suggest similar European destinations for a road trip:
+            
+            Photo Description: {photo_description}
+            
+            Find places with similar landscapes, architecture, atmosphere, or cultural features."""
+            
+            messages = [{'role': 'user', 'content': user_prompt}]
+            
+            try:
+                response = self._make_request_sync(messages, max_tokens=2000, system_prompt=system_prompt)
+                
+                if response:
+                    try:
+                        return json.loads(response)
+                    except json.JSONDecodeError:
+                        return [{"destination": "AI Analysis", "country": "Europe", "description": response}]
+            except Exception as e:
+                logger.error(f"Text-based photo analysis failed: {e}")
         
         return [
             {
-                "destination": "Similar European Location",
-                "country": "Various",
-                "similarity_reasons": ["Photo analysis unavailable"],
+                "destination": "Photo Analysis Unavailable",
+                "country": "Europe",
+                "similarity_reasons": ["Service temporarily unavailable"],
                 "best_time_to_visit": "Spring to Fall",
-                "highlights": ["Local attractions", "Scenic routes"],
-                "driving_distance_from_major_cities": {"Major cities": "Variable"}
+                "highlights": ["Please try again later"],
+                "description": "Photo analysis service is currently unavailable"
             }
         ]
     

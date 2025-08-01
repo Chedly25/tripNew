@@ -896,38 +896,92 @@
             const file = input.files[0];
             if (!file) return;
             
-            // For demo, we'll use a simple description prompt
-            const description = prompt('Describe what you see in this photo (landscape, architecture, etc.):');
-            if (!description) return;
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload a valid image file.');
+                return;
+            }
+            
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Please upload an image smaller than 10MB.');
+                return;
+            }
+            
+            // Show loading state
+            const originalText = document.querySelector('.photo-upload p').textContent;
+            document.querySelector('.photo-upload p').textContent = 'Analyzing your photo with AI...';
+            document.querySelector('.photo-upload i').className = 'fas fa-spinner fa-spin';
             
             try {
+                // Convert image to base64
+                const base64Image = await convertImageToBase64(file);
+                
                 const response = await fetch('/api/ai-photo-analysis', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ description: description })
+                    body: JSON.stringify({ 
+                        image_data: base64Image,
+                        image_type: file.type 
+                    })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success && data.destinations) {
-                    let message = 'AI suggests these similar European destinations:\n\n';
-                    data.destinations.forEach((dest, index) => {
-                        message += `${index + 1}. ${dest.destination}, ${dest.country}\n`;
-                        message += `   Best time: ${dest.best_time_to_visit}\n`;
-                        message += `   Highlights: ${dest.highlights.join(', ')}\n\n`;
-                    });
+                    let message = '🤖 AI Analysis Results:\n\n';
+                    message += `Based on your photo, here are similar European destinations:\n\n`;
+                    
+                    if (Array.isArray(data.destinations)) {
+                        data.destinations.forEach((dest, index) => {
+                            if (typeof dest === 'string') {
+                                message += `${index + 1}. ${dest}\n`;
+                            } else {
+                                message += `${index + 1}. ${dest.destination || dest.name}, ${dest.country || 'Europe'}\n`;
+                                if (dest.best_time_to_visit) {
+                                    message += `   Best time: ${dest.best_time_to_visit}\n`;
+                                }
+                                if (dest.highlights && Array.isArray(dest.highlights)) {
+                                    message += `   Highlights: ${dest.highlights.join(', ')}\n`;
+                                }
+                                message += '\n';
+                            }
+                        });
+                    } else {
+                        message += data.destinations;
+                    }
                     
                     alert(message);
                 } else {
-                    alert('Photo analysis failed. Please try again.');
+                    alert('AI photo analysis failed. Please try uploading a clearer image of a travel destination.');
                 }
                 
             } catch (error) {
                 console.error('Photo analysis error:', error);
-                alert('Photo analysis service unavailable.');
+                alert('Photo analysis service is currently unavailable. Please try again later.');
+            } finally {
+                // Reset UI state
+                document.querySelector('.photo-upload p').textContent = originalText;
+                document.querySelector('.photo-upload i').className = 'fas fa-cloud-upload-alt';
+                // Clear the file input
+                input.value = '';
             }
+        }
+        
+        // Helper function to convert image to base64
+        function convertImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // Remove the data URL prefix (data:image/jpeg;base64,)
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
         
         // Trip management functions

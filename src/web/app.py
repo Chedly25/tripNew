@@ -472,15 +472,27 @@ def create_app() -> Flask:
         """Analyze photo for destination suggestions."""
         try:
             data = request.get_json()
+            image_data = data.get('image_data')
+            image_type = data.get('image_type', 'image/jpeg')
             photo_description = data.get('description', '')
             
-            if not photo_description:
-                return jsonify({'error': 'Photo description required'}), 400
+            if not image_data and not photo_description:
+                return jsonify({'error': 'Image data or photo description required'}), 400
             
             try:
-                suggestions = claude_service.analyze_photo_for_destinations(photo_description)
-            except:
-                suggestions = ["Photo analysis service is currently unavailable."]
+                if image_data:
+                    # Handle actual image analysis
+                    suggestions = claude_service.analyze_photo_for_destinations(image_data=image_data)
+                else:
+                    # Handle text description fallback
+                    suggestions = claude_service.analyze_photo_for_destinations(photo_description=photo_description)
+            except Exception as e:
+                logger.error(f"Photo analysis service error: {e}")
+                suggestions = [{
+                    "destination": "Analysis Unavailable", 
+                    "country": "Europe", 
+                    "description": "Photo analysis service is currently unavailable. Please try again later."
+                }]
             
             return jsonify({
                 'success': True,
