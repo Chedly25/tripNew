@@ -338,6 +338,14 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         """Find intermediate cities based on route strategy using async Google Places API."""
         strategy_type = strategy['type']
         
+        # Calculate optimal number of intermediate cities based on trip duration and type
+        max_cities = self._calculate_optimal_city_count(strategy_type, request.travel_days)
+        
+        logger.info("Dynamic city calculation (async)", 
+                   strategy=strategy_type, 
+                   trip_days=request.travel_days, 
+                   max_cities=max_cities)
+        
         # Get cities near the route using async API calls, filtered by route type
         nearby_cities = await self.city_service.find_cities_near_route(
             start_city.coordinates, end_city.coordinates, max_deviation_km=120, route_type=strategy_type
