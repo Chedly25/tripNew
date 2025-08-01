@@ -1151,6 +1151,215 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Route Selection UI Styles */
+        .route-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .route-option-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-radius: 20px;
+            border: 2px solid var(--glass-border);
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .route-option-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-blue);
+            box-shadow: 0 10px 40px rgba(102, 204, 255, 0.3);
+        }
+
+        .route-option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--bright-cyan));
+        }
+
+        .route-option-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .route-option-header i {
+            font-size: 2rem;
+            color: var(--electric-blue);
+        }
+
+        .route-option-header h3 {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+        }
+
+        .route-type-badge {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .route-option-details {
+            margin-bottom: 2rem;
+        }
+
+        .route-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .route-highlights h4,
+        .route-cities h4 {
+            color: var(--bright-cyan);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .route-highlights ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .route-highlights li {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            padding: 0.2rem 0;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .route-highlights li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+        }
+
+        .cities-list {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .city-name {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .cities-list i {
+            color: var(--electric-blue);
+            font-size: 0.8rem;
+        }
+
+        .route-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .route-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .route-stats .stat i {
+            color: var(--bright-cyan);
+        }
+
+        .route-option-action {
+            text-align: center;
+        }
+
+        .select-route-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+        }
+
+        .select-route-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 204, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--electric-blue);
+        }
+
+        @media (max-width: 768px) {
+            .route-selection-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .route-option-card {
+                padding: 1.5rem;
+            }
+            
+            .route-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -1710,7 +1919,7 @@
             // In a full implementation, this would modify the active route
         }
 
-        // Load and display itineraries
+        // Phase 1: Load and display route selection cards
         function loadItineraries() {
             const container = document.getElementById('itineraries-container');
             const routeSummary = document.getElementById('route-summary');
@@ -1725,14 +1934,14 @@
                 }
             }
             
-            const itineraries = data.data ? data.data.routes || [] : [];
+            const routes = data.data ? data.data.routes || [] : [];
             
-            if (itineraries.length === 0) {
+            if (routes.length === 0) {
                 container.innerHTML = `
-                    <div class="itinerary-card" style="text-align: center; padding: 4rem 2rem;">
+                    <div class="route-selection-card" style="text-align: center; padding: 4rem 2rem;">
                         <h3 style="color: white; margin-bottom: 1rem;">🗺️ No Trip Results Available</h3>
                         <p style="color: rgba(255,255,255,0.8); margin-bottom: 2rem;">
-                            Please go back and plan a new adventure to see your custom itineraries here.
+                            Please go back and plan a new adventure to see your custom routes here.
                         </p>
                         <a href="/" class="btn" style="text-decoration: none;">
                             <i class="fas fa-arrow-left"></i>
@@ -1743,124 +1952,227 @@
                 return;
             }
 
-            // Update summary
-            routeSummary.textContent = `${itineraries.length} amazing itineraries crafted just for you`;
+            // Update summary for route selection phase
+            routeSummary.textContent = `Choose from ${routes.length} expertly crafted route${routes.length > 1 ? 's' : ''} for your journey`;
 
-            // Display each itinerary with superior layout
-            container.innerHTML = itineraries.map((itinerary, index) => `
-                <div class="itinerary-card">
-                    <!-- Route Header -->
-                    <div class="route-header">
-                        <div>
-                            <h2 class="route-title">
-                                <i class="fas fa-${getRouteIcon(itinerary.route_type)}"></i>
-                                Route ${index + 1}: ${itinerary.start_city?.name || 'Start'} → ${itinerary.end_city?.name || 'Destination'}
-                            </h2>
-                            <div class="route-type-badge">${itinerary.route_type}</div>
+            // Display route selection cards
+            container.innerHTML = routes.map((route, index) => `
+                <div class="route-selection-card" data-route-index="${index}">
+                    <div class="route-card-header">
+                        <div class="route-card-title">
+                            <i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i>
+                            <h3>${route.name || `${route.route_type || 'Custom'} Route`}</h3>
                         </div>
-                        <div class="route-actions">
-                            <a href="#" class="action-btn" onclick="selectRoute(${index})">
-                                <i class="fas fa-eye"></i> View Details
-                            </a>
-                            <a href="#" class="action-btn" onclick="saveRoute(${index})">
-                                <i class="fas fa-heart"></i> Save Route
-                            </a>
+                        <div class="route-card-badge">${route.route_type || 'custom'}</div>
+                    </div>
+                    
+                    <div class="route-card-description">
+                        <p>${route.description || 'A carefully planned route through beautiful European destinations.'}</p>
+                    </div>
+                    
+                    <div class="route-card-highlights">
+                        <h4><i class="fas fa-star"></i> Highlights</h4>
+                        <div class="highlights-grid">
+                            ${(route.highlights || ['Scenic views', 'Local culture', 'Great food', 'Historic sites']).map(highlight => 
+                                `<span class="highlight-tag">${highlight}</span>`
+                            ).join('')}
                         </div>
                     </div>
                     
-                    <!-- Top Section: Trip Overview + Small Map -->
-                    <div class="trip-overview-section">
-                        <!-- Left: Trip Overview -->
-                        <div class="trip-overview">
-                            <h3><i class="fas fa-info-circle"></i> Trip Overview</h3>
+                    <div class="route-card-cities">
+                        <h4><i class="fas fa-map-marker-alt"></i> Cities You'll Visit</h4>
+                        <div class="cities-list">
+                            ${generateCitiesList(route)}
+                        </div>
+                    </div>
+                    
+                    <div class="route-card-stats">
+                        <div class="route-stat">
+                            <i class="fas fa-road"></i>
+                            <span>${Math.round(route.total_distance_km || 700)} km</span>
+                        </div>
+                        <div class="route-stat">
+                            <i class="fas fa-clock"></i>
+                            <span>${Math.round(route.total_duration_hours || 8.5)} hrs</span>
+                        </div>
+                        <div class="route-stat">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>${(route.intermediate_cities?.length || 2) + 2} cities</span>
+                        </div>
+                        <div class="route-stat">
+                            <i class="fas fa-euro-sign"></i>
+                            <span>${route.estimated_cost?.total_estimate || '450-650'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="route-card-ideal-for">
+                        <p><i class="fas fa-heart"></i> <strong>Ideal for:</strong> ${route.ideal_for || 'Adventure seekers and culture enthusiasts'}</p>
+                    </div>
+                    
+                    <div class="route-card-actions">
+                        <button class="route-select-btn" onclick="selectRoute(${index})">
+                            <i class="fas fa-eye"></i>
+                            View Detailed Itinerary
+                        </button>
+                        <button class="route-save-btn" onclick="saveRouteForLater(${index})">
+                            <i class="fas fa-bookmark"></i>
+                            Save for Later
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Store routes globally for route selection
+            window.availableRoutes = routes;
+        }
+
+        // Phase 2: Show detailed itinerary for selected route
+        function selectRoute(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            if (!route) {
+                console.error('Route not found:', routeIndex);
+                return;
+            }
+
+            // Update summary for detailed view
+            const routeSummary = document.getElementById('route-summary');
+            routeSummary.textContent = `Your Selected Route: ${route.name || `${route.route_type || 'Custom'} Route`}`;
+
+            // Show detailed itinerary
+            showRouteDetails(route, routeIndex);
+        }
+
+        // New function to show detailed route information
+        function showRouteDetails(route, routeIndex) {
+            const container = document.getElementById('itineraries-container');
+            
+            container.innerHTML = `
+                <div class="route-details-container">
+                    <!-- Back to route selection -->
+                    <div class="route-navigation">
+                        <button class="back-to-routes-btn" onclick="loadItineraries()">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Route Selection
+                        </button>
+                        <div class="route-actions">
+                            <button class="action-btn" onclick="saveRouteForLater(${routeIndex})">
+                                <i class="fas fa-bookmark"></i> Save Route
+                            </button>
+                            <button class="action-btn" onclick="shareRoute(${routeIndex})">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Route Card -->
+                    <div class="detailed-route-card">
+                        <!-- Route Header -->
+                        <div class="detailed-route-header">
+                            <div class="route-title-section">
+                                <h2 class="detailed-route-title">
+                                    <i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i>
+                                    ${route.name || `${route.route_type || 'Custom'} Route`}
+                                </h2>
+                                <p class="route-description">${route.description || 'A carefully crafted journey through Europe.'}</p>
+                            </div>
+                            <div class="route-type-badge detailed">${route.route_type || 'custom'}</div>
+                        </div>
+                        
+                        <!-- Route Overview Section -->
+                        <div class="route-overview-section">
                             <div class="overview-stats">
                                 <div class="stat-item">
-                                    <div class="stat-value">${Math.round(itinerary.total_distance || 700)} km</div>
+                                    <div class="stat-value">${Math.round(route.total_distance_km || 700)} km</div>
                                     <div class="stat-label">Total Distance</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value">${Math.round((itinerary.total_duration || 525) / 60)} hrs</div>
+                                    <div class="stat-value">${Math.round(route.total_duration_hours || 8.5)} hrs</div>
                                     <div class="stat-label">Driving Time</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value">€${Math.round(itinerary.estimated_fuel_cost || 73)}</div>
-                                    <div class="stat-label">Fuel Cost</div>
+                                    <div class="stat-value">€${route.estimated_cost?.total_estimate || '450-650'}</div>
+                                    <div class="stat-label">Est. Total Cost</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value">${(itinerary.intermediate_cities?.length || 0) + 2}</div>
+                                    <div class="stat-value">${(route.intermediate_cities?.length || 2) + 2}</div>
                                     <div class="stat-label">Cities</div>
                                 </div>
                             </div>
-                            
-                            <div class="trip-highlights">
-                                <h4><i class="fas fa-star"></i> Trip Highlights</h4>
-                                <ul>
-                                    <li><i class="fas fa-map-marker-alt"></i> Scenic Mediterranean coastal route</li>
-                                    <li><i class="fas fa-camera"></i> Instagram-worthy stops in French Riviera</li>
-                                    <li><i class="fas fa-utensils"></i> Authentic Italian cuisine experiences</li>
-                                    <li><i class="fas fa-building"></i> Historic architecture and culture</li>
-                                </ul>
+                        </div>
+
+                        <!-- Route Map -->
+                        <div class="route-map-section">
+                            <h3><i class="fas fa-map"></i> Your Route Map</h3>
+                            <div class="route-map-detailed" id="detailed-map-${routeIndex}"></div>
+                        </div>
+                        
+                        <!-- Day by Day Itinerary -->
+                        <div class="day-by-day-section">
+                            <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
+                            <div class="daily-program">
+                                ${generateDetailedDayByDay(route, routeIndex)}
                             </div>
                         </div>
                         
-                        <!-- Right: Small Map with Trajectory -->
-                        <div class="compact-map">
-                            <h3><i class="fas fa-route"></i> Your Route</h3>
-                            <div class="route-map-small" id="map-${index}"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Day by Day Program Section -->
-                    <div class="day-by-day-section">
-                        <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
-                        <div class="daily-program">
-                            ${generateDayByDayProgram(itinerary, index)}
-                        </div>
-                    </div>
-                    
-                    <!-- Advanced Features Section -->
-                    <div class="advanced-features-section">
-                        <h3><i class="fas fa-tools"></i> Advanced Planning Tools</h3>
-                        <div class="features-grid-compact">
-                            <div class="feature-item" onclick="openBudgetTracker()">
-                                <div class="feature-icon">💰</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Smart Budget</div>
-                                    <div class="feature-desc">Track expenses in real-time</div>
+                        <!-- Travel Toolkit (Advanced Features) -->
+                        <div class="travel-toolkit-section">
+                            <h3><i class="fas fa-toolbox"></i> Your Travel Toolkit</h3>
+                            <div class="toolkit-grid">
+                                <div class="toolkit-item" onclick="openBudgetTracker()">
+                                    <div class="toolkit-icon">💰</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Smart Budget Tracker</div>
+                                        <div class="toolkit-desc">Track expenses in real-time</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="feature-item" onclick="openPackingAssistant()">
-                                <div class="feature-icon">🎒</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Packing Assistant</div>
-                                    <div class="feature-desc">Never forget essentials</div>
+                                <div class="toolkit-item" onclick="openPackingAssistant()">
+                                    <div class="toolkit-icon">🎒</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">AI Packing Assistant</div>
+                                        <div class="toolkit-desc">Never forget essentials</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="feature-item" onclick="openTravelJournal()">
-                                <div class="feature-icon">📔</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Travel Journal</div>
-                                    <div class="feature-desc">Capture memories</div>
+                                <div class="toolkit-item" onclick="openTravelJournal()">
+                                    <div class="toolkit-icon">📔</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Travel Journal</div>
+                                        <div class="toolkit-desc">Capture memories</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="feature-item" onclick="openTransportGuide()">
-                                <div class="feature-icon">🚊</div>
-                                <div class="feature-info">
-                                    <div class="feature-title">Transport Guide</div>
-                                    <div class="feature-desc">Local transport info</div>
+                                <div class="toolkit-item" onclick="openWeatherForecast()">
+                                    <div class="toolkit-icon">🌤️</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Weather Forecast</div>
+                                        <div class="toolkit-desc">7-day travel forecast</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openOfflineGuide()">
+                                    <div class="toolkit-icon">📱</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Offline Guide</div>
+                                        <div class="toolkit-desc">Download for offline use</div>
+                                    </div>
+                                </div>
+                                <div class="toolkit-item" onclick="openEmergencyInfo()">
+                                    <div class="toolkit-icon">🚨</div>
+                                    <div class="toolkit-info">
+                                        <div class="toolkit-title">Emergency Info</div>
+                                        <div class="toolkit-desc">Important contacts & tips</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
 
-            // Initialize maps
+            // Initialize detailed map
             setTimeout(() => {
-                itineraries.forEach((itinerary, index) => {
-                    initializeMap(itinerary, index);
-                });
+                initializeDetailedMap(route, routeIndex);
             }, 100);
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Helper functions
@@ -1869,9 +2181,234 @@
                 'scenic': 'mountain',
                 'cultural': 'landmark',
                 'adventure': 'hiking',
-                'culinary': 'utensils'
+                'culinary': 'utensils',
+                'romantic': 'heart',
+                'hidden_gems': 'gem'
             };
             return icons[routeType] || 'route';
+        }
+
+        function generateCitiesList(route) {
+            const cities = [];
+            
+            // Add start city
+            if (route.start_city) {
+                cities.push(route.start_city);
+            }
+            
+            // Add intermediate cities
+            if (route.intermediate_cities && route.intermediate_cities.length > 0) {
+                cities.push(...route.intermediate_cities);
+            }
+            
+            // Add end city
+            if (route.end_city) {
+                cities.push(route.end_city);
+            }
+            
+            // Fallback if no cities data
+            if (cities.length === 0) {
+                return '<div class="city-item">Route cities will be displayed here</div>';
+            }
+            
+            return cities.map((city, index) => {
+                const cityName = city.name || city;
+                const country = city.country || '';
+                return `
+                    <div class="city-item">
+                        <div class="city-number">${index + 1}</div>
+                        <div class="city-info">
+                            <span class="city-name">${cityName}</span>
+                            ${country ? `<span class="city-country">${country}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateDetailedDayByDay(route, routeIndex) {
+            // Use actual daily_itinerary if available, otherwise generate based on route data
+            if (route.daily_itinerary && route.daily_itinerary.length > 0) {
+                return route.daily_itinerary.map((day, index) => `
+                    <div class="day-item detailed">
+                        <div class="day-number">
+                            <div class="day-circle">${day.day}</div>
+                        </div>
+                        <div class="day-content">
+                            <div class="day-header">
+                                <h4><i class="fas fa-calendar-day"></i> ${day.title}</h4>
+                                <div class="day-type">${day.type.replace('_', ' ')}</div>
+                            </div>
+                            <div class="day-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${day.location.city || day.location.from + ' → ' + day.location.to}</span>
+                            </div>
+                            <div class="day-activities">
+                                ${day.activities.map(activity => `
+                                    <div class="activity-item detailed">
+                                        <span class="activity-time">${activity.time}</span>
+                                        <div class="activity-content">
+                                            <span class="activity-name">${activity.activity}</span>
+                                            <span class="activity-description">${activity.description}</span>
+                                        </div>
+                                        <span class="activity-duration">${activity.duration}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ${day.accommodation ? `
+                                <div class="day-accommodation">
+                                    <i class="fas fa-bed"></i>
+                                    <span>${day.accommodation.type} in ${day.accommodation.city}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                // Fallback to generate basic itinerary from route data
+                return generateDayByDayProgram(route, routeIndex);
+            }
+        }
+
+        function initializeDetailedMap(route, routeIndex) {
+            try {
+                const mapId = `detailed-map-${routeIndex}`;
+                const mapElement = document.getElementById(mapId);
+                
+                if (!mapElement) return;
+
+                const map = L.map(mapId, {
+                    zoomControl: true,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    boxZoom: true,
+                    keyboard: true,
+                    dragging: true
+                }).setView([45.4408, 12.3155], 6);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Create route coordinates from city data
+                const routeCoordinates = [];
+                
+                if (route.start_city && route.start_city.coordinates) {
+                    routeCoordinates.push([route.start_city.coordinates.latitude || route.start_city.coordinates[0], 
+                                         route.start_city.coordinates.longitude || route.start_city.coordinates[1]]);
+                }
+                
+                if (route.intermediate_cities) {
+                    route.intermediate_cities.forEach(city => {
+                        if (city.coordinates) {
+                            routeCoordinates.push([city.coordinates.latitude || city.coordinates[0], 
+                                                 city.coordinates.longitude || city.coordinates[1]]);
+                        }
+                    });
+                }
+                
+                if (route.end_city && route.end_city.coordinates) {
+                    routeCoordinates.push([route.end_city.coordinates.latitude || route.end_city.coordinates[0], 
+                                         route.end_city.coordinates.longitude || route.end_city.coordinates[1]]);
+                }
+
+                // Draw route line if coordinates are available
+                if (routeCoordinates.length > 1) {
+                    const routeLine = L.polyline(routeCoordinates, {
+                        color: '#FF6B35',
+                        weight: 4,
+                        opacity: 0.8,
+                        dashArray: '10, 5'
+                    }).addTo(map);
+                    
+                    // Fit map to show entire route
+                    map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
+                    
+                    // Add markers for each point
+                    routeCoordinates.forEach((coords, index) => {
+                        let markerIcon, popupText;
+                        
+                        if (index === 0) {
+                            // Start marker
+                            markerIcon = L.divIcon({
+                                html: `<div style="background: var(--coastal-mint); 
+                                       width: 35px; height: 35px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: var(--midnight-navy); font-weight: bold; font-size: 1rem;
+                                       box-shadow: 0 4px 15px rgba(6, 255, 165, 0.4);">
+                                       🏁
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [35, 35],
+                                iconAnchor: [17, 17]
+                            });
+                            popupText = `<b>🏁 Start</b><br>${route.start_city?.name || 'Starting Point'}`;
+                        } else if (index === routeCoordinates.length - 1) {
+                            // End marker
+                            markerIcon = L.divIcon({
+                                html: `<div style="background: var(--sunset-orange); 
+                                       width: 35px; height: 35px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: white; font-weight: bold; font-size: 1rem;
+                                       box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">
+                                       🎯
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [35, 35],
+                                iconAnchor: [17, 17]
+                            });
+                            popupText = `<b>🎯 Destination</b><br>${route.end_city?.name || 'Final Destination'}`;
+                        } else {
+                            // Intermediate marker
+                            markerIcon = L.divIcon({
+                                html: `<div style="background: var(--tuscan-gold); 
+                                       width: 30px; height: 30px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: var(--midnight-navy); font-weight: bold; font-size: 0.9rem;
+                                       box-shadow: 0 3px 10px rgba(255, 210, 63, 0.4);">
+                                       ${index}
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [30, 30],
+                                iconAnchor: [15, 15]
+                            });
+                            const cityName = route.intermediate_cities[index - 1]?.name || `Stop ${index}`;
+                            popupText = `<b>📍 ${cityName}</b><br>Intermediate stop`;
+                        }
+                        
+                        L.marker(coords, { icon: markerIcon }).addTo(map)
+                            .bindPopup(popupText);
+                    });
+                } else {
+                    // Fallback map view
+                    map.setView([45.4408, 12.3155], 6);
+                }
+                
+            } catch (error) {
+                console.error('Error initializing detailed map:', error);
+            }
+        }
+
+        // Additional functions for route actions
+        function saveRouteForLater(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            // In a real implementation, this would save to user's account or localStorage
+            showToast(`Route "${route.name || 'Route ' + (routeIndex + 1)}" saved for later! 📌`, 'success');
+        }
+
+        function shareRoute(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            // In a real implementation, this would generate a shareable link
+            if (navigator.share) {
+                navigator.share({
+                    title: route.name || 'Amazing European Route',
+                    text: route.description || 'Check out this amazing route through Europe!',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('Route link copied to clipboard! 📋', 'success');
+            }
         }
 
         function generateDayByDayProgram(itinerary, routeIndex) {
