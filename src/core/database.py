@@ -1,0 +1,396 @@
+"""
+Database models and configuration for the road trip application.
+Supports user accounts, trip saving, favorites, and advanced features.
+"""
+import os
+import sqlite3
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta
+import hashlib
+import secrets
+import json
+import structlog
+
+logger = structlog.get_logger(__name__)
+
+class Database:
+    """Main database handler for the application."""
+    
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'roadtrip.db')
+        
+        self.db_path = db_path
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        self.init_database()
+    
+    def get_connection(self):
+        """Get database connection with row factory."""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+    
+    def init_database(self):
+        """Initialize database with all required tables."""
+        with self.get_connection() as conn:
+            # Users table
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE NOT NULL,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    salt TEXT NOT NULL,
+                    first_name TEXT,
+                    last_name TEXT,
+                    profile_image TEXT,
+                    travel_preferences TEXT, -- JSON
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_login TIMESTAMP,
+                    is_active BOOLEAN DEFAULT 1,
+                    email_verified BOOLEAN DEFAULT 0
+                )
+            ''')
+            
+            # User sessions table
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS user_sessions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    session_token TEXT UNIQUE NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL,
+                    is_active BOOLEAN DEFAULT 1,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Saved trips table
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS saved_trips (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    trip_name TEXT NOT NULL,
+                    trip_data TEXT NOT NULL, -- JSON
+                    route_type TEXT NOT NULL,
+                    start_city TEXT NOT NULL,
+                    end_city TEXT NOT NULL,
+                    intermediate_cities TEXT, -- JSON
+                    total_distance REAL,
+                    total_duration REAL,
+                    estimated_cost REAL,
+                    is_favorite BOOLEAN DEFAULT 0,
+                    is_public BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Trip reviews and ratings
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS trip_reviews (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    trip_id INTEGER NOT NULL,
+                    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+                    review_text TEXT,
+                    photos TEXT, -- JSON array of photo URLs
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id)
+                )
+            ''')
+            
+            # User travel analytics
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS user_analytics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    total_trips INTEGER DEFAULT 0,
+                    total_distance REAL DEFAULT 0,
+                    total_duration REAL DEFAULT 0,
+                    favorite_route_type TEXT,
+                    countries_visited TEXT, -- JSON array
+                    cities_visited TEXT, -- JSON array
+                    carbon_footprint REAL DEFAULT 0,
+                    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # AI chat history
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS ai_chat_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    session_id TEXT NOT NULL,
+                    message_type TEXT NOT NULL, -- 'user' or 'assistant'
+                    message_content TEXT NOT NULL,
+                    context_data TEXT, -- JSON for additional context
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Travel alerts and notifications
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS travel_alerts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    alert_type TEXT NOT NULL, -- 'weather', 'traffic', 'safety', etc.
+                    title TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    trip_id INTEGER,
+                    is_read BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id)
+                )
+            ''')
+            
+            conn.commit()
+        
+        logger.info("Database initialized successfully")
+
+class UserManager:
+    """Handles user authentication and management."""
+    
+    def __init__(self, db: Database):
+        self.db = db
+    
+    def hash_password(self, password: str, salt: str = None) -> tuple:
+        """Hash password with salt."""
+        if salt is None:
+            salt = secrets.token_hex(16)
+        
+        password_hash = hashlib.pbkdf2_hmac('sha256', 
+                                           password.encode('utf-8'), 
+                                           salt.encode('utf-8'), 
+                                           100000)
+        return password_hash.hex(), salt
+    
+    def verify_password(self, password: str, hash_hex: str, salt: str) -> bool:
+        """Verify password against hash."""
+        password_hash, _ = self.hash_password(password, salt)
+        return password_hash == hash_hex
+    
+    def create_user(self, email: str, username: str, password: str, 
+                   first_name: str = None, last_name: str = None) -> Optional[int]:
+        """Create a new user account."""
+        try:
+            password_hash, salt = self.hash_password(password)
+            
+            with self.db.get_connection() as conn:
+                cursor = conn.execute('''
+                    INSERT INTO users (email, username, password_hash, salt, first_name, last_name)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (email, username, password_hash, salt, first_name, last_name))
+                
+                user_id = cursor.lastrowid
+                
+                # Initialize user analytics
+                conn.execute('''
+                    INSERT INTO user_analytics (user_id) VALUES (?)
+                ''', (user_id,))
+                
+                conn.commit()
+                logger.info(f"User created successfully: {username}")
+                return user_id
+                
+        except sqlite3.IntegrityError as e:
+            logger.error(f"User creation failed: {e}")
+            return None
+    
+    def authenticate_user(self, login: str, password: str) -> Optional[Dict]:
+        """Authenticate user by email or username."""
+        with self.db.get_connection() as conn:
+            user = conn.execute('''
+                SELECT * FROM users 
+                WHERE (email = ? OR username = ?) AND is_active = 1
+            ''', (login, login)).fetchone()
+            
+            if user and self.verify_password(password, user['password_hash'], user['salt']):
+                # Update last login
+                conn.execute('''
+                    UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?
+                ''', (user['id'],))
+                conn.commit()
+                
+                return dict(user)
+        
+        return None
+    
+    def create_session(self, user_id: int) -> str:
+        """Create a new user session."""
+        session_token = secrets.token_urlsafe(32)
+        expires_at = datetime.now() + timedelta(days=30)  # 30 day sessions
+        
+        with self.db.get_connection() as conn:
+            conn.execute('''
+                INSERT INTO user_sessions (user_id, session_token, expires_at)
+                VALUES (?, ?, ?)
+            ''', (user_id, session_token, expires_at))
+            conn.commit()
+        
+        return session_token
+    
+    def get_user_by_session(self, session_token: str) -> Optional[Dict]:
+        """Get user by session token."""
+        with self.db.get_connection() as conn:
+            result = conn.execute('''
+                SELECT u.*, s.expires_at 
+                FROM users u
+                JOIN user_sessions s ON u.id = s.user_id
+                WHERE s.session_token = ? AND s.is_active = 1 AND s.expires_at > CURRENT_TIMESTAMP
+            ''', (session_token,)).fetchone()
+            
+            return dict(result) if result else None
+    
+    def logout_user(self, session_token: str):
+        """Logout user by deactivating session."""
+        with self.db.get_connection() as conn:
+            conn.execute('''
+                UPDATE user_sessions SET is_active = 0 WHERE session_token = ?
+            ''', (session_token,))
+            conn.commit()
+
+class TripManager:
+    """Handles trip saving, favorites, and management."""
+    
+    def __init__(self, db: Database):
+        self.db = db
+    
+    def save_trip(self, user_id: int, trip_name: str, trip_data: Dict, 
+                  is_favorite: bool = False, is_public: bool = False) -> int:
+        """Save a trip for a user."""
+        with self.db.get_connection() as conn:
+            cursor = conn.execute('''
+                INSERT INTO saved_trips (
+                    user_id, trip_name, trip_data, route_type, start_city, end_city,
+                    intermediate_cities, total_distance, total_duration, estimated_cost,
+                    is_favorite, is_public
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                user_id, trip_name, json.dumps(trip_data),
+                trip_data.get('route_type', ''), 
+                trip_data.get('start_city', {}).get('name', ''),
+                trip_data.get('end_city', {}).get('name', ''),
+                json.dumps(trip_data.get('intermediate_cities', [])),
+                trip_data.get('total_distance_km', 0),
+                trip_data.get('total_duration_hours', 0),
+                trip_data.get('estimated_cost', {}).get('total_estimate', 0),
+                is_favorite, is_public
+            ))
+            
+            trip_id = cursor.lastrowid
+            conn.commit()
+            
+            # Update user analytics
+            self._update_user_analytics(user_id, trip_data)
+            
+            return trip_id
+    
+    def get_user_trips(self, user_id: int, limit: int = 50) -> List[Dict]:
+        """Get all trips for a user."""
+        with self.db.get_connection() as conn:
+            trips = conn.execute('''
+                SELECT * FROM saved_trips 
+                WHERE user_id = ? 
+                ORDER BY updated_at DESC 
+                LIMIT ?
+            ''', (user_id, limit)).fetchall()
+            
+            return [dict(trip) for trip in trips]
+    
+    def get_favorite_trips(self, user_id: int) -> List[Dict]:
+        """Get favorite trips for a user."""
+        with self.db.get_connection() as conn:
+            trips = conn.execute('''
+                SELECT * FROM saved_trips 
+                WHERE user_id = ? AND is_favorite = 1 
+                ORDER BY updated_at DESC
+            ''', (user_id,)).fetchall()
+            
+            return [dict(trip) for trip in trips]
+    
+    def toggle_favorite(self, user_id: int, trip_id: int) -> bool:
+        """Toggle favorite status of a trip."""
+        with self.db.get_connection() as conn:
+            # First check if trip belongs to user
+            trip = conn.execute('''
+                SELECT is_favorite FROM saved_trips WHERE id = ? AND user_id = ?
+            ''', (trip_id, user_id)).fetchone()
+            
+            if trip:
+                new_status = not bool(trip['is_favorite'])
+                conn.execute('''
+                    UPDATE saved_trips SET is_favorite = ?, updated_at = CURRENT_TIMESTAMP 
+                    WHERE id = ? AND user_id = ?
+                ''', (new_status, trip_id, user_id))
+                conn.commit()
+                return new_status
+        
+        return False
+    
+    def delete_trip(self, user_id: int, trip_id: int) -> bool:
+        """Delete a trip."""
+        with self.db.get_connection() as conn:
+            cursor = conn.execute('''
+                DELETE FROM saved_trips WHERE id = ? AND user_id = ?
+            ''', (trip_id, user_id))
+            conn.commit()
+            return cursor.rowcount > 0
+    
+    def _update_user_analytics(self, user_id: int, trip_data: Dict):
+        """Update user analytics when a trip is saved."""
+        with self.db.get_connection() as conn:
+            # Get current analytics
+            analytics = conn.execute('''
+                SELECT * FROM user_analytics WHERE user_id = ?
+            ''', (user_id,)).fetchone()
+            
+            if analytics:
+                new_total_trips = analytics['total_trips'] + 1
+                new_total_distance = analytics['total_distance'] + trip_data.get('total_distance_km', 0)
+                new_total_duration = analytics['total_duration'] + trip_data.get('total_duration_hours', 0)
+                
+                # Calculate carbon footprint (rough estimate: 0.2kg CO2 per km)
+                new_carbon = analytics['carbon_footprint'] + (trip_data.get('total_distance_km', 0) * 0.2)
+                
+                # Update cities and countries visited
+                cities_visited = json.loads(analytics['cities_visited'] or '[]')
+                intermediate_cities = trip_data.get('intermediate_cities', [])
+                
+                for city in intermediate_cities:
+                    city_name = city.get('name') if isinstance(city, dict) else str(city)
+                    if city_name and city_name not in cities_visited:
+                        cities_visited.append(city_name)
+                
+                conn.execute('''
+                    UPDATE user_analytics SET
+                        total_trips = ?, total_distance = ?, total_duration = ?,
+                        cities_visited = ?, carbon_footprint = ?, last_updated = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                ''', (new_total_trips, new_total_distance, new_total_duration,
+                      json.dumps(cities_visited), new_carbon, user_id))
+                conn.commit()
+
+# Global database instance
+_db_instance = None
+
+def get_database() -> Database:
+    """Get global database instance."""
+    global _db_instance
+    if _db_instance is None:
+        _db_instance = Database()
+    return _db_instance
+
+def get_user_manager() -> UserManager:
+    """Get user manager instance."""
+    return UserManager(get_database())
+
+def get_trip_manager() -> TripManager:
+    """Get trip manager instance."""
+    return TripManager(get_database())

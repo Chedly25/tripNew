@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Road Trip Planner</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 2rem 0;
+        }
+        
+        .auth-container {
+            background: var(--glass-bg);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            width: 100%;
+            max-width: 480px;
+            margin: 2rem;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .auth-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            background: white;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        }
+        
+        .row .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .password-requirements {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: #64748b;
+        }
+        
+        .password-requirements li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .requirement-met {
+            color: #10b981 !important;
+        }
+        
+        .auth-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .auth-divider span {
+            background: var(--glass-bg);
+            padding: 0 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .auth-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        .auth-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .back-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-home:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-home">
+        <i class="fas fa-arrow-left me-2"></i>
+        Back to Home
+    </a>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1 class="auth-title">
+                <i class="fas fa-route me-2"></i>
+                Join the Journey
+            </h1>
+            <p class="auth-subtitle">Create your account to start planning amazing road trips</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="registerForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="first_name" class="form-label">
+                            <i class="fas fa-user me-2"></i>
+                            First Name
+                        </label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" 
+                               placeholder="Enter your first name">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="last_name" class="form-label">
+                            <i class="fas fa-user me-2"></i>
+                            Last Name
+                        </label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" 
+                               placeholder="Enter your last name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>
+                    Email Address *
+                </label>
+                <input type="email" class="form-control" id="email" name="email" required 
+                       placeholder="Enter your email address">
+            </div>
+
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    <i class="fas fa-at me-2"></i>
+                    Username *
+                </label>
+                <input type="text" class="form-control" id="username" name="username" required 
+                       placeholder="Choose a username">
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock me-2"></i>
+                    Password *
+                </label>
+                <input type="password" class="form-control" id="password" name="password" required 
+                       placeholder="Create a secure password">
+                
+                <div class="password-requirements">
+                    <strong>Password requirements:</strong>
+                    <ul id="passwordReqs">
+                        <li id="req-length">At least 8 characters long</li>
+                        <li id="req-upper">Contains an uppercase letter</li>
+                        <li id="req-lower">Contains a lowercase letter</li>
+                        <li id="req-number">Contains a number</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-user-plus me-2"></i>
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <span>Already have an account?</span>
+        </div>
+
+        <div class="auth-link">
+            <a href="/auth/login">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Sign in here
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Password validation
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            
+            // Check length
+            const lengthReq = document.getElementById('req-length');
+            if (password.length >= 8) {
+                lengthReq.classList.add('requirement-met');
+            } else {
+                lengthReq.classList.remove('requirement-met');
+            }
+            
+            // Check uppercase
+            const upperReq = document.getElementById('req-upper');
+            if (/[A-Z]/.test(password)) {
+                upperReq.classList.add('requirement-met');
+            } else {
+                upperReq.classList.remove('requirement-met');
+            }
+            
+            // Check lowercase
+            const lowerReq = document.getElementById('req-lower');
+            if (/[a-z]/.test(password)) {
+                lowerReq.classList.add('requirement-met');
+            } else {
+                lowerReq.classList.remove('requirement-met');
+            }
+            
+            // Check number
+            const numberReq = document.getElementById('req-number');
+            if (/\d/.test(password)) {
+                numberReq.classList.add('requirement-met');
+            } else {
+                numberReq.classList.remove('requirement-met');
+            }
+        });
+        
+        // Form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !username || !password) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Validate username
+            if (username.length < 3) {
+                e.preventDefault();
+                alert('Username must be at least 3 characters long');
+                return;
+            }
+            
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                e.preventDefault();
+                alert('Username can only contain letters, numbers, and underscores');
+                return;
+            }
+            
+            // Validate password
+            if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
+                e.preventDefault();
+                alert('Password does not meet requirements');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

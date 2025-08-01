@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Road Trip Planner</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+        
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--primary-dark) !important;
+        }
+        
+        .profile-header {
+            background: transparent;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .profile-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .profile-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-card {
+            background: var(--glass-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+        
+        .profile-info h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .trip-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .trip-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        
+        .trip-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .trip-title {
+            font-weight: 700;
+            color: var(--gray-800);
+            margin: 0;
+        }
+        
+        .trip-type {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .trip-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .trip-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        
+        .trip-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-sm-icon {
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-favorite {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-favorite.active {
+            background: #f59e0b;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-sm-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray-600);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-route me-2"></i>
+                Road Trip Planner
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link active" href="/auth/profile">Profile</a>
+                <a class="nav-link" href="/auth/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="container">
+            <h1 class="profile-title">
+                <i class="fas fa-user me-2"></i>
+                Your Travel Profile
+            </h1>
+            <p>Manage your account and view your amazing journeys</p>
+        </div>
+    </div>
+
+    <div class="container profile-container">
+        <div class="row">
+            <!-- Profile Information -->
+            <div class="col-md-4">
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <div class="profile-info text-center">
+                        <h2>{{ user.first_name or user.username }}</h2>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <strong>Username:</strong> {{ user.username }}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <strong>Email:</strong> {{ user.email }}
+                            </div>
+                        </div>
+                        
+                        {% if user.first_name and user.last_name %}
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div>
+                                <strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div>
+                                <strong>Member since:</strong> {{ user.created_at.split(' ')[0] }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trips and Favorites -->
+            <div class="col-md-8">
+                <!-- Favorite Trips -->
+                <div class="profile-card">
+                    <h3 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        Favorite Trips
+                    </h3>
+                    
+                    {% if favorites %}
+                        {% for trip in favorites %}
+                        <div class="trip-card">
+                            <div class="trip-header">
+                                <h4 class="trip-title">{{ trip.trip_name }}</h4>
+                                <span class="trip-type">{{ trip.route_type.title() }}</span>
+                            </div>
+                            
+                            <div class="trip-stats">
+                                <div class="trip-stat">
+                                    <i class="fas fa-route"></i>
+                                    {{ "%.1f"|format(trip.total_distance) }} km
+                                </div>
+                                <div class="trip-stat">
+                                    <i class="fas fa-clock"></i>
+                                    {{ "%.1f"|format(trip.total_duration) }}h
+                                </div>
+                                <div class="trip-stat">
+                                    <i class="fas fa-euro-sign"></i>
+                                    €{{ "%.0f"|format(trip.estimated_cost) }}
+                                </div>
+                                <div class="trip-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ trip.created_at.split(' ')[0] }}
+                                </div>
+                            </div>
+                            
+                            <div class="trip-actions">
+                                <button class="btn-sm-icon btn-favorite active" 
+                                        onclick="toggleFavorite({{ trip.id }})"
+                                        title="Remove from favorites">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="btn-sm-icon btn-primary" 
+                                        onclick="viewTrip({{ trip.id }})"
+                                        title="View trip">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-sm-icon btn-danger" 
+                                        onclick="deleteTrip({{ trip.id }})"
+                                        title="Delete trip">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <h4>No favorite trips yet</h4>
+                            <p>Start planning your first trip and mark it as favorite!</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- All Trips -->
+                <div class="profile-card">
+                    <h3 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        Recent Trips
+                    </h3>
+                    
+                    {% if trips %}
+                        {% for trip in trips %}
+                        <div class="trip-card">
+                            <div class="trip-header">
+                                <h4 class="trip-title">{{ trip.trip_name }}</h4>
+                                <span class="trip-type">{{ trip.route_type.title() }}</span>
+                            </div>
+                            
+                            <div class="trip-stats">
+                                <div class="trip-stat">
+                                    <i class="fas fa-route"></i>
+                                    {{ "%.1f"|format(trip.total_distance) }} km
+                                </div>
+                                <div class="trip-stat">
+                                    <i class="fas fa-clock"></i>
+                                    {{ "%.1f"|format(trip.total_duration) }}h
+                                </div>
+                                <div class="trip-stat">
+                                    <i class="fas fa-euro-sign"></i>
+                                    €{{ "%.0f"|format(trip.estimated_cost) }}
+                                </div>
+                                <div class="trip-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ trip.created_at.split(' ')[0] }}
+                                </div>
+                            </div>
+                            
+                            <div class="trip-actions">
+                                <button class="btn-sm-icon btn-favorite {{ 'active' if trip.is_favorite else '' }}" 
+                                        onclick="toggleFavorite({{ trip.id }})"
+                                        title="{{ 'Remove from favorites' if trip.is_favorite else 'Add to favorites' }}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="btn-sm-icon btn-primary" 
+                                        onclick="viewTrip({{ trip.id }})"
+                                        title="View trip">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-sm-icon btn-danger" 
+                                        onclick="deleteTrip({{ trip.id }})"
+                                        title="Delete trip">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-map"></i>
+                            <h4>No trips saved yet</h4>
+                            <p>Start planning your first European road trip!</p>
+                            <a href="/" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus me-2"></i>
+                                Plan Your First Trip
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function toggleFavorite(tripId) {
+            fetch(`/auth/api/trips/${tripId}/favorite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Simple reload for now
+                } else {
+                    alert('Error updating favorite status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating favorite status');
+            });
+        }
+        
+        function deleteTrip(tripId) {
+            if (confirm('Are you sure you want to delete this trip? This action cannot be undone.')) {
+                fetch(`/auth/api/trips/${tripId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting trip');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting trip');
+                });
+            }
+        }
+        
+        function viewTrip(tripId) {
+            // For now, just show alert - this would navigate to trip details
+            alert('Trip viewing feature will be implemented with trip details integration');
+        }
+    </script>
+</body>
+</html>

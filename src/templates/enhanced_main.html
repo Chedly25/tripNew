@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Trip Planner - Your AI-Powered European Adventure</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.onerror=null; document.head.appendChild(document.createElement('link')).href='/static/fallback.css';">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Fallback CSS -->
+    <link rel="stylesheet" href="/static/fallback.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            color: var(--gray-800);
+            overflow-x: hidden;
+        }
+        
+        /* Enhanced Navigation */
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--primary-dark) !important;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: var(--gray-700) !important;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary) !important;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: transparent;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            letter-spacing: -0.02em;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            opacity: 0.95;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        .hero-feature i {
+            color: var(--accent);
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .quick-action-btn {
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            color: var(--gray-800);
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .quick-action-btn:hover {
+            background: white;
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+        }
+        
+        .quick-action-btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-color: transparent;
+        }
+        
+        .quick-action-btn.primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* Enhanced Trip Planner Form */
+        .planner-section {
+            padding: 4rem 0;
+        }
+        
+        .planner-card {
+            background: var(--glass-bg);
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .planner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--gray-800);
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            background: white;
+        }
+        
+        .route-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .route-type-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .route-type-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        
+        .route-type-card.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .route-type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 0.75rem;
+        }
+        
+        .route-type-name {
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+        
+        .route-type-desc {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            line-height: 1.4;
+        }
+        
+        .plan-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border: none;
+            color: white;
+            padding: 1.25rem 2.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .plan-btn:hover::before {
+            left: 100%;
+        }
+        
+        .plan-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        }
+        
+        .plan-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Recent Trips Section */
+        .recent-trips-section {
+            padding: 3rem 0;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+        
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .trip-card {
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+        
+        .trip-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+        
+        .trip-title {
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+        
+        .trip-route {
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .trip-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .trip-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--gray-600);
+            font-size: 0.8rem;
+        }
+        
+        .trip-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary-sm {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline-sm {
+            background: transparent;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .btn-sm:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* Photo Upload Section */
+        .photo-inspiration {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .photo-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .photo-upload:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .photo-upload i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+        
+        /* Loading States */
+        .loading {
+            display: none;
+        }
+        
+        .loading.active {
+            display: inline-block;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-features {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .planner-card {
+                padding: 2rem 1.5rem;
+                margin: 0 1rem;
+            }
+            
+            .route-types {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .user-menu {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-route me-2"></i>
+                Road Trip Planner
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav me-auto">
+                    <a class="nav-link active" href="/">Home</a>
+                    <a class="nav-link" href="/ai-assistant">
+                        <i class="fas fa-robot me-1"></i>
+                        AI Assistant
+                    </a>
+                    {% if current_user %}
+                        <a class="nav-link" href="/travel-insights">
+                            <i class="fas fa-chart-line me-1"></i>
+                            My Insights
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="user-menu">
+                    {% if current_user %}
+                        <div class="user-avatar">
+                            {{ current_user.username[0].upper() }}
+                        </div>
+                        <div class="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                {{ current_user.first_name or current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/auth/profile">
+                                    <i class="fas fa-user me-2"></i>Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="/travel-insights">
+                                    <i class="fas fa-chart-line me-2"></i>Travel Insights
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/auth/logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a class="nav-link" href="/auth/login">Login</a>
+                        <a class="nav-link" href="/auth/register">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Enhanced Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Your AI-Powered European Adventure Awaits
+                </h1>
+                <p class="hero-subtitle">
+                    Discover breathtaking routes, hidden gems, and personalized recommendations 
+                    powered by advanced AI technology. Plan the perfect road trip with real-time 
+                    bookings and intelligent insights.
+                </p>
+                
+                <div class="hero-features">
+                    <div class="hero-feature">
+                        <i class="fas fa-robot"></i>
+                        <span>AI-Powered Planning</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>6 Route Types</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="fas fa-hotel"></i>
+                        <span>Real Hotel Bookings</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="fas fa-comments"></i>
+                        <span>24/7 AI Assistant</span>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <a href="#planner" class="quick-action-btn primary">
+                        <i class="fas fa-play"></i>
+                        Start Planning
+                    </a>
+                    <a href="/ai-assistant" class="quick-action-btn">
+                        <i class="fas fa-robot"></i>
+                        Ask AI Assistant
+                    </a>
+                    {% if not current_user %}
+                        <a href="/auth/register" class="quick-action-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Create Account
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Photo Inspiration -->
+                <div class="photo-inspiration">
+                    <h3 style="color: white; margin-bottom: 1rem;">
+                        <i class="fas fa-camera me-2"></i>
+                        Get Inspired by Photos
+                    </h3>
+                    <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                        <i class="fas fa-cloud-upload-alt" style="color: white;"></i>
+                        <p style="color: white; margin: 0;">
+                            Upload a photo and let AI suggest similar European destinations
+                        </p>
+                        <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="analyzePhoto(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trips for Logged-in Users -->
+    {% if current_user and recent_trips %}
+    <div class="recent-trips-section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-history me-2"></i>
+                Your Recent Adventures
+            </h2>
+            
+            <div class="trips-grid">
+                {% for trip in recent_trips %}
+                <div class="trip-card">
+                    <h4 class="trip-title">{{ trip.trip_name }}</h4>
+                    <p class="trip-route">{{ trip.start_city }} → {{ trip.end_city }}</p>
+                    
+                    <div class="trip-stats">
+                        <div class="trip-stat">
+                            <i class="fas fa-route"></i>
+                            {{ "%.0f"|format(trip.total_distance) }}km
+                        </div>
+                        <div class="trip-stat">
+                            <i class="fas fa-clock"></i>
+                            {{ "%.1f"|format(trip.total_duration) }}h
+                        </div>
+                        <div class="trip-stat">
+                            <i class="fas fa-euro-sign"></i>
+                            €{{ "%.0f"|format(trip.estimated_cost) }}
+                        </div>
+                    </div>
+                    
+                    <div class="trip-actions">
+                        <button class="btn-sm btn-primary-sm" onclick="loadTrip({{ trip.id }})">
+                            <i class="fas fa-eye me-1"></i>View
+                        </button>
+                        <button class="btn-sm btn-outline-sm" onclick="toggleFavorite({{ trip.id }})">
+                            <i class="fas fa-heart{{ ' text-danger' if trip.is_favorite else '' }}"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Enhanced Trip Planner -->
+    <div class="planner-section" id="planner">
+        <div class="container">
+            <div class="planner-card">
+                <h2 class="planner-title">
+                    <i class="fas fa-map-marked-alt me-2"></i>
+                    Plan Your Perfect Journey
+                </h2>
+                
+                <form id="tripPlannerForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="startLocation" class="form-label">
+                                    <i class="fas fa-play-circle"></i>
+                                    Starting City
+                                </label>
+                                <input type="text" class="form-control" id="startLocation" 
+                                       placeholder="e.g., Aix-en-Provence" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="endLocation" class="form-label">
+                                    <i class="fas fa-flag-checkered"></i>
+                                    Destination City
+                                </label>
+                                <input type="text" class="form-control" id="endLocation" 
+                                       placeholder="e.g., Venice" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-route"></i>
+                            Choose Your Adventure Types
+                        </label>
+                        <div class="route-types">
+                            <div class="route-type-card" data-type="scenic">
+                                <div class="route-type-icon">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                                <div class="route-type-name">Scenic</div>
+                                <div class="route-type-desc">Breathtaking landscapes and natural wonders</div>
+                            </div>
+                            <div class="route-type-card" data-type="cultural">
+                                <div class="route-type-icon">
+                                    <i class="fas fa-monument"></i>
+                                </div>
+                                <div class="route-type-name">Cultural</div>
+                                <div class="route-type-desc">Historic sites and cultural landmarks</div>
+                            </div>
+                            <div class="route-type-card" data-type="adventure">
+                                <div class="route-type-icon">
+                                    <i class="fas fa-hiking"></i>
+                                </div>
+                                <div class="route-type-name">Adventure</div>
+                                <div class="route-type-desc">Thrilling activities and outdoor experiences</div>
+                            </div>
+                            <div class="route-type-card" data-type="culinary">
+                                <div class="route-type-icon">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div class="route-type-name">Culinary</div>
+                                <div class="route-type-desc">Gastronomic delights and local cuisine</div>
+                            </div>
+                            <div class="route-type-card" data-type="romantic">
+                                <div class="route-type-icon">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="route-type-name">Romantic</div>
+                                <div class="route-type-desc">Perfect for couples and romantic getaways</div>
+                            </div>
+                            <div class="route-type-card" data-type="hidden_gems">
+                                <div class="route-type-icon">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <div class="route-type-name">Hidden Gems</div>
+                                <div class="route-type-desc">Secret spots and off-the-beaten-path treasures</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="plan-btn">
+                        <span class="btn-text">
+                            <i class="fas fa-magic me-2"></i>
+                            Create My AI-Powered Adventure
+                        </span>
+                        <span class="loading">
+                            <span class="spinner"></span>
+                            Planning your perfect trip...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Route type selection
+        let selectedRouteTypes = ['scenic', 'cultural']; // Default selection
+        
+        document.querySelectorAll('.route-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const type = this.dataset.type;
+                
+                if (this.classList.contains('selected')) {
+                    // Deselect if already selected
+                    this.classList.remove('selected');
+                    selectedRouteTypes = selectedRouteTypes.filter(t => t !== type);
+                } else {
+                    // Select if not selected
+                    this.classList.add('selected');
+                    if (!selectedRouteTypes.includes(type)) {
+                        selectedRouteTypes.push(type);
+                    }
+                }
+                
+                // Ensure at least one is selected
+                if (selectedRouteTypes.length === 0) {
+                    selectedRouteTypes = ['scenic'];
+                    document.querySelector('[data-type="scenic"]').classList.add('selected');
+                }
+            });
+        });
+        
+        // Initialize default selections
+        document.querySelector('[data-type="scenic"]').classList.add('selected');
+        document.querySelector('[data-type="cultural"]').classList.add('selected');
+        
+        // Enhanced form submission
+        document.getElementById('tripPlannerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const startLocation = document.getElementById('startLocation').value.trim();
+            const endLocation = document.getElementById('endLocation').value.trim();
+            
+            if (!startLocation || !endLocation) {
+                alert('Please enter both starting city and destination');
+                return;
+            }
+            
+            if (selectedRouteTypes.length === 0) {
+                alert('Please select at least one route type');
+                return;
+            }
+            
+            // Show loading state
+            const button = document.querySelector('.plan-btn');
+            const btnText = button.querySelector('.btn-text');
+            const loading = button.querySelector('.loading');
+            
+            button.disabled = true;
+            btnText.style.display = 'none';
+            loading.classList.add('active');
+            
+            try {
+                const response = await fetch('/api/plan-trip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        start_location: startLocation,
+                        end_location: endLocation,
+                        route_types: selectedRouteTypes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success !== false) {
+                    // Store results and navigate
+                    sessionStorage.setItem('travelPlanResult', JSON.stringify({
+                        success: true,
+                        data: data
+                    }));
+                    
+                    window.location.href = '/results';
+                } else {
+                    throw new Error(data.error || 'Planning failed');
+                }
+                
+            } catch (error) {
+                console.error('Trip planning error:', error);
+                alert('Sorry, we encountered an error while planning your trip. Please try again.');
+            } finally {
+                // Hide loading state
+                button.disabled = false;
+                btnText.style.display = 'inline';
+                loading.classList.remove('active');
+            }
+        });
+        
+        // Photo analysis function
+        async function analyzePhoto(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // For demo, we'll use a simple description prompt
+            const description = prompt('Describe what you see in this photo (landscape, architecture, etc.):');
+            if (!description) return;
+            
+            try {
+                const response = await fetch('/api/ai-photo-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ description: description })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.destinations) {
+                    let message = 'AI suggests these similar European destinations:\n\n';
+                    data.destinations.forEach((dest, index) => {
+                        message += `${index + 1}. ${dest.destination}, ${dest.country}\n`;
+                        message += `   Best time: ${dest.best_time_to_visit}\n`;
+                        message += `   Highlights: ${dest.highlights.join(', ')}\n\n`;
+                    });
+                    
+                    alert(message);
+                } else {
+                    alert('Photo analysis failed. Please try again.');
+                }
+                
+            } catch (error) {
+                console.error('Photo analysis error:', error);
+                alert('Photo analysis service unavailable.');
+            }
+        }
+        
+        // Trip management functions
+        function loadTrip(tripId) {
+            // This would load trip details - for now show alert
+            alert(`Loading trip ${tripId}...`);
+        }
+        
+        async function toggleFavorite(tripId) {
+            try {
+                const response = await fetch(`/auth/api/trips/${tripId}/favorite`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    location.reload(); // Simple reload for now
+                }
+            } catch (error) {
+                console.error('Toggle favorite error:', error);
+            }
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
