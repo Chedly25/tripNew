@@ -1523,38 +1523,108 @@
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
 
-                // Add markers for cities
-                const cities = [itinerary.start_city, ...itinerary.intermediate_cities, itinerary.end_city];
-                const bounds = [];
-
-                cities.forEach((city, idx) => {
-                    if (city.coordinates) {
-                        const [lat, lng] = city.coordinates;
-                        bounds.push([lat, lng]);
-                        
-                        const isStart = idx === 0;
-                        const isEnd = idx === cities.length - 1;
-                        
-                        const icon = L.divIcon({
-                            html: `<div style="background: ${isStart ? 'var(--coastal-mint)' : isEnd ? 'var(--sunset-orange)' : 'var(--tuscan-gold)'}; 
-                                   width: 30px; height: 30px; border-radius: 50%; 
+                // Draw route line if coordinates are available
+                if (itinerary.coordinates && itinerary.coordinates.length > 0) {
+                    const routeLine = L.polyline(itinerary.coordinates, {
+                        color: '#FF6B35',
+                        weight: 4,
+                        opacity: 0.8,
+                        dashArray: '10, 5'
+                    }).addTo(map);
+                    
+                    // Fit map to show entire route
+                    map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
+                    
+                    // Add markers for start and end points
+                    const startCoords = itinerary.coordinates[0];
+                    const endCoords = itinerary.coordinates[itinerary.coordinates.length - 1];
+                    
+                    // Start marker
+                    const startIcon = L.divIcon({
+                        html: `<div style="background: var(--coastal-mint); 
+                               width: 35px; height: 35px; border-radius: 50%; 
+                               display: flex; align-items: center; justify-content: center; 
+                               color: var(--midnight-navy); font-weight: bold; font-size: 1rem;
+                               box-shadow: 0 4px 15px rgba(6, 255, 165, 0.4);">
+                               1
+                               </div>`,
+                        className: 'custom-div-icon',
+                        iconSize: [35, 35],
+                        iconAnchor: [17, 17]
+                    });
+                    
+                    L.marker(startCoords, { icon: startIcon }).addTo(map)
+                        .bindPopup(`<b>🏁 Start</b><br>Your journey begins here!`);
+                    
+                    // End marker
+                    const endIcon = L.divIcon({
+                        html: `<div style="background: var(--sunset-orange); 
+                               width: 35px; height: 35px; border-radius: 50%; 
+                               display: flex; align-items: center; justify-content: center; 
+                               color: white; font-weight: bold; font-size: 1rem;
+                               box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">
+                               ${itinerary.coordinates.length}
+                               </div>`,
+                        className: 'custom-div-icon',
+                        iconSize: [35, 35],
+                        iconAnchor: [17, 17]
+                    });
+                    
+                    L.marker(endCoords, { icon: endIcon }).addTo(map)
+                        .bindPopup(`<b>🎯 Destination</b><br>Your amazing journey ends here!`);
+                    
+                    // Add intermediate waypoint markers
+                    for (let i = 1; i < itinerary.coordinates.length - 1; i++) {
+                        const waypointIcon = L.divIcon({
+                            html: `<div style="background: var(--tuscan-gold); 
+                                   width: 25px; height: 25px; border-radius: 50%; 
                                    display: flex; align-items: center; justify-content: center; 
                                    color: var(--midnight-navy); font-weight: bold; font-size: 0.8rem;
-                                   box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                                   ${idx + 1}
+                                   box-shadow: 0 3px 10px rgba(255, 210, 63, 0.4);">
+                                   ${i + 1}
                                    </div>`,
                             className: 'custom-div-icon',
-                            iconSize: [30, 30],
-                            iconAnchor: [15, 15]
+                            iconSize: [25, 25],
+                            iconAnchor: [12, 12]
                         });
                         
-                        L.marker([lat, lng], { icon }).addTo(map)
-                            .bindPopup(`<b>${city.name}</b><br>${city.country}`);
+                        L.marker(itinerary.coordinates[i], { icon: waypointIcon }).addTo(map)
+                            .bindPopup(`<b>📍 Waypoint ${i + 1}</b><br>Stop along your route`);
                     }
-                });
+                } else {
+                    // Fallback: Add markers for cities if coordinates are not available
+                    const cities = [itinerary.start_city, ...itinerary.intermediate_cities, itinerary.end_city];
+                    const bounds = [];
 
-                if (bounds.length > 0) {
-                    map.fitBounds(bounds, { padding: [20, 20] });
+                    cities.forEach((city, idx) => {
+                        if (city && city.coordinates) {
+                            const [lat, lng] = city.coordinates;
+                            bounds.push([lat, lng]);
+                            
+                            const isStart = idx === 0;
+                            const isEnd = idx === cities.length - 1;
+                            
+                            const icon = L.divIcon({
+                                html: `<div style="background: ${isStart ? 'var(--coastal-mint)' : isEnd ? 'var(--sunset-orange)' : 'var(--tuscan-gold)'}; 
+                                       width: 30px; height: 30px; border-radius: 50%; 
+                                       display: flex; align-items: center; justify-content: center; 
+                                       color: var(--midnight-navy); font-weight: bold; font-size: 0.8rem;
+                                       box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                                       ${idx + 1}
+                                       </div>`,
+                                className: 'custom-div-icon',
+                                iconSize: [30, 30],
+                                iconAnchor: [15, 15]
+                            });
+                            
+                            L.marker([lat, lng], { icon }).addTo(map)
+                                .bindPopup(`<b>${city.name}</b><br>${city.country}`);
+                        }
+                    });
+
+                    if (bounds.length > 0) {
+                        map.fitBounds(bounds, { padding: [20, 20] });
+                    }
                 }
             } catch (error) {
                 console.error('Error initializing map:', error);
