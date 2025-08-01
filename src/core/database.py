@@ -169,6 +169,221 @@ class Database:
                 )
             ''')
             
+            # Collaborative trip planning
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS trip_collaborators (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    trip_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    role TEXT DEFAULT 'viewer', -- 'owner', 'editor', 'viewer'
+                    invited_by INTEGER,
+                    invitation_status TEXT DEFAULT 'pending', -- 'pending', 'accepted', 'declined'
+                    invitation_token TEXT UNIQUE,
+                    invited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    joined_at TIMESTAMP,
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (invited_by) REFERENCES users (id)
+                )
+            ''')
+            
+            # Trip votes and suggestions
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS trip_suggestions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    trip_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    suggestion_type TEXT NOT NULL, -- 'destination', 'activity', 'restaurant', 'hotel', etc.
+                    suggestion_data TEXT NOT NULL, -- JSON
+                    votes INTEGER DEFAULT 0,
+                    status TEXT DEFAULT 'proposed', -- 'proposed', 'accepted', 'rejected'
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Offline trip downloads
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS offline_trips (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    trip_id INTEGER NOT NULL,
+                    download_data TEXT NOT NULL, -- JSON with all trip data
+                    version INTEGER DEFAULT 1,
+                    downloaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_synced TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id)
+                )
+            ''')
+            
+            # Budget tracking and expenses
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS trip_expenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    trip_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    expense_category TEXT NOT NULL, -- 'transport', 'accommodation', 'food', 'activities', etc.
+                    description TEXT NOT NULL,
+                    amount REAL NOT NULL,
+                    currency TEXT DEFAULT 'EUR',
+                    paid_by INTEGER NOT NULL,
+                    split_with TEXT, -- JSON array of user_ids
+                    receipt_url TEXT,
+                    expense_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (paid_by) REFERENCES users (id)
+                )
+            ''')
+            
+            # Travel journal entries
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS travel_journal (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    trip_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    entry_type TEXT DEFAULT 'text', -- 'text', 'photo', 'video', 'location'
+                    title TEXT,
+                    content TEXT,
+                    media_urls TEXT, -- JSON array
+                    location_data TEXT, -- JSON with coordinates, place name
+                    weather_data TEXT, -- JSON snapshot
+                    mood TEXT, -- user's mood/rating
+                    is_private BOOLEAN DEFAULT 0,
+                    entry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Packing lists
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS packing_lists (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    trip_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    list_name TEXT DEFAULT 'My Packing List',
+                    items TEXT NOT NULL, -- JSON array of {item, quantity, packed, category}
+                    weather_considered TEXT, -- JSON weather data used
+                    activities_considered TEXT, -- JSON activities data
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Local transportation cache
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS transportation_cache (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    city_name TEXT NOT NULL,
+                    transport_type TEXT NOT NULL, -- 'public_transit', 'parking', 'bike_share', etc.
+                    data TEXT NOT NULL, -- JSON
+                    cached_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP
+                )
+            ''')
+            
+            # Emergency contacts
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS emergency_contacts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    country TEXT NOT NULL,
+                    service_type TEXT NOT NULL, -- 'police', 'medical', 'embassy', 'roadside', etc.
+                    service_name TEXT NOT NULL,
+                    phone_number TEXT NOT NULL,
+                    address TEXT,
+                    coordinates TEXT, -- JSON
+                    languages TEXT, -- JSON array
+                    notes TEXT,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Local experiences marketplace
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS local_experiences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    host_user_id INTEGER,
+                    city TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    category TEXT NOT NULL, -- 'tour', 'cooking', 'adventure', 'cultural', etc.
+                    price REAL NOT NULL,
+                    currency TEXT DEFAULT 'EUR',
+                    duration_hours REAL,
+                    max_participants INTEGER,
+                    languages TEXT, -- JSON array
+                    included_items TEXT, -- JSON array
+                    photos TEXT, -- JSON array
+                    rating REAL DEFAULT 0,
+                    review_count INTEGER DEFAULT 0,
+                    is_verified BOOLEAN DEFAULT 0,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (host_user_id) REFERENCES users (id)
+                )
+            ''')
+            
+            # Experience bookings
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS experience_bookings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    experience_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    trip_id INTEGER,
+                    booking_date DATE NOT NULL,
+                    participants INTEGER DEFAULT 1,
+                    total_price REAL NOT NULL,
+                    status TEXT DEFAULT 'pending', -- 'pending', 'confirmed', 'cancelled'
+                    payment_status TEXT DEFAULT 'pending',
+                    special_requests TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (experience_id) REFERENCES local_experiences (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id)
+                )
+            ''')
+            
+            # Itinerary optimization preferences
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS optimization_preferences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    trip_id INTEGER,
+                    energy_pattern TEXT DEFAULT 'moderate', -- 'morning_person', 'night_owl', 'moderate'
+                    pace_preference TEXT DEFAULT 'relaxed', -- 'packed', 'relaxed', 'balanced'
+                    break_frequency TEXT DEFAULT 'regular', -- 'minimal', 'regular', 'frequent'
+                    meal_times TEXT, -- JSON with preferred times
+                    avoid_rush_hours BOOLEAN DEFAULT 1,
+                    max_walking_distance REAL DEFAULT 2.0, -- km
+                    accessibility_needs TEXT, -- JSON
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id),
+                    FOREIGN KEY (trip_id) REFERENCES saved_trips (id)
+                )
+            ''')
+            
+            # User emergency contacts (personal contacts)
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS user_emergency_contacts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    phone TEXT NOT NULL,
+                    email TEXT,
+                    relationship TEXT,
+                    is_primary BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            ''')
+            
             conn.commit()
         
         logger.info("Database initialized successfully")

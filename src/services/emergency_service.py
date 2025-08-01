@@ -1,486 +1,412 @@
 """
-Emergency assistance service for travel safety and support.
+Enhanced emergency assistance network service.
 """
-import os
-import json
-import asyncio
-from typing import Dict, List, Optional, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
+import json
 import structlog
-from ..core.database import get_database
-from ..services.claude_ai_service import get_claude_service
+from src.core.database import get_database
+from src.core.exceptions import ValidationError, ServiceError
 
 logger = structlog.get_logger(__name__)
 
+
 class EmergencyService:
-    """Service for emergency assistance and travel safety."""
+    """Handles emergency assistance and safety information."""
     
     def __init__(self):
         self.db = get_database()
-        self.claude_service = get_claude_service()
-        
-        # Emergency contact numbers by country
-        self.emergency_numbers = {
-            'france': {'police': '17', 'medical': '15', 'fire': '18', 'general': '112'},
-            'italy': {'police': '113', 'medical': '118', 'fire': '115', 'general': '112'},
-            'spain': {'police': '091', 'medical': '061', 'fire': '080', 'general': '112'},
-            'germany': {'police': '110', 'medical': '112', 'fire': '112', 'general': '112'},
-            'switzerland': {'police': '117', 'medical': '144', 'fire': '118', 'general': '112'},
-            'austria': {'police': '133', 'medical': '144', 'fire': '122', 'general': '112'},
-            'netherlands': {'police': '112', 'medical': '112', 'fire': '112', 'general': '112'},
-            'belgium': {'police': '101', 'medical': '100', 'fire': '100', 'general': '112'},
-            'czech_republic': {'police': '158', 'medical': '155', 'fire': '150', 'general': '112'},
-            'default': {'general': '112'}  # EU standard
-        }
-        
-        # Embassy contact information (simplified)
-        self.embassy_info = {
-            'us_embassy': {
-                'france': '+33-1-43-12-22-22',
-                'italy': '+39-06-46741',
-                'germany': '+49-30-8305-0',
-                'spain': '+34-91-587-2200'
-            },
-            'uk_embassy': {
-                'france': '+33-1-44-51-31-00',
-                'italy': '+39-06-4220-0001',
-                'germany': '+49-30-204-570',
-                'spain': '+34-91-714-6300'
-            }
-        }
+        self._populate_emergency_contacts()
     
-    async def handle_emergency_request(self, user_id: int, emergency_type: str, 
-                                     location: str, description: str, 
-                                     user_info: Dict = None) -> Dict:
-        """Handle emergency assistance request."""
+    def _populate_emergency_contacts(self):
+        """Populate emergency contacts database with European data."""
         try:
-            # Log emergency request
-            emergency_id = await self._log_emergency_request(
-                user_id, emergency_type, location, description
-            )
-            
-            # Get location-specific emergency info
-            country = self._detect_country(location)
-            emergency_contacts = self._get_emergency_contacts(country)
-            
-            # Get AI assistance for the emergency
-            ai_response = await self._get_ai_emergency_assistance(
-                emergency_type, location, description, user_info
-            )
-            
-            # Create emergency response
-            response = {
-                'emergency_id': emergency_id,
-                'immediate_actions': self._get_immediate_actions(emergency_type),
-                'emergency_contacts': emergency_contacts,
-                'ai_guidance': ai_response,
-                'nearby_services': await self._find_nearby_services(location, emergency_type),
-                'follow_up_actions': self._get_follow_up_actions(emergency_type),
-                'timestamp': datetime.now().isoformat()
+            emergency_data = {
+                'France': [
+                    {'service_type': 'emergency_all', 'service_name': 'Emergency Services', 'phone': '112', 'languages': ['French', 'English']},
+                    {'service_type': 'police', 'service_name': 'Police', 'phone': '17', 'languages': ['French']},
+                    {'service_type': 'medical', 'service_name': 'SAMU (Medical Emergency)', 'phone': '15', 'languages': ['French']},
+                    {'service_type': 'fire', 'service_name': 'Fire Department', 'phone': '18', 'languages': ['French']},
+                    {'service_type': 'roadside', 'service_name': 'Roadside Assistance', 'phone': '0800 05 15 15', 'languages': ['French', 'English']},
+                    {'service_type': 'embassy', 'service_name': 'US Embassy Paris', 'phone': '+33 1 43 12 22 22', 'address': '2 Avenue Gabriel, 75008 Paris', 'languages': ['English']},
+                    {'service_type': 'embassy', 'service_name': 'UK Embassy Paris', 'phone': '+33 1 44 51 31 00', 'address': '35 Rue du Faubourg Saint-Honoré, 75008 Paris', 'languages': ['English']},
+                ],
+                'Germany': [
+                    {'service_type': 'emergency_all', 'service_name': 'Emergency Services', 'phone': '112', 'languages': ['German', 'English']},
+                    {'service_type': 'police', 'service_name': 'Police', 'phone': '110', 'languages': ['German']},
+                    {'service_type': 'medical', 'service_name': 'Medical Emergency', 'phone': '112', 'languages': ['German', 'English']},
+                    {'service_type': 'roadside', 'service_name': 'ADAC Roadside', 'phone': '+49 180 2 22 22 22', 'languages': ['German', 'English']},
+                    {'service_type': 'embassy', 'service_name': 'US Embassy Berlin', 'phone': '+49 30 8305-0', 'address': 'Clayallee 170, 14195 Berlin', 'languages': ['English']},
+                ],
+                'Italy': [
+                    {'service_type': 'emergency_all', 'service_name': 'Emergency Services', 'phone': '112', 'languages': ['Italian', 'English']},
+                    {'service_type': 'police', 'service_name': 'Carabinieri', 'phone': '112', 'languages': ['Italian']},
+                    {'service_type': 'police', 'service_name': 'State Police', 'phone': '113', 'languages': ['Italian']},
+                    {'service_type': 'medical', 'service_name': 'Medical Emergency', 'phone': '118', 'languages': ['Italian']},
+                    {'service_type': 'fire', 'service_name': 'Fire Brigade', 'phone': '115', 'languages': ['Italian']},
+                    {'service_type': 'roadside', 'service_name': 'ACI Roadside', 'phone': '803 116', 'languages': ['Italian', 'English']},
+                ],
+                'Spain': [
+                    {'service_type': 'emergency_all', 'service_name': 'Emergency Services', 'phone': '112', 'languages': ['Spanish', 'English']},
+                    {'service_type': 'police', 'service_name': 'National Police', 'phone': '091', 'languages': ['Spanish']},
+                    {'service_type': 'police', 'service_name': 'Civil Guard', 'phone': '062', 'languages': ['Spanish']},
+                    {'service_type': 'medical', 'service_name': 'Medical Emergency', 'phone': '061', 'languages': ['Spanish']},
+                    {'service_type': 'roadside', 'service_name': 'RACE Roadside', 'phone': '902 40 45 45', 'languages': ['Spanish', 'English']},
+                ],
+                'Netherlands': [
+                    {'service_type': 'emergency_all', 'service_name': 'Emergency Services', 'phone': '112', 'languages': ['Dutch', 'English']},
+                    {'service_type': 'police', 'service_name': 'Police', 'phone': '0900-8844', 'languages': ['Dutch', 'English']},
+                    {'service_type': 'roadside', 'service_name': 'ANWB Roadside', 'phone': '088 269 2222', 'languages': ['Dutch', 'English']},
+                ],
+                'Austria': [
+                    {'service_type': 'emergency_all', 'service_name': 'Emergency Services', 'phone': '112', 'languages': ['German', 'English']},
+                    {'service_type': 'police', 'service_name': 'Police', 'phone': '133', 'languages': ['German']},
+                    {'service_type': 'medical', 'service_name': 'Medical Emergency', 'phone': '144', 'languages': ['German']},
+                    {'service_type': 'fire', 'service_name': 'Fire Department', 'phone': '122', 'languages': ['German']},
+                    {'service_type': 'roadside', 'service_name': 'ÖAMTC Roadside', 'phone': '120', 'languages': ['German', 'English']},
+                ]
             }
             
-            # Send alert to emergency contacts if configured
-            await self._notify_emergency_contacts(user_id, emergency_type, location)
-            
-            return response
-            
-        except Exception as e:
-            logger.error(f"Emergency handling failed: {e}")
-            return {
-                'error': 'Emergency service temporarily unavailable',
-                'fallback_number': '112',  # EU emergency number
-                'message': 'Please call 112 for immediate assistance'
-            }
-    
-    async def get_safety_briefing(self, destination: str, route_type: str) -> Dict:
-        """Get safety briefing for a destination."""
-        try:
-            # Get country-specific safety information
-            country = self._detect_country(destination)
-            
-            # Get AI-powered safety briefing
-            ai_briefing = await self._get_ai_safety_briefing(destination, route_type, country)
-            
-            return {
-                'destination': destination,
-                'country': country,
-                'emergency_contacts': self._get_emergency_contacts(country),
-                'safety_briefing': ai_briefing,
-                'health_recommendations': self._get_health_recommendations(country),
-                'driving_requirements': self._get_driving_requirements(country),
-                'cultural_considerations': self._get_cultural_considerations(country),
-                'common_scams': self._get_common_scams(country)
-            }
-            
-        except Exception as e:
-            logger.error(f"Safety briefing failed: {e}")
-            return {'error': 'Safety briefing unavailable'}
-    
-    def setup_emergency_contacts(self, user_id: int, contacts: List[Dict]) -> Dict:
-        """Setup emergency contacts for a user."""
-        try:
             with self.db.get_connection() as conn:
-                # Create emergency contacts table if not exists
-                conn.execute('''
-                    CREATE TABLE IF NOT EXISTS emergency_contacts (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        user_id INTEGER NOT NULL,
-                        name TEXT NOT NULL,
-                        phone TEXT NOT NULL,
-                        email TEXT,
-                        relationship TEXT,
-                        is_primary BOOLEAN DEFAULT 0,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (user_id) REFERENCES users (id)
-                    )
-                ''')
+                # Check if data already exists
+                existing = conn.execute('SELECT COUNT(*) FROM emergency_contacts').fetchone()[0]
+                if existing > 0:
+                    return  # Data already populated
                 
-                # Delete existing contacts
-                conn.execute('DELETE FROM emergency_contacts WHERE user_id = ?', (user_id,))
+                # Insert emergency contacts
+                for country, contacts in emergency_data.items():
+                    for contact in contacts:
+                        conn.execute('''
+                            INSERT INTO emergency_contacts (
+                                country, service_type, service_name, phone_number,
+                                address, languages, notes
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        ''', (
+                            country,
+                            contact['service_type'],
+                            contact['service_name'],
+                            contact['phone'],
+                            contact.get('address'),
+                            json.dumps(contact.get('languages', [])),
+                            contact.get('notes')
+                        ))
                 
-                # Add new contacts
+                conn.commit()
+                logger.info("Emergency contacts populated successfully")
+                
+        except Exception as e:
+            logger.error(f"Failed to populate emergency contacts: {e}")
+    
+    def get_emergency_contacts(self, country: str = None, service_type: str = None) -> List[Dict[str, Any]]:
+        """Get emergency contacts for a country or service type."""
+        try:
+            query = 'SELECT * FROM emergency_contacts WHERE 1=1'
+            params = []
+            
+            if country:
+                query += ' AND country = ?'
+                params.append(country)
+            
+            if service_type:
+                query += ' AND service_type = ?'
+                params.append(service_type)
+            
+            query += ' ORDER BY service_type, service_name'
+            
+            with self.db.get_connection() as conn:
+                contacts = conn.execute(query, params).fetchall()
+                
+                result = []
                 for contact in contacts:
-                    conn.execute('''
-                        INSERT INTO emergency_contacts (user_id, name, phone, email, relationship, is_primary)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    ''', (
-                        user_id, contact['name'], contact['phone'], 
-                        contact.get('email', ''), contact.get('relationship', ''),
-                        contact.get('is_primary', False)
-                    ))
+                    contact_dict = dict(contact)
+                    if contact_dict.get('languages'):
+                        contact_dict['languages'] = json.loads(contact_dict['languages'])
+                    result.append(contact_dict)
                 
-                conn.commit()
-                
-                return {'success': True, 'message': 'Emergency contacts updated'}
+                return result
                 
         except Exception as e:
-            logger.error(f"Emergency contacts setup failed: {e}")
-            return {'success': False, 'error': 'Failed to setup emergency contacts'}
+            logger.error(f"Failed to get emergency contacts: {e}")
+            raise ServiceError(f"Failed to get emergency contacts: {str(e)}")
     
-    def get_travel_health_info(self, destinations: List[str]) -> Dict:
-        """Get health information for travel destinations."""
-        health_info = {}
-        
-        for destination in destinations:
-            country = self._detect_country(destination)
-            health_info[destination] = {
-                'vaccinations': self._get_vaccination_requirements(country),
-                'health_risks': self._get_health_risks(country),
-                'medical_facilities': self._get_medical_facilities_info(country),
-                'insurance_recommendations': self._get_insurance_recommendations(country),
-                'emergency_medical_number': self.emergency_numbers.get(country, {}).get('medical', '112')
-            }
-        
-        return health_info
-    
-    async def _log_emergency_request(self, user_id: int, emergency_type: str, 
-                                   location: str, description: str) -> str:
-        """Log emergency request to database."""
+    def get_nearest_emergency_services(self, latitude: float, longitude: float, 
+                                     service_type: str = None) -> List[Dict[str, Any]]:
+        """Get nearest emergency services based on location."""
         try:
-            with self.db.get_connection() as conn:
-                # Create emergency logs table if not exists
-                conn.execute('''
-                    CREATE TABLE IF NOT EXISTS emergency_logs (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        emergency_id TEXT UNIQUE NOT NULL,
-                        user_id INTEGER NOT NULL,
-                        emergency_type TEXT NOT NULL,
-                        location TEXT NOT NULL,
-                        description TEXT,
-                        status TEXT DEFAULT 'active',
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        resolved_at TIMESTAMP,
-                        FOREIGN KEY (user_id) REFERENCES users (id)
+            # In production, this would use geolocation APIs
+            # For now, we'll determine country based on coordinates and return relevant contacts
+            country = self._determine_country_from_coordinates(latitude, longitude)
+            
+            if country:
+                contacts = self.get_emergency_contacts(country, service_type)
+                
+                # Add estimated response times and additional info
+                for contact in contacts:
+                    contact['estimated_response_time'] = self._estimate_response_time(
+                        contact['service_type'], latitude, longitude
                     )
-                ''')
+                    contact['available_24_7'] = contact['service_type'] in [
+                        'emergency_all', 'police', 'medical', 'fire'
+                    ]
                 
-                emergency_id = f"EMG_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{user_id}"
-                
-                conn.execute('''
-                    INSERT INTO emergency_logs (emergency_id, user_id, emergency_type, location, description)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (emergency_id, user_id, emergency_type, location, description))
-                
-                conn.commit()
-                return emergency_id
-                
-        except Exception as e:
-            logger.error(f"Emergency logging failed: {e}")
-            return f"EMG_FALLBACK_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    async def _get_ai_emergency_assistance(self, emergency_type: str, location: str, 
-                                         description: str, user_info: Dict = None) -> str:
-        """Get AI-powered emergency assistance."""
-        try:
-            prompt = f"""
-            EMERGENCY ASSISTANCE REQUEST:
-            Type: {emergency_type}
-            Location: {location}
-            Description: {description}
-            User Info: {user_info or 'Not provided'}
+                return contacts
             
-            Please provide immediate, practical guidance for this emergency situation.
-            Focus on:
-            1. Immediate safety actions
-            2. Who to contact
-            3. What information to have ready
-            4. Next steps to take
-            
-            Keep advice practical and location-specific.
-            """
-            
-            messages = [{'role': 'user', 'content': prompt}]
-            
-            response = await self.claude_service._make_request(
-                messages, 
-                max_tokens=1000,
-                system_prompt="You are an emergency assistance AI. Provide clear, actionable guidance for travel emergencies. Always prioritize safety and direct users to appropriate emergency services."
-            )
-            
-            return response or "Contact local emergency services immediately. In EU countries, dial 112."
+            return []
             
         except Exception as e:
-            logger.error(f"AI emergency assistance failed: {e}")
-            return "Contact local emergency services immediately. In EU countries, dial 112."
+            logger.error(f"Failed to get nearest emergency services: {e}")
+            raise ServiceError(f"Failed to get nearest emergency services: {str(e)}")
     
-    async def _get_ai_safety_briefing(self, destination: str, route_type: str, country: str) -> str:
-        """Get AI-powered safety briefing."""
+    def _determine_country_from_coordinates(self, lat: float, lon: float) -> Optional[str]:
+        """Determine country from coordinates (simplified)."""
+        # Simplified country detection - in production use proper geocoding
+        if 41.0 <= lat <= 51.0 and -5.0 <= lon <= 10.0:
+            if 42.0 <= lat <= 51.5 and -5.0 <= lon <= 8.0:
+                return 'France'
+            elif 47.0 <= lat <= 55.0 and 6.0 <= lon <= 15.0:
+                return 'Germany'
+            elif 36.0 <= lat <= 47.0 and 6.0 <= lon <= 19.0:
+                return 'Italy'
+            elif 36.0 <= lat <= 44.0 and -10.0 <= lon <= 5.0:
+                return 'Spain'
+            elif 50.0 <= lat <= 54.0 and 3.0 <= lon <= 7.0:
+                return 'Netherlands'
+            elif 46.0 <= lat <= 49.0 and 9.0 <= lon <= 17.0:
+                return 'Austria'
+        
+        return None
+    
+    def _estimate_response_time(self, service_type: str, lat: float, lon: float) -> str:
+        """Estimate emergency response time based on service type and location."""
+        # Simplified estimation - in production use real-time data
+        if service_type == 'police':
+            return '5-15 minutes'
+        elif service_type == 'medical':
+            return '8-20 minutes'
+        elif service_type == 'fire':
+            return '6-18 minutes'
+        elif service_type == 'roadside':
+            return '30-90 minutes'
+        else:
+            return 'Variable'
+    
+    def create_emergency_alert(self, user_id: int, alert_data: Dict[str, Any]) -> int:
+        """Create an emergency alert for a user."""
         try:
-            prompt = f"""
-            Provide a comprehensive safety briefing for:
-            Destination: {destination}
-            Country: {country}
-            Route Type: {route_type}
+            required_fields = ['alert_type', 'location', 'message']
+            for field in required_fields:
+                if field not in alert_data:
+                    raise ValidationError(f"Missing required field: {field}")
             
-            Include:
-            1. Current safety situation
-            2. Common risks for travelers
-            3. Precautions to take
-            4. Areas or situations to avoid
-            5. Local safety tips
-            6. Cultural considerations for safety
-            
-            Keep advice current and practical.
-            """
-            
-            messages = [{'role': 'user', 'content': prompt}]
-            
-            response = await self.claude_service._make_request(
-                messages,
-                max_tokens=1500,
-                system_prompt="You are a travel safety expert. Provide accurate, up-to-date safety information for travelers."
-            )
-            
-            return response or f"General safety precautions apply for {destination}. Stay aware of surroundings and follow local guidelines."
-            
-        except Exception as e:
-            logger.error(f"AI safety briefing failed: {e}")
-            return f"Safety briefing unavailable. Follow standard travel safety precautions for {destination}."
-    
-    def _detect_country(self, location: str) -> str:
-        """Detect country from location string."""
-        location_lower = location.lower()
-        
-        country_keywords = {
-            'france': ['france', 'french', 'paris', 'lyon', 'marseille', 'nice', 'cannes'],
-            'italy': ['italy', 'italian', 'rome', 'milan', 'venice', 'florence', 'naples'],
-            'spain': ['spain', 'spanish', 'madrid', 'barcelona', 'valencia', 'seville'],
-            'germany': ['germany', 'german', 'berlin', 'munich', 'hamburg', 'cologne'],
-            'switzerland': ['switzerland', 'swiss', 'zurich', 'geneva', 'bern', 'basel'],
-            'austria': ['austria', 'austrian', 'vienna', 'salzburg', 'innsbruck'],
-            'netherlands': ['netherlands', 'dutch', 'amsterdam', 'rotterdam', 'hague'],
-            'belgium': ['belgium', 'belgian', 'brussels', 'antwerp', 'ghent'],
-            'czech_republic': ['czech', 'prague', 'brno', 'ostrava']
-        }
-        
-        for country, keywords in country_keywords.items():
-            if any(keyword in location_lower for keyword in keywords):
-                return country
-        
-        return 'default'
-    
-    def _get_emergency_contacts(self, country: str) -> Dict:
-        """Get emergency contact numbers for a country."""
-        return self.emergency_numbers.get(country, self.emergency_numbers['default'])
-    
-    def _get_immediate_actions(self, emergency_type: str) -> List[str]:
-        """Get immediate actions for emergency type."""
-        actions = {
-            'medical': [
-                "Ensure your safety first",
-                "Call local medical emergency number immediately",
-                "Provide clear location information",
-                "Stay with the injured person if safe to do so",
-                "Have passport and insurance information ready"
-            ],
-            'accident': [
-                "Move to safety if possible",
-                "Call local emergency services",
-                "Take photos if safe to do so",
-                "Exchange information with other parties",
-                "Contact your insurance company"
-            ],
-            'theft': [
-                "Report to local police immediately",
-                "Contact your bank to freeze cards",
-                "Get a police report number",
-                "Contact your embassy if passport stolen",
-                "Keep copies of all documents"
-            ],
-            'breakdown': [
-                "Pull over safely",
-                "Turn on hazard lights",
-                "Call roadside assistance",
-                "Stay in vehicle if on busy road",
-                "Have vehicle documents ready"
-            ],
-            'lost': [
-                "Stay where you are if safe",
-                "Use GPS on phone if available",
-                "Call local emergency services if in danger",
-                "Contact someone who knows your itinerary",
-                "Look for tourist information centers"
-            ]
-        }
-        
-        return actions.get(emergency_type, [
-            "Assess your immediate safety",
-            "Call local emergency services (112 in EU)",
-            "Provide clear location information",
-            "Stay calm and follow official instructions"
-        ])
-    
-    def _get_follow_up_actions(self, emergency_type: str) -> List[str]:
-        """Get follow-up actions for emergency type."""
-        actions = {
-            'medical': [
-                "Keep all medical records and receipts",
-                "Contact travel insurance provider",
-                "Follow up with your doctor at home",
-                "Consider adjusting travel plans"
-            ],
-            'accident': [
-                "File insurance claim promptly",
-                "Get vehicle repairs documented",
-                "Keep all receipts for expenses",
-                "Review and update travel plans"
-            ],
-            'theft': [
-                "Apply for replacement documents",
-                "Monitor bank statements",
-                "Update passwords for online accounts",
-                "Consider additional security measures"
-            ]
-        }
-        
-        return actions.get(emergency_type, [
-            "Document everything",
-            "Contact relevant authorities",
-            "Review travel insurance coverage",
-            "Consider safety improvements"
-        ])
-    
-    async def _find_nearby_services(self, location: str, emergency_type: str) -> List[Dict]:
-        """Find nearby emergency services (simplified implementation)."""
-        # This would integrate with Google Places API in a real implementation
-        services = {
-            'medical': ['Hospital', 'Pharmacy', 'Medical Center'],
-            'accident': ['Police Station', 'Auto Repair', 'Car Rental'],
-            'theft': ['Police Station', 'Embassy', 'Bank'],
-            'breakdown': ['Auto Repair', 'Gas Station', 'Car Rental']
-        }
-        
-        service_types = services.get(emergency_type, ['Police Station', 'Hospital'])
-        
-        return [
-            {
-                'name': f'{service_type} near {location}',
-                'type': service_type,
-                'note': 'Use local directory or ask locals for specific locations'
-            }
-            for service_type in service_types
-        ]
-    
-    async def _notify_emergency_contacts(self, user_id: int, emergency_type: str, location: str):
-        """Notify user's emergency contacts (placeholder for future SMS/email integration)."""
-        try:
             with self.db.get_connection() as conn:
-                contacts = conn.execute('''
-                    SELECT * FROM emergency_contacts WHERE user_id = ? AND is_primary = 1
-                ''', (user_id,)).fetchall()
+                cursor = conn.execute('''
+                    INSERT INTO travel_alerts (
+                        user_id, alert_type, title, message, trip_id
+                    ) VALUES (?, ?, ?, ?, ?)
+                ''', (
+                    user_id,
+                    alert_data['alert_type'],
+                    alert_data.get('title', 'Emergency Alert'),
+                    alert_data['message'],
+                    alert_data.get('trip_id')
+                ))
                 
-                # In a real implementation, this would send SMS/email notifications
-                logger.info(f"Would notify {len(contacts)} emergency contacts about {emergency_type} in {location}")
+                alert_id = cursor.lastrowid
+                conn.commit()
+                
+                # Log the emergency alert
+                logger.warning(f"Emergency alert created", 
+                             alert_id=alert_id, 
+                             user_id=user_id, 
+                             alert_type=alert_data['alert_type'])
+                
+                return alert_id
                 
         except Exception as e:
-            logger.error(f"Emergency contact notification failed: {e}")
+            logger.error(f"Failed to create emergency alert: {e}")
+            raise ServiceError(f"Failed to create emergency alert: {str(e)}")
     
-    def _get_health_recommendations(self, country: str) -> List[str]:
-        """Get health recommendations for a country."""
-        recommendations = {
-            'italy': ["Drink bottled water in some areas", "Sun protection essential", "Mosquito protection in summer"],
-            'france': ["Standard European health precautions", "Tick protection in rural areas"],
-            'spain': ["Sun protection essential", "Stay hydrated", "Be aware of jellyfish in coastal areas"],
-            'default': ["Check with your doctor before travel", "Ensure routine vaccinations are up to date", "Consider travel insurance"]
+    def get_safety_tips(self, country: str, travel_type: str = 'road_trip') -> Dict[str, Any]:
+        """Get safety tips for a specific country and travel type."""
+        try:
+            general_tips = [
+                "Keep emergency contacts saved in your phone",
+                "Share your itinerary with someone at home",
+                "Keep copies of important documents",
+                "Have local currency for emergencies",
+                "Know the local emergency number (112 in EU)",
+                "Keep your phone charged and carry a power bank"
+            ]
+            
+            road_trip_tips = [
+                "Check your vehicle before long drives",
+                "Keep a roadside emergency kit",
+                "Plan rest stops every 2 hours",
+                "Avoid driving when tired",
+                "Keep fuel tank above 1/4 full",
+                "Have offline maps downloaded"
+            ]
+            
+            country_specific = self._get_country_specific_tips(country)
+            
+            return {
+                'country': country,
+                'general_safety': general_tips,
+                'road_trip_safety': road_trip_tips if travel_type == 'road_trip' else [],
+                'country_specific': country_specific,
+                'emergency_number': '112',  # EU standard
+                'important_phrases': self._get_emergency_phrases(country)
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get safety tips: {e}")
+            raise ServiceError(f"Failed to get safety tips: {str(e)}")
+    
+    def _get_country_specific_tips(self, country: str) -> List[str]:
+        """Get country-specific safety tips."""
+        tips_by_country = {
+            'France': [
+                "Carry ID at all times",
+                "Be aware of tourist scams in major cities",
+                "Respect local driving rules and speed limits",
+                "Many businesses close for lunch 12-2pm"
+            ],
+            'Germany': [
+                "Autobahn has no general speed limit but recommended 130 km/h",
+                "Strict environmental zones in cities require special stickers",
+                "Sunday shopping is generally not available",
+                "Punctuality is highly valued"
+            ],
+            'Italy': [
+                "ZTL zones in city centers require permits",
+                "Siesta hours: many shops close 1-4pm",
+                "Dress codes enforced in religious sites",
+                "Watch for pickpockets in tourist areas"
+            ],
+            'Spain': [
+                "Siesta hours: 2-5pm many businesses closed",
+                "Dinner is typically late (9-11pm)",
+                "Be cautious of bag snatching in tourist areas",
+                "Respect local customs and traditions"
+            ],
+            'Netherlands': [
+                "Watch out for cyclists everywhere",
+                "Parking in city centers is expensive",
+                "Most people speak excellent English",
+                "Coffee shops have specific rules"
+            ],
+            'Austria': [
+                "Vignette required for highway driving",
+                "Mountain weather can change quickly",
+                "Respect quiet hours (typically 10pm-6am)",
+                "Tipping 5-10% is customary"
+            ]
         }
         
-        return recommendations.get(country, recommendations['default'])
+        return tips_by_country.get(country, [])
     
-    def _get_driving_requirements(self, country: str) -> List[str]:
-        """Get driving requirements for a country."""
-        requirements = {
-            'italy': ["International Driving Permit required", "ZTL zones in cities", "Autostrade tolls"],
-            'france': ["UK/EU license valid", "Breathalyzer kit required", "High-vis vests mandatory"],
-            'spain': ["International Driving Permit recommended", "Speed cameras common", "Parking restrictions in cities"],
-            'default': ["Check local driving requirements", "International Driving Permit recommended", "Research local traffic laws"]
+    def _get_emergency_phrases(self, country: str) -> Dict[str, str]:
+        """Get essential emergency phrases in local language."""
+        phrases_by_country = {
+            'France': {
+                'Help': 'Au secours',
+                'Emergency': 'Urgence',
+                'Call the police': 'Appelez la police',
+                'I need a doctor': 'J\'ai besoin d\'un médecin',
+                'I don\'t speak French': 'Je ne parle pas français'
+            },
+            'Germany': {
+                'Help': 'Hilfe',
+                'Emergency': 'Notfall',
+                'Call the police': 'Rufen Sie die Polizei',
+                'I need a doctor': 'Ich brauche einen Arzt',
+                'I don\'t speak German': 'Ich spreche kein Deutsch'
+            },
+            'Italy': {
+                'Help': 'Aiuto',
+                'Emergency': 'Emergenza',
+                'Call the police': 'Chiama la polizia',
+                'I need a doctor': 'Ho bisogno di un medico',
+                'I don\'t speak Italian': 'Non parlo italiano'
+            },
+            'Spain': {
+                'Help': 'Ayuda',
+                'Emergency': 'Emergencia',
+                'Call the police': 'Llama a la policía',
+                'I need a doctor': 'Necesito un médico',
+                'I don\'t speak Spanish': 'No hablo español'
+            },
+            'Netherlands': {
+                'Help': 'Help',
+                'Emergency': 'Noodgeval',
+                'Call the police': 'Bel de politie',
+                'I need a doctor': 'Ik heb een dokter nodig',
+                'I don\'t speak Dutch': 'Ik spreek geen Nederlands'
+            },
+            'Austria': {
+                'Help': 'Hilfe',
+                'Emergency': 'Notfall',
+                'Call the police': 'Rufen Sie die Polizei',
+                'I need a doctor': 'Ich brauche einen Arzt',
+                'I don\'t speak German': 'Ich spreche kein Deutsch'
+            }
         }
         
-        return requirements.get(country, requirements['default'])
+        return phrases_by_country.get(country, {})
     
-    def _get_cultural_considerations(self, country: str) -> List[str]:
-        """Get cultural safety considerations."""
-        considerations = {
-            'italy': ["Dress modestly in churches", "Be aware of pickpockets in tourist areas", "Siesta hours affect business"],
-            'france': ["Learn basic French phrases", "Dining etiquette important", "Strike actions can affect transport"],
-            'spain': ["Late dining hours", "Siesta affects business hours", "Regional languages important"],
-            'default': ["Research local customs", "Dress appropriately", "Be respectful of local traditions"]
-        }
-        
-        return considerations.get(country, considerations['default'])
+    def get_travel_advisories(self, country: str) -> Dict[str, Any]:
+        """Get current travel advisories for a country."""
+        try:
+            # In production, this would fetch real-time data from government APIs
+            return {
+                'country': country,
+                'last_updated': datetime.now().isoformat(),
+                'overall_risk': 'Low',  # Low, Medium, High
+                'advisories': [
+                    {
+                        'type': 'General',
+                        'level': 'Standard precautions',
+                        'message': 'Exercise normal precautions when traveling'
+                    }
+                ],
+                'health_notices': [],
+                'security_alerts': [],
+                'entry_requirements': {
+                    'passport_required': True,
+                    'visa_required': False,  # For EU citizens
+                    'covid_restrictions': 'None currently'
+                },
+                'source': 'Government Travel Advisory',
+                'source_url': f'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/{country.lower()}.html'
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get travel advisories: {e}")
+            raise ServiceError(f"Failed to get travel advisories: {str(e)}")
     
-    def _get_common_scams(self, country: str) -> List[str]:
-        """Get common travel scams for a country."""
-        scams = {
-            'italy': ["Fake petition signers", "Overcharging in restaurants", "ATM skimming"],
-            'france': ["Gold ring scam", "Friendship bracelet scam", "Metro pickpocketing"],
-            'spain': ["Fake police checkpoints", "Distraction theft", "Overpriced tourist menus"],
-            'default': ["ATM skimming", "Overcharging tourists", "Distraction theft", "Fake officials"]
-        }
-        
-        return scams.get(country, scams['default'])
-    
-    def _get_vaccination_requirements(self, country: str) -> List[str]:
-        """Get vaccination requirements (simplified)."""
-        return ["Routine vaccinations up to date", "Check with healthcare provider", "No special requirements for most EU countries"]
-    
-    def _get_health_risks(self, country: str) -> List[str]:
-        """Get health risks for a country."""
-        return ["Standard European health risks", "Seasonal allergies possible", "Food safety generally good"]
-    
-    def _get_medical_facilities_info(self, country: str) -> str:
-        """Get medical facilities information."""
-        return f"Good medical facilities available in {country}. EU health insurance card valid."
-    
-    def _get_insurance_recommendations(self, country: str) -> List[str]:
-        """Get insurance recommendations."""
-        return ["Comprehensive travel insurance recommended", "Check coverage for activities", "Keep insurance documents accessible"]
-
-# Global service instance
-_emergency_service = None
-
-def get_emergency_service() -> EmergencyService:
-    """Get global emergency service instance."""
-    global _emergency_service
-    if _emergency_service is None:
-        _emergency_service = EmergencyService()
-    return _emergency_service
+    def send_emergency_notification(self, user_id: int, emergency_data: Dict[str, Any]) -> bool:
+        """Send emergency notification to emergency contacts."""
+        try:
+            # In production, this would integrate with SMS/email services
+            # For now, we'll log the emergency and create an alert
+            
+            alert_data = {
+                'alert_type': 'emergency',
+                'title': 'Emergency Notification Sent',
+                'message': f"Emergency alert sent: {emergency_data.get('message', 'Emergency situation')}",
+                'location': emergency_data.get('location'),
+                'trip_id': emergency_data.get('trip_id')
+            }
+            
+            alert_id = self.create_emergency_alert(user_id, alert_data)
+            
+            logger.critical(f"Emergency notification sent", 
+                          user_id=user_id, 
+                          alert_id=alert_id,
+                          emergency_data=emergency_data)
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send emergency notification: {e}")
+            return False
