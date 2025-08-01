@@ -648,6 +648,167 @@
             return cityActivities[city] || {};
         }
 
+        function populateDayTimelineWithRealData(route, apiData) {
+            const timeline = document.getElementById('dayTimeline');
+            const cities = [route.start_city, ...route.intermediate_cities, route.end_city];
+            const days = route.travel_days || 5;
+            
+            let timelineHTML = '';
+            
+            for (let day = 1; day <= days; day++) {
+                const cityIndex = Math.floor((day - 1) * cities.length / days);
+                const currentCity = cities[Math.min(cityIndex, cities.length - 1)];
+                
+                // Get real data for this city
+                const cityRestaurants = apiData.restaurants[currentCity.name] || [];
+                const cityActivities = apiData.activities[currentCity.name] || [];
+                
+                // Generate activities using real data
+                const activities = generateDayActivitiesWithRealData(currentCity, day, days, cityRestaurants, cityActivities);
+                
+                timelineHTML += `
+                    <div class="day-item">
+                        <div class="day-header">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            Day ${day} - ${currentCity.name}
+                        </div>
+                        <div class="activity-grid">
+                            ${activities.map(activity => `
+                                <div class="activity-card">
+                                    <div class="activity-type">${activity.time}</div>
+                                    <div class="activity-name">${activity.name}</div>
+                                    <div class="activity-details">${activity.details}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            timeline.innerHTML = timelineHTML;
+        }
+
+        function generateDayActivitiesWithRealData(city, day, totalDays, restaurants, activities) {
+            const cityName = city.name;
+            const isFirstDay = day === 1;
+            const isLastDay = day === totalDays;
+            
+            // Track used restaurants to avoid repeats
+            const usedRestaurants = new Set();
+            
+            // Get real restaurant for lunch/dinner
+            const getRandomRestaurant = () => {
+                if (restaurants.length > 0) {
+                    // Try to find an unused restaurant
+                    let availableRestaurants = restaurants.filter(r => !usedRestaurants.has(r.name));
+                    if (availableRestaurants.length === 0) {
+                        // If all used, reset and use any
+                        usedRestaurants.clear();
+                        availableRestaurants = restaurants;
+                    }
+                    
+                    const restaurant = availableRestaurants[Math.floor(Math.random() * availableRestaurants.length)];
+                    usedRestaurants.add(restaurant.name);
+                    return restaurant.name;
+                }
+                return 'Local Restaurant';
+            };
+            
+            // Track used attractions to avoid repeats
+            const usedAttractions = new Set();
+            
+            // Get real attraction for activities
+            const getRandomAttraction = () => {
+                if (activities.length > 0) {
+                    // Try to find an unused attraction
+                    let availableAttractions = activities.filter(a => !usedAttractions.has(a.name));
+                    if (availableAttractions.length === 0) {
+                        // If all used, reset and use any
+                        usedAttractions.clear();
+                        availableAttractions = activities;
+                    }
+                    
+                    const attraction = availableAttractions[Math.floor(Math.random() * availableAttractions.length)];
+                    usedAttractions.add(attraction.name);
+                    return attraction.name;
+                }
+                return `${cityName} Historic Center`;
+            };
+            
+            // Get top attraction for main activity
+            const getTopAttraction = () => {
+                if (activities.length > 0) {
+                    // Sort by rating and pick the highest rated
+                    const sortedActivities = [...activities].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    return sortedActivities[0].name;
+                }
+                return `${cityName} Main Attraction`;
+            };
+            
+            let dayActivities = [];
+            
+            if (isFirstDay) {
+                // Arrival day
+                dayActivities = [
+                    {
+                        time: "Morning",
+                        name: `Arrive in ${cityName}`,
+                        details: "Check into hotel, freshen up, and get oriented with the city center"
+                    },
+                    {
+                        time: "Afternoon", 
+                        name: getTopAttraction(),
+                        details: "First impressions tour of the main attractions and city landmarks"
+                    },
+                    {
+                        time: "Evening",
+                        name: `Dinner at ${getRandomRestaurant()}`,
+                        details: `Welcome dinner and plan tomorrow's adventures`
+                    }
+                ];
+            } else if (isLastDay) {
+                // Departure day
+                dayActivities = [
+                    {
+                        time: "Morning",
+                        name: `Final visit to ${getRandomAttraction()}`,
+                        details: "Visit any missed attractions, last-minute shopping, and photo opportunities"
+                    },
+                    {
+                        time: "Midday",
+                        name: "Departure Preparation", 
+                        details: "Check out, grab lunch, and begin journey to next destination"
+                    }
+                ];
+            } else {
+                // Full day
+                dayActivities = [
+                    {
+                        time: "Morning",
+                        name: getRandomAttraction(),
+                        details: `Start the day exploring ${cityName}'s most iconic attractions and historic sites`
+                    },
+                    {
+                        time: "Midday",
+                        name: `Lunch at ${getRandomRestaurant()}`,
+                        details: "Experience local cuisine and rest before afternoon activities"
+                    },
+                    {
+                        time: "Afternoon", 
+                        name: getRandomAttraction(),
+                        details: `Discover hidden gems and experience authentic ${cityName} culture`
+                    },
+                    {
+                        time: "Evening",
+                        name: `Dinner at ${getRandomRestaurant()}`,
+                        details: "Evening meal and explore the nighttime atmosphere"
+                    }
+                ];
+            }
+            
+            return dayActivities;
+        }
+
         function populateHotels(hotelsData) {
             const grid = document.getElementById('hotelGrid');
             
@@ -944,6 +1105,9 @@
                     populateHotels(data.data.hotels);
                     populateRestaurants(data.data.restaurants);
                     populateActivities(data.data.activities);
+                    
+                    // Update day-by-day itinerary with real data
+                    populateDayTimelineWithRealData(route, data.data);
                 } else {
                     console.error('API returned error:', data.error);
                     // Keep loading state or show error
