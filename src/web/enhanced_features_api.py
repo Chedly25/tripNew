@@ -6,28 +6,40 @@ from datetime import datetime, date
 import json
 import structlog
 
-from src.services.budget_service import BudgetService
-from src.services.journal_service import JournalService
-from src.services.packing_service import PackingService
-from src.services.transportation_service import TransportationService
-from src.services.emergency_service import get_emergency_service
-from src.services.marketplace_service import MarketplaceService
-from src.services.optimization_service import OptimizationService
-from src.core.exceptions import ValidationError, ServiceError
+try:
+    from ..services.budget_service import BudgetService
+    from ..services.journal_service import JournalService
+    from ..services.packing_service import PackingService
+    from ..services.transportation_service import TransportationService
+    from ..services.emergency_service import get_emergency_service
+    from ..services.marketplace_service import MarketplaceService
+    from ..services.optimization_service import ItineraryOptimizationService as OptimizationService
+    from ..core.exceptions import ValidationError, ServiceError
+except ImportError:
+    # Fallback - services not available
+    BudgetService = None
+    JournalService = None
+    PackingService = None
+    TransportationService = None
+    get_emergency_service = lambda: None
+    MarketplaceService = None
+    OptimizationService = None
+    ValidationError = Exception
+    ServiceError = Exception
 
 logger = structlog.get_logger(__name__)
 
 # Create blueprint
 enhanced_bp = Blueprint('enhanced_features', __name__, url_prefix='/api/enhanced')
 
-# Initialize services
-budget_service = BudgetService()
-journal_service = JournalService()
-packing_service = PackingService()
-transportation_service = TransportationService()
-emergency_service = get_emergency_service()
-marketplace_service = MarketplaceService()
-optimization_service = OptimizationService()
+# Initialize services (with error handling)
+budget_service = BudgetService() if BudgetService else None
+journal_service = JournalService() if JournalService else None
+packing_service = PackingService() if PackingService else None
+transportation_service = TransportationService() if TransportationService else None
+emergency_service = get_emergency_service() if get_emergency_service else None
+marketplace_service = MarketplaceService() if MarketplaceService else None
+optimization_service = OptimizationService() if OptimizationService else None
 
 
 def require_auth():
@@ -37,11 +49,23 @@ def require_auth():
     return session['user_id']
 
 
+def check_service_available(service, service_name):
+    """Check if a service is available."""
+    if service is None:
+        return jsonify({'error': f'{service_name} service not available'}), 503
+    return None
+
+
 # Budget Tracking Endpoints
 @enhanced_bp.route('/budget/expenses', methods=['POST'])
 def add_expense():
     """Add a new expense."""
     try:
+        # Check if service is available
+        service_check = check_service_available(budget_service, 'Budget tracking')
+        if service_check:
+            return service_check
+            
         user_id = require_auth()
         data = request.get_json()
         

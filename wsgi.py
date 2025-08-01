@@ -30,13 +30,16 @@ except Exception as startup_error:
     import traceback
     traceback.print_exc()
     
+    # Store error message for fallback app
+    error_message = str(startup_error)
+    
     # Create minimal fallback Flask app
     from flask import Flask
     application = Flask(__name__)
     
     @application.route('/')
     def error():
-        return f"App failed to start: {str(startup_error)}", 500
+        return f"App failed to start: {error_message}", 500
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

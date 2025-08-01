@@ -88,6 +88,14 @@ def create_app() -> Flask:
     # Register authentication blueprint
     app.register_blueprint(auth_bp)
     
+    # Register enhanced features blueprint
+    try:
+        from ..web.enhanced_features_api import enhanced_bp
+        app.register_blueprint(enhanced_bp)
+        logger.info("Enhanced features API registered successfully")
+    except Exception as e:
+        logger.warning(f"Enhanced features API not available: {e}")
+    
     # Initialize services
     config_service = SecureConfigurationService()
     city_service = GooglePlacesCityService()
