@@ -1430,6 +1430,43 @@
             text-transform: capitalize;
         }
 
+        .route-refresh-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .route-refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--coastal-mint);
+            color: var(--coastal-mint);
+            transform: rotate(180deg);
+        }
+
+        .route-refresh-btn:active {
+            transform: rotate(180deg) scale(0.95);
+        }
+
+        .route-refresh-btn.loading {
+            animation: spin 1s linear infinite;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .route-card-description {
             margin-bottom: 1.5rem;
         }
@@ -2714,7 +2751,12 @@
                             <i class="fas fa-${getRouteIcon(route.route_type || route.name)}"></i>
                             <h3>${route.name || `${route.route_type || 'Custom'} Route`}</h3>
                         </div>
-                        <div class="route-card-badge">${route.route_type || 'custom'}</div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <button class="route-refresh-btn" onclick="refreshRoute('${route.route_type || route.name}', ${index})" title="Generate new cities for this route">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <div class="route-card-badge">${route.route_type || 'custom'}</div>
+                        </div>
                     </div>
                     
                     <div class="route-card-description">
@@ -3167,6 +3209,104 @@
             const route = window.availableRoutes[routeIndex];
             // In a real implementation, this would save to user's account or localStorage
             showToast(`Route "${route.name || 'Route ' + (routeIndex + 1)}" saved for later! 📌`, 'success');
+        }
+
+        // Refresh route with new cities
+        async function refreshRoute(routeType, routeIndex) {
+            const refreshBtn = event.target.closest('.route-refresh-btn');
+            if (!refreshBtn) return;
+            
+            // Add loading state
+            refreshBtn.classList.add('loading');
+            
+            try {
+                // Get original request data
+                const storedData = sessionStorage.getItem('travelPlanResult');
+                if (!storedData) {
+                    showToast('Unable to refresh route. Please start a new search.', 'error');
+                    return;
+                }
+                
+                const data = JSON.parse(storedData);
+                const originalRequest = data.request;
+                
+                // Call backend to regenerate just this route type
+                const response = await fetch('/api/travel/refresh-route', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        request: originalRequest,
+                        route_type: routeType,
+                        exclude_cities: getExcludeCities(routeIndex) // Exclude previously shown cities for variety
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to refresh route');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // Update the specific route in our data
+                    window.availableRoutes[routeIndex] = result.data;
+                    
+                    // Update the route card without refreshing entire page
+                    updateRouteCard(routeIndex, result.data);
+                    
+                    showToast(`${routeType} route refreshed with new cities! 🔄`, 'success');
+                } else {
+                    throw new Error(result.error || 'Failed to generate new route');
+                }
+                
+            } catch (error) {
+                console.error('Error refreshing route:', error);
+                showToast('Failed to refresh route. Please try again.', 'error');
+            } finally {
+                // Remove loading state
+                refreshBtn.classList.remove('loading');
+            }
+        }
+        
+        // Get cities to exclude for variety
+        function getExcludeCities(routeIndex) {
+            const route = window.availableRoutes[routeIndex];
+            if (!route) return [];
+            
+            const cities = [];
+            if (route.intermediate_cities) {
+                cities.push(...route.intermediate_cities.map(c => c.name));
+            }
+            return cities;
+        }
+        
+        // Update a single route card without refreshing the page
+        function updateRouteCard(routeIndex, newRoute) {
+            const card = document.querySelector(`[data-route-index="${routeIndex}"]`);
+            if (!card) return;
+            
+            // Update cities list
+            const citiesListElement = card.querySelector('.cities-list');
+            if (citiesListElement) {
+                citiesListElement.innerHTML = generateCitiesList(newRoute);
+            }
+            
+            // Update stats
+            const statsElements = card.querySelectorAll('.route-stat span');
+            if (statsElements.length >= 4) {
+                statsElements[0].textContent = `${Math.round(newRoute.total_distance_km || 700)} km`;
+                statsElements[1].textContent = `${Math.round(newRoute.total_duration_hours || 8.5)} hrs`;
+                statsElements[2].textContent = `${(newRoute.intermediate_cities?.length || 2) + 2} cities`;
+                statsElements[3].textContent = `${newRoute.estimated_cost?.total_estimate || '450-650'}`;
+            }
+            
+            // Add a subtle animation to show the update
+            card.style.animation = 'none';
+            setTimeout(() => {
+                card.style.animation = 'slideInUp 0.5s ease-out';
+            }, 10);
         }
 
         function shareRoute(routeIndex) {
