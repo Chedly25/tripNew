@@ -646,7 +646,7 @@
                         <div class="form-group">
                             <label class="form-label">📅 Trip Duration</label>
                             <div class="select-wrapper">
-                                <select class="form-control" id="duration" required>
+                                <select class="form-control" id="duration" name="duration" required>
                                     <option value="">Choose duration</option>
                                     <option value="3-5">Weekend Getaway (3-5 days)</option>
                                     <option value="7-10">Classic Tour (1-2 weeks)</option>
@@ -659,7 +659,7 @@
                         <div class="form-group">
                             <label class="form-label">💰 Budget Range</label>
                             <div class="select-wrapper">
-                                <select class="form-control" id="budget" required>
+                                <select class="form-control" id="budget" name="budget" required>
                                     <option value="">Select budget</option>
                                     <option value="budget">Budget Explorer (€30-50/day)</option>
                                     <option value="mid-range">Comfortable Traveler (€50-100/day)</option>
@@ -670,7 +670,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">🎨 Travel Style</label>
+                        <label class="form-label">🎨 Travel Style <small>(Select one or more)</small></label>
                         <div class="specialty-grid">
                             <div class="specialty-btn" data-specialty="scenic">
                                 <i class="fas fa-mountain"></i>
@@ -688,7 +688,17 @@
                                 <i class="fas fa-utensils"></i>
                                 <span>Food & Wine</span>
                             </div>
+                            <div class="specialty-btn" data-specialty="romantic">
+                                <i class="fas fa-heart"></i>
+                                <span>Romantic</span>
+                            </div>
+                            <div class="specialty-btn" data-specialty="hidden_gems">
+                                <i class="fas fa-gem"></i>
+                                <span>Hidden Gems</span>
+                            </div>
                         </div>
+                        <!-- Hidden input to store selected travel styles -->
+                        <input type="hidden" id="travel-styles" name="travel_styles" value="">
                     </div>
 
                     <button type="submit" class="plan-btn">
@@ -768,13 +778,21 @@
             }
         });
 
-        // Specialty button selection
+        // Specialty button selection (multiple selection allowed)
         document.querySelectorAll('.specialty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.specialty-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+                btn.classList.toggle('active');
+                updateTravelStylesInput();
             });
         });
+
+        function updateTravelStylesInput() {
+            const selectedStyles = [];
+            document.querySelectorAll('.specialty-btn.active').forEach(btn => {
+                selectedStyles.push(btn.dataset.specialty);
+            });
+            document.getElementById('travel-styles').value = selectedStyles.join(',');
+        }
 
         // Form submission
         document.getElementById('travel-form').addEventListener('submit', async (e) => {
@@ -790,13 +808,23 @@
             button.disabled = true;
             
             // Collect form data
+            const selectedStyles = document.getElementById('travel-styles').value;
             const formData = {
                 start_city: document.getElementById('start-city').value,
                 end_city: document.getElementById('end-city').value,
                 duration: document.getElementById('duration').value,
                 budget: document.getElementById('budget').value,
-                travel_style: document.querySelector('.specialty-btn.active')?.dataset.specialty || 'scenic'
+                travel_style: selectedStyles || 'scenic'  // Default to scenic if none selected
             };
+
+            // Validate that all required fields are filled
+            if (!formData.start_city || !formData.end_city || !formData.duration || !formData.budget) {
+                alert('Please fill in all required fields (cities, duration, and budget)');
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Create My Adventure';
+                button.disabled = false;
+                return;
+            }
             
             try {
                 const response = await fetch('/plan_trip', {

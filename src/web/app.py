@@ -217,11 +217,15 @@ def create_app() -> Flask:
             else:
                 travel_days = 7  # Default
             
-            # Calculate nights at destination based on travel style
-            travel_style = data.get('travel_style', 'scenic')
-            if travel_style in ['romantic', 'wellness']:
+            # Parse travel styles (can be multiple, comma-separated)
+            travel_style_raw = data.get('travel_style', 'scenic')
+            travel_styles = [style.strip() for style in travel_style_raw.split(',') if style.strip()]
+            primary_travel_style = travel_styles[0] if travel_styles else 'scenic'
+            
+            # Calculate nights at destination based on primary travel style
+            if primary_travel_style in ['romantic', 'wellness']:
                 nights_ratio = 0.7  # More nights at destination
-            elif travel_style in ['adventure', 'hidden_gems']:
+            elif primary_travel_style in ['adventure', 'hidden_gems']:
                 nights_ratio = 0.3  # More exploring
             else:
                 nights_ratio = 0.5  # Balanced
@@ -248,7 +252,8 @@ def create_app() -> Flask:
                 'nights_at_destination': nights_at_destination,
                 'season': season,
                 'budget': data.get('budget', 'mid-range'),
-                'travel_style': travel_style
+                'travel_style': primary_travel_style,
+                'travel_styles': travel_styles
             }
             
             # Validate and plan trip
@@ -262,7 +267,7 @@ def create_app() -> Flask:
             user_preferences = TripPreference(
                 budget_range=data.get('budget', 'mid-range'),
                 duration_days=travel_days,
-                travel_style=travel_style,
+                travel_style=primary_travel_style,
                 season=season,
                 group_size=2  # Default group size
             )
@@ -288,14 +293,15 @@ def create_app() -> Flask:
                 logger.info("ML recommendations added", 
                            count=len(ml_recommendations.data.get('recommendations', [])))
             
-            # Filter routes by travel style
-            if 'routes' in routes_data and travel_style:
-                # Prioritize routes matching the selected travel style
+            # Filter routes by travel styles
+            if 'routes' in routes_data and travel_styles:
+                # Prioritize routes matching any of the selected travel styles
                 matching_routes = []
                 other_routes = []
                 
                 for route in routes_data['routes']:
-                    if route.get('route_type') == travel_style:
+                    route_type = route.get('route_type', '')
+                    if route_type in travel_styles:
                         matching_routes.append(route)
                     else:
                         other_routes.append(route)
