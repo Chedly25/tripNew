@@ -4,6 +4,7 @@ Enhanced Flask application with AI features, user accounts, and advanced functio
 import os
 import json
 import asyncio
+from typing import List
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from werkzeug.exceptions import BadRequest, InternalServerError
 import structlog
@@ -39,6 +40,35 @@ configure_logging(
 
 logger = structlog.get_logger(__name__)
 security_logger = SecurityLogger()
+
+def get_category_from_kinds(kinds: List[str]) -> str:
+    """Convert OpenTripMap kinds to display category."""
+    if not kinds:
+        return 'Attraction'
+    
+    # Map kinds to user-friendly categories
+    kind_mapping = {
+        'religion': 'Religious Site',
+        'churches': 'Church',
+        'museums': 'Museum',
+        'monuments': 'Monument',
+        'architecture': 'Architecture',
+        'historic': 'Historic Site',
+        'cultural': 'Cultural Site',
+        'bridges': 'Bridge',
+        'castles': 'Castle',
+        'palaces': 'Palace',
+        'squares': 'Square',
+        'parks': 'Park'
+    }
+    
+    # Find first matching category
+    for kind in kinds:
+        if kind in kind_mapping:
+            return kind_mapping[kind]
+    
+    # Default fallback
+    return kinds[0].title().replace('_', ' ') if kinds else 'Attraction'
 
 def create_app() -> Flask:
     """Enhanced application factory with all new features."""
@@ -297,13 +327,45 @@ def create_app() -> Flask:
                         
                         # Fetch restaurants and activities
                         try:
-                            # Use async methods properly
-                            async def get_foursquare_data():
+                            # Use async methods for both Foursquare and OpenTripMap
+                            async def get_combined_data():
+                                # Get restaurants from Foursquare
                                 restaurants = await foursquare_service.find_restaurants(city_coords, city_name, limit=10)
-                                activities = await foursquare_service.find_activities(city_coords, city_name, limit=10)
-                                return restaurants, activities
+                                
+                                # Get activities from OpenTripMap (better for attractions)
+                                async with opentripmap_service:
+                                    opentripmap_activities = await opentripmap_service.get_city_attractions(
+                                        coordinates=city_coords,
+                                        radius_km=5,
+                                        limit=10,
+                                        kinds='cultural,historic,architecture,museums,churches,monuments'
+                                    )
+                                
+                                # Format OpenTripMap data to match expected format
+                                formatted_activities = []
+                                for attraction in opentripmap_activities:
+                                    if attraction.get('xid'):  # Real OpenTripMap data
+                                        formatted_activities.append({
+                                            'name': attraction.get('name', 'Unknown Attraction'),
+                                            'rating': attraction.get('rating', 4),
+                                            'price_level': 0,  # Most attractions are free
+                                            'address': f"{city_name}, {attraction.get('kinds', [])}",
+                                            'category': get_category_from_kinds(attraction.get('kinds', [])),
+                                            'website': attraction.get('wikipedia') or '',
+                                            'url': attraction.get('wikipedia') or '',
+                                            'hours': 'Check local listings',
+                                            'photo': attraction.get('preview', {}).get('source', ''),
+                                            'source': 'opentripmap'
+                                        })
+                                
+                                # If no real OpenTripMap data, try Foursquare activities as backup
+                                if not formatted_activities:
+                                    foursquare_activities = await foursquare_service.find_activities(city_coords, city_name, limit=10)
+                                    formatted_activities = foursquare_activities
+                                
+                                return restaurants, formatted_activities
                             
-                            restaurants, activities = asyncio.run(get_foursquare_data())
+                            restaurants, activities = asyncio.run(get_combined_data())
                             
                             # Check if we got real data or fallback data
                             if restaurants and restaurants[0].get('source') == 'foursquare':
@@ -311,17 +373,19 @@ def create_app() -> Flask:
                             else:
                                 logger.warning(f"Using {len(restaurants)} FALLBACK restaurants for {city_name} - Foursquare API returned no real data")
                                 
-                            if activities and activities[0].get('source') == 'foursquare':
+                            if activities and activities[0].get('source') == 'opentripmap':
+                                logger.info(f"Successfully fetched {len(activities)} REAL attractions from OpenTripMap for {city_name}")
+                            elif activities and activities[0].get('source') == 'foursquare':
                                 logger.info(f"Successfully fetched {len(activities)} REAL activities from Foursquare for {city_name}")
                             else:
-                                logger.warning(f"Using {len(activities)} FALLBACK activities for {city_name} - Foursquare API returned no real data")
+                                logger.warning(f"Using {len(activities)} FALLBACK activities for {city_name} - Both APIs returned no real data")
                                 
                         except Exception as e:
-                            logger.warning(f"Foursquare API failed for {city_name}: {e}")
-                            # Use fallback data if API fails
+                            logger.warning(f"Combined API calls failed for {city_name}: {e}")
+                            # Use fallback data if both APIs fail
                             restaurants = foursquare_service._get_fallback_restaurants(city_name, 10)
                             activities = foursquare_service._get_fallback_activities(city_name, 10)
-                            logger.warning(f"Using {len(restaurants)} FALLBACK restaurants and {len(activities)} FALLBACK activities for {city_name} due to API error")
+                            logger.warning(f"Using {len(restaurants)} FALLBACK restaurants and {len(activities)} FALLBACK activities for {city_name} due to API errors")
                         
                         restaurants_data[city_name] = restaurants
                         activities_data[city_name] = activities

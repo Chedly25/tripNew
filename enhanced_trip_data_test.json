@@ -1,0 +1,191 @@
+{
+  "data": {
+    "activities": {
+      "Venice": [
+        {
+          "address": "Venice, ['religion', 'churches', 'interesting_places', 'other_churches']",
+          "category": "Religious Site",
+          "hours": "Check local listings",
+          "name": "chiesa di Santa Chiara",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['religion', 'churches', 'interesting_places', 'catholic_churches']",
+          "category": "Religious Site",
+          "hours": "Check local listings",
+          "name": "Nome di Ges\u00f9",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['religion', 'churches', 'interesting_places', 'catholic_churches']",
+          "category": "Religious Site",
+          "hours": "Check local listings",
+          "name": "Sant'Andrea della Zirada",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['bridges', 'architecture', 'interesting_places', 'other_bridges']",
+          "category": "Bridge",
+          "hours": "Check local listings",
+          "name": "Constitution Bridge",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['bridges', 'architecture', 'interesting_places', 'other_bridges']",
+          "category": "Bridge",
+          "hours": "Check local listings",
+          "name": "Constitution Bridge",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['palaces', 'architecture', 'historic_architecture', 'interesting_places']",
+          "category": "Palace",
+          "hours": "Check local listings",
+          "name": "Palace of the Veneto Region",
+          "photo": "",
+          "price_level": 0,
+          "rating": 2,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['religion', 'churches', 'interesting_places', 'other_churches']",
+          "category": "Religious Site",
+          "hours": "Check local listings",
+          "name": "chiesa del Corpus Domini",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['religion', 'accomodations', 'churches', 'interesting_places', 'other_hotels', 'other_churches']",
+          "category": "Religious Site",
+          "hours": "Check local listings",
+          "name": "hotel santa chiara & residenza parisi",
+          "photo": "",
+          "price_level": 0,
+          "rating": 2,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['cultural', 'urban_environment', 'interesting_places', 'sculptures']",
+          "category": "Cultural Site",
+          "hours": "Check local listings",
+          "name": "Beata Vergine Maria",
+          "photo": "",
+          "price_level": 0,
+          "rating": 1,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        },
+        {
+          "address": "Venice, ['religion', 'churches', 'interesting_places', 'other_churches']",
+          "category": "Religious Site",
+          "hours": "Check local listings",
+          "name": "San Giobbe",
+          "photo": "",
+          "price_level": 0,
+          "rating": 3,
+          "source": "opentripmap",
+          "url": "",
+          "website": ""
+        }
+      ]
+    },
+    "hotels": {
+      "Venice": [
+        {
+          "address": "",
+          "amadeus_hotel_id": "BWVCE261",
+          "amadeus_offer_id": "O7L27JZRXO",
+          "amenities": [],
+          "currency": "EUR",
+          "description": "Hotel in Venice with modern amenities and comfort.",
+          "distance_to_center": 0,
+          "name": "BEST WESTERN HOTEL OLIMPIA",
+          "photo": "",
+          "price_per_night": 856.0,
+          "rating": null,
+          "review_count": 100,
+          "source": "amadeus",
+          "stars": 4,
+          "url": "https://www.amadeus.com/hotel/BWVCE261",
+          "website": "https://www.amadeus.com/hotel/BWVCE261"
+        }
+      ]
+    },
+    "restaurants": {
+      "Venice": [
+        {
+          "address": "City Center, Venice",
+          "category": "Restaurant",
+          "cuisine": "French",
+          "hours": "12:00-14:00, 19:00-22:00",
+          "name": "Le Bistro Venice",
+          "photo": "",
+          "price_level": 3,
+          "rating": 4.5,
+          "source": "fallback",
+          "website": "https://www.lebistro-venice.com"
+        },
+        {
+          "address": "Old Town, Venice",
+          "category": "Restaurant",
+          "cuisine": "Italian",
+          "hours": "18:00-23:00",
+          "name": "Osteria del Venice",
+          "photo": "",
+          "price_level": 2,
+          "rating": 4.3,
+          "source": "fallback",
+          "website": "https://www.osteria-venice.com"
+        },
+        {
+          "address": "Main Square, Venice",
+          "category": "Caf\u00e9",
+          "cuisine": "Coffee & Light Meals",
+          "hours": "07:00-19:00",
+          "name": "Caf\u00e9 Central Venice",
+          "photo": "",
+          "price_level": 1,
+          "rating": 4.1,
+          "source": "fallback",
+          "website": ""
+        }
+      ]
+    }
+  },
+  "success": true
+}
