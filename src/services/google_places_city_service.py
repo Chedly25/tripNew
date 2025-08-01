@@ -990,14 +990,27 @@ class GooglePlacesCityService:
                 if len(typed_candidates) >= 2:
                     candidates = typed_candidates
         
-        # Sort by distance from start point
+        # Add randomization for variety in route generation
+        import random
+        
+        # Sort by distance from start point for initial ordering
         from geopy.distance import geodesic
         candidates.sort(key=lambda c: geodesic(
             (start.latitude, start.longitude),
             (c.coordinates.latitude, c.coordinates.longitude)
         ).kilometers)
         
-        return candidates[:8]  # Return up to 8 candidates
+        # Add randomization while maintaining geographic relevance
+        # Take the closest candidates but shuffle within groups for variety
+        if len(candidates) > 8:
+            # Keep closest 12 cities but randomize their order for variety
+            close_candidates = candidates[:12]
+            random.shuffle(close_candidates)
+            return close_candidates[:8]
+        else:
+            # For smaller lists, add some randomization
+            random.shuffle(candidates)
+            return candidates[:8]
     
     def _is_city_near_route(self, city_coords: Coordinates, start: Coordinates, 
                           end: Coordinates, max_deviation_km: float) -> bool:

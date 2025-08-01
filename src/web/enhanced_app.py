@@ -254,6 +254,140 @@ def create_enhanced_app() -> Flask:
             logger.error("Trip data fetch failed", error=str(e))
             return jsonify({'error': 'Data fetch failed'}), 500
     
+    @app.route('/api/travel/refresh-route', methods=['POST'])
+    async def refresh_route():
+        """Refresh a specific route type with new cities."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Invalid JSON data'}), 400
+            
+            original_request = data.get('request')
+            route_type = data.get('route_type')
+            exclude_cities = data.get('exclude_cities', [])
+            
+            if not original_request or not route_type:
+                return jsonify({'error': 'Missing required parameters'}), 400
+            
+            # Create trip request from original data
+            from ..core.models import TripRequest, Season
+            trip_request = TripRequest(
+                start_city=original_request.get('start_city'),
+                end_city=original_request.get('end_city'),
+                travel_days=original_request.get('travel_days', 7),
+                interests=original_request.get('interests', []),
+                season=Season(original_request.get('season', 'summer'))
+            )
+            
+            # Get the specific route strategy
+            route_strategies = travel_planner_service._initialize_route_strategies()
+            strategy = None
+            for s in route_strategies:
+                if s['type'] == route_type:
+                    strategy = s
+                    break
+            
+            if not strategy:
+                return jsonify({'error': f'Unknown route type: {route_type}'}), 400
+            
+            # Generate a new route for this specific type with randomization
+            import random
+            random.seed()  # Reset random seed for variety
+            
+            # Get start and end cities
+            start_city = await city_service.get_city_by_name(trip_request.start_city)
+            end_city = await city_service.get_city_by_name(trip_request.end_city)
+            
+            if not start_city or not end_city:
+                return jsonify({'error': 'Invalid start or end city'}), 400
+            
+            # Use ML recommendation system for intelligent city selection
+            from ..services.ml_recommendation_service import MLRecommendationService, TripPreference
+            
+            # Initialize ML service if not already available
+            if not hasattr(app, 'ml_service'):
+                app.ml_service = MLRecommendationService(city_service)
+            
+            # Create trip preferences from request
+            trip_preferences = TripPreference(
+                budget_range=original_request.get('budget_range', 'mid-range'),
+                duration_days=trip_request.travel_days,
+                travel_style=route_type,
+                season=trip_request.season.value if hasattr(trip_request.season, 'value') else str(trip_request.season),
+                group_size=original_request.get('group_size', 2),
+                activity_preferences=trip_request.interests,
+                previous_trips=exclude_cities  # Use excluded cities as "already seen"
+            )
+            
+            # Get session ID for consistent randomization within session
+            session_id = request.headers.get('X-Session-ID', str(hash(str(data))))
+            
+            # Use exploration factor based on refresh count or user preference
+            exploration_factor = min(0.6, 0.2 + len(exclude_cities) * 0.1)  # More exploration with more refreshes
+            
+            # Get ML-powered recommendations
+            ml_result = app.ml_service.get_smart_recommendations(
+                preferences=trip_preferences,
+                start_city=trip_request.start_city,
+                end_city=trip_request.end_city,
+                exploration_factor=exploration_factor,
+                session_id=session_id
+            )
+            
+            if not ml_result.success:
+                logger.warning("ML recommendations failed, falling back to simple method")
+                # Fallback to original method
+                intermediate_cities = await travel_planner_service._find_intermediate_cities_async(
+                    strategy, start_city, end_city, trip_request
+                )
+                filtered_cities = [c for c in intermediate_cities if c.name not in exclude_cities]
+                max_cities = strategy.get('max_cities', 3)
+                if len(filtered_cities) > max_cities:
+                    filtered_cities = random.sample(filtered_cities, max_cities)
+            else:
+                # Use ML recommendations (already returns appropriate count for trip duration)
+                recommendations = ml_result.data['recommendations']
+                filtered_cities = [rec['city'] for rec in recommendations]
+                
+                logger.info("ML recommendations applied", 
+                           method=ml_result.data['algorithm_info']['method'],
+                           exploration_factor=exploration_factor,
+                           cities_selected=len(filtered_cities))
+            
+            # Generate the route
+            all_cities = [start_city] + filtered_cities + [end_city]
+            route_result = route_service.optimize_multi_city_route(all_cities)
+            
+            if not route_result.success:
+                return jsonify({'error': 'Failed to generate route'}), 500
+            
+            route_data = route_result.data
+            
+            # Create enriched route data
+            from ..core.models import TravelRoute, RouteType
+            travel_route = TravelRoute(
+                route_type=RouteType(strategy['type']),
+                segments=route_data['segments'],
+                total_distance_km=route_data['total_distance_km'],
+                total_duration_hours=route_data['total_duration_hours'],
+                intermediate_cities=filtered_cities,
+                description=strategy['description']
+            )
+            
+            # Enrich with itinerary
+            enriched_route = await travel_planner_service._enrich_route_with_itinerary(
+                travel_route, trip_request, strategy, start_city, end_city
+            )
+            
+            return jsonify({
+                'success': True,
+                'data': enriched_route
+            })
+            
+        except Exception as e:
+            logger.error("Route refresh failed", error=str(e), exc_info=True)
+            return jsonify({'error': f'Route refresh failed: {str(e)}'}), 500
+    
     # AI Assistant Chat API
     @app.route('/api/ai-chat', methods=['POST'])
     async def ai_chat():
