@@ -314,11 +314,21 @@ def create_app() -> Flask:
             
             # Get AI response
             try:
-                response = claude_service.travel_chat_assistant(
-                    user_message, chat_history, user_context
-                )
-            except:
-                # If the service expects async calls, provide fallback response
+                # Use sync version since we're in a Flask route
+                import asyncio
+                try:
+                    # Try to get running loop
+                    loop = asyncio.get_running_loop()
+                    # We're in an event loop, need to handle differently
+                    response = "I'm currently unable to process your request. Please try again later."
+                except RuntimeError:
+                    # No running loop, can use asyncio.run
+                    response = asyncio.run(claude_service.travel_chat_assistant(
+                        user_message, chat_history, user_context
+                    ))
+            except Exception as e:
+                logger.error(f"AI chat service error: {e}")
+                # Provide fallback response
                 response = "I'm currently unable to process your request. Please try again later."
             
             # Save chat history if user is logged in

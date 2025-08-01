@@ -48,6 +48,14 @@
 .fa-car::before { content: "🚗"; }
 .fa-wifi::before { content: "📶"; }
 .fa-external-link-alt::before { content: "🔗"; }
+.fa-camera::before { content: "📷"; }
+.fa-cloud-upload-alt::before { content: "☁️"; }
+.fa-upload::before { content: "⬆️"; }
+.fa-paper-plane::before { content: "✈️"; }
+.fa-user::before { content: "👤"; }
+.fa-lock::before { content: "🔒"; }
+.fa-sign-in-alt::before { content: "➡️"; }
+.fa-user-plus::before { content: "👤"; }
 
 /* Ensure icons are visible */
 .fas::before, .far::before, .fab::before {

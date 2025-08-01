@@ -320,7 +320,7 @@ def get_google_provider_cfg():
 def google_login():
     """Initiate Google OAuth login."""
     if not GOOGLE_CLIENT_ID:
-        flash('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables. Check GOOGLE_OAUTH_SETUP.md for instructions.', 'warning')
+        flash('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables. Check GOOGLE_OAUTH_SETUP.md for setup instructions.', 'warning')
         return redirect(url_for('auth.login'))
     
     # Find out what URL to hit for Google login
@@ -460,7 +460,13 @@ def google_callback():
         
     except Exception as e:
         logger.error(f"Google OAuth error: {e}")
-        flash('Login with Google failed. Please try again or use regular login.', 'error')
+        error_message = str(e)
+        if 'redirect_uri_mismatch' in error_message.lower():
+            flash('Google OAuth redirect URI mismatch. Please check your Google Cloud Console settings and ensure the redirect URI is configured correctly.', 'error')
+        elif 'invalid_client' in error_message.lower():
+            flash('Invalid Google OAuth client credentials. Please check your GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET settings.', 'error')
+        else:
+            flash(f'Login with Google failed: {error_message}. Please try again or use regular login.', 'error')
         return redirect(url_for('auth.login'))
 
 def prepare_token_request(token_url, authorization_response, redirect_url, code, client_id, client_secret):
