@@ -25,7 +25,7 @@ from ..web.auth_routes import auth_bp, login_required, get_current_user
 from ..services.claude_ai_service import get_claude_service
 from ..services.weather_service import get_weather_service
 from ..services.social_service import get_social_service
-from ..services.emergency_service import get_emergency_service
+from ..services.emergency_service import EmergencyService
 from ..core.exceptions import TravelPlannerException, ValidationError
 
 # Configure logging
@@ -64,7 +64,7 @@ def create_enhanced_app() -> Flask:
     claude_service = get_claude_service()
     weather_service = get_weather_service()
     social_service = get_social_service()
-    emergency_service = get_emergency_service()
+    emergency_service = EmergencyService()
     
     travel_planner = TravelPlannerServiceImpl(
         city_service, route_service, validation_service
