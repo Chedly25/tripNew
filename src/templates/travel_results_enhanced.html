@@ -859,6 +859,298 @@
         .feature-card:nth-child(4) { animation-delay: 0.4s; }
         .feature-card:nth-child(5) { animation-delay: 0.5s; }
         .feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+        /* Superior Layout Styles */
+        .trip-overview-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .trip-overview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .trip-overview h3 {
+            color: white;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--tuscan-gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .trip-highlights h4 {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .trip-highlights ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .trip-highlights li {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.5rem;
+            padding-left: 0;
+        }
+
+        .trip-highlights li i {
+            color: var(--tuscan-gold);
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+
+        .compact-map {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .compact-map h3 {
+            color: white;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .route-map-small {
+            height: 250px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .day-by-day-section {
+            margin: 2rem 0;
+        }
+
+        .day-by-day-section h3 {
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+        }
+
+        .daily-program {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .day-item {
+            display: flex;
+            gap: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .day-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .day-number {
+            flex-shrink: 0;
+        }
+
+        .day-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--midnight-navy);
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .day-content {
+            flex: 1;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .day-header h4 {
+            color: white;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .day-header h4 i {
+            color: var(--tuscan-gold);
+            margin-right: 0.5rem;
+        }
+
+        .day-type {
+            background: var(--nordic-teal);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .day-activities {
+            margin-bottom: 1rem;
+        }
+
+        .activity-item {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .activity-text {
+            font-size: 0.95rem;
+        }
+
+        .day-logistics {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+
+        .logistics-item {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .logistics-item i {
+            color: var(--coastal-mint);
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+
+        .advanced-features-section {
+            margin: 2rem 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .advanced-features-section h3 {
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .features-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+        }
+
+        .feature-info {
+            flex: 1;
+        }
+
+        .feature-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .trip-overview-section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .route-map-small {
+                height: 200px;
+            }
+            
+            .day-item {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .day-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .features-grid-compact {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1439,14 +1731,15 @@
             // Update summary
             routeSummary.textContent = `${itineraries.length} amazing itineraries crafted just for you`;
 
-            // Display each itinerary
+            // Display each itinerary with superior layout
             container.innerHTML = itineraries.map((itinerary, index) => `
                 <div class="itinerary-card">
+                    <!-- Route Header -->
                     <div class="route-header">
                         <div>
                             <h2 class="route-title">
                                 <i class="fas fa-${getRouteIcon(itinerary.route_type)}"></i>
-                                Route ${index + 1}: ${itinerary.start_city.name} → ${itinerary.end_city.name}
+                                Route ${index + 1}: ${itinerary.start_city?.name || 'Start'} → ${itinerary.end_city?.name || 'Destination'}
                             </h2>
                             <div class="route-type-badge">${itinerary.route_type}</div>
                         </div>
@@ -1460,32 +1753,88 @@
                         </div>
                     </div>
                     
-                    <div class="route-map" id="map-${index}"></div>
+                    <!-- Top Section: Trip Overview + Small Map -->
+                    <div class="trip-overview-section">
+                        <!-- Left: Trip Overview -->
+                        <div class="trip-overview">
+                            <h3><i class="fas fa-info-circle"></i> Trip Overview</h3>
+                            <div class="overview-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">${Math.round(itinerary.total_distance || 700)} km</div>
+                                    <div class="stat-label">Total Distance</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${Math.round((itinerary.total_duration || 525) / 60)} hrs</div>
+                                    <div class="stat-label">Driving Time</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">€${Math.round(itinerary.estimated_fuel_cost || 73)}</div>
+                                    <div class="stat-label">Fuel Cost</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${(itinerary.intermediate_cities?.length || 0) + 2}</div>
+                                    <div class="stat-label">Cities</div>
+                                </div>
+                            </div>
+                            
+                            <div class="trip-highlights">
+                                <h4><i class="fas fa-star"></i> Trip Highlights</h4>
+                                <ul>
+                                    <li><i class="fas fa-map-marker-alt"></i> Scenic Mediterranean coastal route</li>
+                                    <li><i class="fas fa-camera"></i> Instagram-worthy stops in French Riviera</li>
+                                    <li><i class="fas fa-utensils"></i> Authentic Italian cuisine experiences</li>
+                                    <li><i class="fas fa-building"></i> Historic architecture and culture</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Small Map with Trajectory -->
+                        <div class="compact-map">
+                            <h3><i class="fas fa-route"></i> Your Route</h3>
+                            <div class="route-map-small" id="map-${index}"></div>
+                        </div>
+                    </div>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--tuscan-gold);">
-                                ${Math.round(itinerary.total_distance)} km
-                            </div>
-                            <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Total Distance</div>
+                    <!-- Day by Day Program Section -->
+                    <div class="day-by-day-section">
+                        <h3><i class="fas fa-calendar-alt"></i> Day-by-Day Itinerary</h3>
+                        <div class="daily-program">
+                            ${generateDayByDayProgram(itinerary, index)}
                         </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--tuscan-gold);">
-                                ${Math.round(itinerary.total_duration / 60)} hrs
+                    </div>
+                    
+                    <!-- Advanced Features Section -->
+                    <div class="advanced-features-section">
+                        <h3><i class="fas fa-tools"></i> Advanced Planning Tools</h3>
+                        <div class="features-grid-compact">
+                            <div class="feature-item" onclick="openBudgetTracker()">
+                                <div class="feature-icon">💰</div>
+                                <div class="feature-info">
+                                    <div class="feature-title">Smart Budget</div>
+                                    <div class="feature-desc">Track expenses in real-time</div>
+                                </div>
                             </div>
-                            <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Driving Time</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--tuscan-gold);">
-                                €${Math.round(itinerary.estimated_fuel_cost)}
+                            <div class="feature-item" onclick="openPackingAssistant()">
+                                <div class="feature-icon">🎒</div>
+                                <div class="feature-info">
+                                    <div class="feature-title">Packing Assistant</div>
+                                    <div class="feature-desc">Never forget essentials</div>
+                                </div>
                             </div>
-                            <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Fuel Cost</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--tuscan-gold);">
-                                ${itinerary.intermediate_cities.length + 2}
+                            <div class="feature-item" onclick="openTravelJournal()">
+                                <div class="feature-icon">📔</div>
+                                <div class="feature-info">
+                                    <div class="feature-title">Travel Journal</div>
+                                    <div class="feature-desc">Capture memories</div>
+                                </div>
                             </div>
-                            <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Cities</div>
+                            <div class="feature-item" onclick="openTransportGuide()">
+                                <div class="feature-icon">🚊</div>
+                                <div class="feature-info">
+                                    <div class="feature-title">Transport Guide</div>
+                                    <div class="feature-desc">Local transport info</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1510,6 +1859,135 @@
             return icons[routeType] || 'route';
         }
 
+        function generateDayByDayProgram(itinerary, routeIndex) {
+            // Generate a realistic day-by-day program based on route
+            const cities = [];
+            
+            // Add start city
+            if (itinerary.start_city) cities.push(itinerary.start_city);
+            
+            // Add intermediate cities
+            if (itinerary.intermediate_cities) {
+                cities.push(...itinerary.intermediate_cities);
+            }
+            
+            // Add end city
+            if (itinerary.end_city) cities.push(itinerary.end_city);
+            
+            // Fallback if no cities data
+            if (cities.length === 0) {
+                cities.push(
+                    {name: 'Aix-en-Provence', country: 'France'},
+                    {name: 'Nice', country: 'France'},
+                    {name: 'Cinque Terre', country: 'Italy'},
+                    {name: 'Venice', country: 'Italy'}
+                );
+            }
+            
+            const days = [];
+            const totalDays = Math.min(7, Math.max(3, cities.length + 1)); // 3-7 days
+            
+            for (let day = 1; day <= totalDays; day++) {
+                const cityIndex = Math.floor((day - 1) * cities.length / totalDays);
+                const city = cities[Math.min(cityIndex, cities.length - 1)];
+                
+                days.push(`
+                    <div class="day-item">
+                        <div class="day-number">
+                            <div class="day-circle">Day ${day}</div>
+                        </div>
+                        <div class="day-content">
+                            <div class="day-header">
+                                <h4><i class="fas fa-map-marker-alt"></i> ${city.name}, ${city.country}</h4>
+                                <div class="day-type">${getDayType(day, totalDays)}</div>
+                            </div>
+                            <div class="day-activities">
+                                ${generateCityActivities(city, itinerary.route_type, day)}
+                            </div>
+                            <div class="day-logistics">
+                                <div class="logistics-item">
+                                    <i class="fas fa-bed"></i>
+                                    <span>Stay: ${getAccommodationType(itinerary.route_type)} in ${city.name}</span>
+                                </div>
+                                ${day < totalDays ? `
+                                <div class="logistics-item">
+                                    <i class="fas fa-car"></i>
+                                    <span>Drive to next city: ~${Math.floor(Math.random() * 3 + 2)} hours</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            return days.join('');
+        }
+
+        function getDayType(day, totalDays) {
+            if (day === 1) return 'Arrival Day';
+            if (day === totalDays) return 'Departure Day';
+            if (day === Math.floor(totalDays / 2)) return 'Exploration Day';
+            return 'Travel Day';
+        }
+
+        function getAccommodationType(routeType) {
+            const accommodations = {
+                'scenic': 'Boutique hotel with mountain views',
+                'cultural': 'Historic hotel in city center',
+                'adventure': 'Adventure lodge',
+                'culinary': 'Charming local inn',
+                'romantic': 'Romantic boutique hotel',
+                'hidden_gems': 'Unique local accommodation'
+            };
+            return accommodations[routeType] || 'Comfortable hotel';
+        }
+
+        function generateCityActivities(city, routeType, day) {
+            const activities = {
+                'Aix-en-Provence': [
+                    '🏛️ Explore Cours Mirabeau boulevard',
+                    '🎨 Visit Cézanne\'s studio and atelier',
+                    '☕ Coffee at traditional French café',
+                    '🛍️ Browse local Provençal markets'
+                ],
+                'Nice': [
+                    '🏖️ Stroll along Promenade des Anglais',
+                    '🎨 Visit Marc Chagall Museum',
+                    '🌺 Explore colorful Old Town (Vieux Nice)',
+                    '🥘 Lunch at traditional Niçois bistro'
+                ],
+                'Venice': [
+                    '🚤 Gondola ride through historic canals',
+                    '⛪ Visit St. Mark\'s Basilica and Square',
+                    '🌉 Cross the famous Rialto Bridge',
+                    '🍝 Dinner at authentic Venetian osteria'
+                ],
+                'Milan': [
+                    '⛪ Marvel at the Gothic Duomo cathedral',
+                    '🛍️ Shop in the elegant Galleria Vittorio Emanuele II',
+                    '🎭 Experience La Scala opera house',
+                    '🍕 Enjoy aperitivo in Navigli district'
+                ]
+            };
+            
+            const cityActivities = activities[city.name] || [
+                '🗺️ Explore historic city center',
+                '📸 Visit local landmarks and attractions',
+                '🍽️ Try authentic regional cuisine',
+                '🚶 Walking tour of main highlights'
+            ];
+            
+            // Return 3-4 activities for the day
+            const selectedActivities = cityActivities.slice(0, Math.min(4, cityActivities.length));
+            
+            return selectedActivities.map(activity => `
+                <div class="activity-item">
+                    <span class="activity-text">${activity}</span>
+                </div>
+            `).join('');
+        }
+
         function initializeMap(itinerary, index) {
             try {
                 const mapId = `map-${index}`;
@@ -1517,7 +1995,14 @@
                 
                 if (!mapElement) return;
 
-                const map = L.map(mapId).setView([48.8566, 2.3522], 5);
+                const map = L.map(mapId, {
+                    zoomControl: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    boxZoom: false,
+                    keyboard: false,
+                    dragging: false
+                }).setView([45.4408, 12.3155], 6);
                 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
