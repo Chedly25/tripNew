@@ -244,12 +244,15 @@ class MLRecommendationService:
             scored_cities.sort(key=lambda x: x['score'], reverse=True)
             
             # Apply Thompson Sampling for diverse selection
+            # Calculate dynamic recommendation count based on trip duration
+            max_recommendations = self._calculate_recommendation_count(preferences.duration_days)
+            
             selected_cities = self._thompson_sampling_selection(
-                scored_cities, preferences.duration_days, exploration_factor
+                scored_cities, preferences.duration_days, exploration_factor, max_recommendations
             )
             
             return ServiceResult.success_result({
-                'recommendations': selected_cities[:5],  # Top 5
+                'recommendations': selected_cities[:max_recommendations],
                 'algorithm_info': {
                     'method': 'ml_exploration_exploitation',
                     'exploration_factor': exploration_factor,
@@ -765,7 +768,8 @@ class MLRecommendationService:
         return quality
     
     def _thompson_sampling_selection(self, scored_cities: List[Dict], 
-                                   duration_days: int, exploration_factor: float) -> List[Dict]:
+                                   duration_days: int, exploration_factor: float,
+                                   max_selections: int = None) -> List[Dict]:
         """Use Thompson Sampling for diverse city selection."""
         import random
         import math
@@ -774,7 +778,11 @@ class MLRecommendationService:
             return []
         
         selected = []
-        max_selections = min(8, len(scored_cities))  # Up to 8 cities
+        if max_selections is None:
+            max_selections = min(8, len(scored_cities))  # Default: up to 8 cities
+        else:
+            max_selections = min(max_selections, len(scored_cities))  # Respect parameter
+            
         min_distance_km = max(50, 150 - (duration_days * 5))  # Dynamic spacing
         
         # Thompson Sampling parameters
@@ -849,3 +857,14 @@ class MLRecommendationService:
     def _get_total_recommendations(self) -> int:
         """Get total number of recommendations made (simulated)."""
         return 10000  # In real implementation, this would be actual count
+    
+    def _calculate_recommendation_count(self, duration_days: int) -> int:
+        """Calculate optimal number of city recommendations based on trip duration."""
+        if duration_days <= 3:
+            return min(8, max(3, duration_days * 2))  # 3-6 recommendations for short trips
+        elif duration_days <= 7:
+            return min(12, max(5, int(duration_days * 1.2)))  # 5-8 recommendations for week trips
+        elif duration_days <= 14:
+            return min(15, max(8, int(duration_days * 0.8)))  # 8-11 recommendations for two weeks
+        else:
+            return min(20, max(10, int(duration_days * 0.6)))  # 10-20 recommendations for long trips

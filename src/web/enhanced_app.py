@@ -345,10 +345,9 @@ def create_enhanced_app() -> Flask:
                 if len(filtered_cities) > max_cities:
                     filtered_cities = random.sample(filtered_cities, max_cities)
             else:
-                # Use ML recommendations
+                # Use ML recommendations (already returns appropriate count for trip duration)
                 recommendations = ml_result.data['recommendations']
-                max_cities = strategy.get('max_cities', 3)
-                filtered_cities = [rec['city'] for rec in recommendations[:max_cities]]
+                filtered_cities = [rec['city'] for rec in recommendations]
                 
                 logger.info("ML recommendations applied", 
                            method=ml_result.data['algorithm_info']['method'],

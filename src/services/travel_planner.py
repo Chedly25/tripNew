@@ -234,10 +234,50 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                         strategy=strategy['name'], error=str(e))
             return ServiceResult.error_result(f"Route generation failed: {e}")
     
+    def _calculate_optimal_city_count(self, strategy_type: str, trip_days: int) -> int:
+        """Calculate optimal number of intermediate cities based on trip duration and type."""
+        
+        # Base ratios: cities per day for different route types
+        base_ratios = {
+            'scenic': 0.4,      # Scenic routes: spend more time in fewer places to enjoy views
+            'cultural': 0.6,    # Cultural routes: more cities to see different heritage sites
+            'adventure': 0.3,   # Adventure routes: fewer cities, more time for activities
+            'culinary': 0.5,    # Culinary routes: moderate pace to savor local cuisine
+            'romantic': 0.3,    # Romantic routes: fewer cities, more time to relax
+            'hidden_gems': 0.4  # Hidden gems: moderate pace to discover authentic places
+        }
+        
+        ratio = base_ratios.get(strategy_type, 0.4)  # Default ratio
+        
+        # Calculate base city count
+        base_count = max(1, int(trip_days * ratio))
+        
+        # Apply constraints based on trip duration
+        if trip_days <= 3:
+            # Short trips: 1-2 intermediate cities max
+            return min(base_count, 2)
+        elif trip_days <= 7:
+            # Week-long trips: 2-4 intermediate cities
+            return min(base_count, 4)
+        elif trip_days <= 14:
+            # Two-week trips: 3-8 intermediate cities
+            return min(base_count, 8)
+        else:
+            # Long trips: 4-12 intermediate cities
+            return min(max(base_count, 4), 12)
+    
     def _find_intermediate_cities(self, strategy: Dict, start_city, end_city, 
                                 request: TripRequest) -> List:
         """Find intermediate cities based on route strategy."""
         strategy_type = strategy['type']
+        
+        # Calculate optimal number of intermediate cities based on trip duration and type
+        max_cities = self._calculate_optimal_city_count(strategy_type, request.travel_days)
+        
+        logger.info("Dynamic city calculation", 
+                   strategy=strategy_type, 
+                   trip_days=request.travel_days, 
+                   max_cities=max_cities)
         
         # Get cities near the route using sync fallback method, filtered by route type
         nearby_cities = self.city_service._get_fallback_route_cities(
@@ -248,19 +288,19 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             # Find scenic cities: alpine, lakes, romantic, resort
             scenic_types = ['scenic', 'alpine', 'lakes', 'romantic', 'resort', 'coastal']
             candidates = [c for c in nearby_cities if any(t in c.types for t in scenic_types)]
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'cultural':
             # Find cultural/historic cities: unesco, historic, cultural, artistic
             cultural_types = ['cultural', 'historic', 'unesco', 'artistic', 'renaissance', 'medieval', 'roman']
             candidates = [c for c in nearby_cities if any(t in c.types for t in cultural_types)]
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'adventure':
             # Find adventure cities: alpine, adventure, winter-sports, nature
             adventure_types = ['adventure', 'alpine', 'winter-sports', 'nature', 'skiing', 'outdoor']
             candidates = [c for c in nearby_cities if any(t in c.types for t in adventure_types)]
-            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'culinary':
             # Find culinary destinations
@@ -270,13 +310,13 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             if len(candidates) < 2:
                 cultural_cities = [c for c in nearby_cities if 'cultural' in c.types]
                 candidates.extend(cultural_cities[:2])
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'romantic':
             # Find romantic destinations
             romantic_types = ['romantic', 'scenic', 'lakes', 'coastal', 'luxury', 'historic']
             candidates = [c for c in nearby_cities if any(t in c.types for t in romantic_types)]
-            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'hidden_gems':
             # Find lesser-known, authentic destinations
@@ -287,11 +327,11 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 small_town_types = ['medieval', 'village', 'traditional', 'rural', 'authentic']
                 more_candidates = [c for c in nearby_cities if any(t in c.types for t in small_town_types)]
                 candidates.extend(more_candidates[:3])
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         else:
             # Default: select diverse cities near route
-            return self._select_diverse_cities(nearby_cities, max_cities=2, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(nearby_cities, max_cities=max_cities, route_type=strategy_type, request=request)
     
     async def _find_intermediate_cities_async(self, strategy: Dict, start_city, end_city, 
                                             request: TripRequest) -> List:
@@ -307,19 +347,19 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             # Find scenic cities: alpine, lakes, romantic, resort
             scenic_types = ['scenic', 'alpine', 'lakes', 'romantic', 'resort', 'coastal']
             candidates = [c for c in nearby_cities if any(t in c.types for t in scenic_types)]
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'cultural':
             # Find cultural/historic cities: unesco, historic, cultural, artistic
             cultural_types = ['cultural', 'historic', 'unesco', 'artistic', 'renaissance', 'medieval', 'roman']
             candidates = [c for c in nearby_cities if any(t in c.types for t in cultural_types)]
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'adventure':
             # Find adventure cities: alpine, adventure, winter-sports, nature
             adventure_types = ['adventure', 'alpine', 'winter-sports', 'nature', 'skiing', 'outdoor']
             candidates = [c for c in nearby_cities if any(t in c.types for t in adventure_types)]
-            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'culinary':
             # Find culinary destinations
@@ -329,13 +369,13 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             if len(candidates) < 2:
                 cultural_cities = [c for c in nearby_cities if 'cultural' in c.types]
                 candidates.extend(cultural_cities[:2])
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'romantic':
             # Find romantic destinations
             romantic_types = ['romantic', 'scenic', 'lakes', 'coastal', 'luxury', 'historic']
             candidates = [c for c in nearby_cities if any(t in c.types for t in romantic_types)]
-            return self._select_diverse_cities(candidates, max_cities=2, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         elif strategy_type == 'hidden_gems':
             # Find lesser-known, authentic destinations
@@ -346,11 +386,11 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 small_town_types = ['medieval', 'village', 'traditional', 'rural', 'authentic']
                 more_candidates = [c for c in nearby_cities if any(t in c.types for t in small_town_types)]
                 candidates.extend(more_candidates[:3])
-            return self._select_diverse_cities(candidates, max_cities=3, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(candidates, max_cities=max_cities, route_type=strategy_type, request=request)
         
         else:
             # Default: select diverse cities near route
-            return self._select_diverse_cities(nearby_cities, max_cities=2, route_type=strategy_type, request=request)
+            return self._select_diverse_cities(nearby_cities, max_cities=max_cities, route_type=strategy_type, request=request)
     
     def _select_diverse_cities(self, candidates: List, max_cities: int, route_type: str = None, 
                              request = None) -> List:
