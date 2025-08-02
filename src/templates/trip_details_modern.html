@@ -1194,17 +1194,53 @@
         }
         
         function drawRoute(coordinates) {
+            console.log('drawRoute called with coordinates:', coordinates);
+            
             // Clear existing route
             if (routeLayer) {
+                console.log('Removing existing route layer');
                 map.removeLayer(routeLayer);
             }
             if (routingControl) {
+                console.log('Removing existing routing control');
                 map.removeControl(routingControl);
             }
             
             if (coordinates.length >= 2) {
+                console.log(`Creating route with ${coordinates.length} waypoints`);
                 // Create waypoints for routing
                 const waypoints = coordinates.map(coord => L.latLng(coord[0], coord[1]));
+                console.log('Waypoints created:', waypoints);
+                
+                // Check if Leaflet Routing Machine is available
+                if (typeof L.Routing === 'undefined') {
+                    console.warn('Leaflet Routing Machine not loaded, using simple polyline');
+                    routeLayer = L.polyline(coordinates, {
+                        color: '#e94560',
+                        weight: 4,
+                        opacity: 0.8,
+                        smoothFactor: 1
+                    }).addTo(map);
+                    
+                    // Add markers for each city
+                    coordinates.forEach((coord, index) => {
+                        const isStart = index === 0;
+                        const isEnd = index === coordinates.length - 1;
+                        const color = isStart ? '#00b894' : isEnd ? '#e94560' : '#0f3460';
+                        
+                        L.marker(coord, {
+                            icon: L.divIcon({
+                                className: 'custom-marker',
+                                html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                                iconSize: [22, 22],
+                                iconAnchor: [11, 11]
+                            })
+                        }).addTo(map);
+                    });
+                    
+                    map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                    return;
+                }
                 
                 // Create routing control with real road routing
                 routingControl = L.Routing.control({
@@ -1241,16 +1277,25 @@
                     })
                 }).addTo(map);
                 
+                console.log('Routing control created and added to map');
+                
                 // Hide the routing instructions panel
                 const routingContainer = routingControl.getContainer();
                 if (routingContainer) {
                     routingContainer.style.display = 'none';
+                    console.log('Routing instructions panel hidden');
                 }
                 
                 // Fit map to route when route is found
                 routingControl.on('routesfound', function(e) {
+                    console.log('Route found, fitting map bounds');
                     const bounds = L.latLngBounds(waypoints);
                     map.fitBounds(bounds, { padding: [50, 50] });
+                });
+                
+                // Add error handling
+                routingControl.on('routingerror', function(e) {
+                    console.error('Routing error:', e);
                 });
             } else {
                 // Fallback to simple polyline if less than 2 coordinates
@@ -1360,10 +1405,13 @@
             }
             
             console.log('All cities for routing:', cities);
+            console.log(`Found ${cities.length} cities for route creation`);
             
             if (cities.length >= 2) {
+                console.log('Creating route with waypoints:', cities);
                 drawRoute(cities);
             } else if (cities.length === 1) {
+                console.log('Only one city found, centering map');
                 // Center map on single city
                 map.setView(cities[0], 10);
                 L.marker(cities[0]).addTo(map);
