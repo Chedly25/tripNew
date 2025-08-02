@@ -1137,7 +1137,8 @@ def create_app() -> Flask:
                 'total_duration_hours': trip_data.get('total_duration_hours'),
                 'estimated_driving_time': trip_data.get('estimated_driving_time'),
                 'highlights': trip_data.get('highlights'),
-                'ideal_for': trip_data.get('ideal_for')
+                'ideal_for': trip_data.get('ideal_for'),
+                'trip_details': trip_data.get('trip_details')
             }
                 
             session['current_trip_data'] = essential_trip_data
