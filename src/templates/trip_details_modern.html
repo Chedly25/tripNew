@@ -2523,13 +2523,26 @@
                     return;
                 }
 
-                if (!city.latitude || !city.longitude) {
+                // Handle different coordinate formats
+                let latitude, longitude;
+                
+                if (city.latitude && city.longitude) {
+                    // Object format: {latitude: x, longitude: y}
+                    latitude = city.latitude;
+                    longitude = city.longitude;
+                } else if (city.coordinates && Array.isArray(city.coordinates) && city.coordinates.length >= 2) {
+                    // Array format: [lat, lng]
+                    latitude = city.coordinates[0];
+                    longitude = city.coordinates[1];
+                } else {
                     console.warn(`City missing coordinates for ${type}:`, city);
                     showNoAmenities(type);
                     return;
                 }
+                
+                console.log(`Extracted coordinates for ${type}: [${latitude}, ${longitude}]`);
 
-                console.log(`Making API call for ${type} in ${city.name || 'Unknown'} at [${city.latitude}, ${city.longitude}]`);
+                console.log(`Making API call for ${type} in ${city.name || 'Unknown'} at [${latitude}, ${longitude}]`);
                 showLoading(type);
 
                 const response = await fetch(`/api/${type}`, {
@@ -2539,8 +2552,8 @@
                     },
                     body: JSON.stringify({
                         city_name: city.name || 'Unknown',
-                        latitude: city.latitude,
-                        longitude: city.longitude,
+                        latitude: latitude,
+                        longitude: longitude,
                         limit: type === 'events' ? 6 : 8
                     })
                 });
