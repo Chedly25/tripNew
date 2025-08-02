@@ -2,6 +2,7 @@ amadeus
 anthropic
 Flask
 foursquare
+geopy
 google-api-python-client
 gunicorn
 aiohttp
@@ -12,4 +13,5 @@ requests
 scikit-learn
 SQLAlchemy
 structlog
+tenacity
 Werkzeug
