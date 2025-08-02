@@ -610,68 +610,89 @@ class GooglePlacesCityService:
             return candidates[:8]
     
     def _get_comprehensive_city_database(self):
-        """Load and parse the comprehensive city database from JSON file."""
+        """Load and parse the comprehensive city database from JSON files."""
         try:
             import json
             import os
             
-            # Get the database file path
+            # Get the database file paths
             current_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
             db_file = os.path.join(current_dir, 'data', 'comprehensive_european_cities.json')
+            massive_db_file = os.path.join(current_dir, 'data', 'massive_european_cities.json')
             
-            if not os.path.exists(db_file):
-                logger.warning(f"Comprehensive database not found at {db_file}, using fallback")
-                return self._get_fallback_database()
-            
-            # Load and parse the JSON database
-            with open(db_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            # Flatten the nested structure into the format expected by the service
             cities_db = {}
             
-            # Process France
-            if 'cities' in data and 'france' in data['cities']:
-                for region_name, region_cities in data['cities']['france'].items():
-                    for city_key, city_data in region_cities.items():
-                        cities_db[city_key] = {
-                            'lat': city_data['coordinates']['lat'],
-                            'lon': city_data['coordinates']['lon'],
-                            'country': 'France',
-                            'types': city_data.get('types', []),
-                            'population': city_data.get('population'),
-                            'travel_appeal': city_data.get('travel_appeal', 'medium'),
-                            'authenticity_score': city_data.get('authenticity_score', 5),
-                            'specialties': city_data.get('specialties', []),
-                            'hidden_gems': city_data.get('hidden_gems', []),
-                            'region': city_data.get('region'),
-                            'local_character': city_data.get('local_character', '')
-                        }
+            # Load both databases and merge them
+            for db_path, db_name in [(db_file, "comprehensive"), (massive_db_file, "massive")]:
+                if os.path.exists(db_path):
+                    try:
+                        with open(db_path, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                        
+                        # Process all countries in the database
+                        if 'cities' in data:
+                            for country_key, country_data in data['cities'].items():
+                                # Map country keys to proper country names
+                                country_name = self._get_country_name(country_key)
+                                
+                                for region_name, region_cities in country_data.items():
+                                    for city_key, city_data in region_cities.items():
+                                        # Skip if already exists (prefer comprehensive over massive)
+                                        if city_key in cities_db and db_name == "massive":
+                                            continue
+                                            
+                                        cities_db[city_key] = {
+                                            'lat': city_data['coordinates']['lat'],
+                                            'lon': city_data['coordinates']['lon'],
+                                            'country': country_name,
+                                            'types': city_data.get('types', []),
+                                            'population': city_data.get('population'),
+                                            'travel_appeal': city_data.get('travel_appeal', 'medium'),
+                                            'authenticity_score': city_data.get('authenticity_score', 5),
+                                            'specialties': city_data.get('specialties', []),
+                                            'hidden_gems': city_data.get('hidden_gems', []),
+                                            'region': city_data.get('region'),
+                                            'local_character': city_data.get('local_character', '')
+                                        }
+                        
+                        logger.info(f"Loaded {db_name} database with cities")
+                        
+                    except Exception as e:
+                        logger.warning(f"Failed to load {db_name} database: {e}")
+                else:
+                    logger.warning(f"Database not found: {db_path}")
             
-            # Process Italy
-            if 'cities' in data and 'italy' in data['cities']:
-                for region_name, region_cities in data['cities']['italy'].items():
-                    for city_key, city_data in region_cities.items():
-                        cities_db[city_key] = {
-                            'lat': city_data['coordinates']['lat'],
-                            'lon': city_data['coordinates']['lon'],
-                            'country': 'Italy',
-                            'types': city_data.get('types', []),
-                            'population': city_data.get('population'),
-                            'travel_appeal': city_data.get('travel_appeal', 'medium'),
-                            'authenticity_score': city_data.get('authenticity_score', 5),
-                            'specialties': city_data.get('specialties', []),
-                            'hidden_gems': city_data.get('hidden_gems', []),
-                            'region': city_data.get('region'),
-                            'local_character': city_data.get('local_character', '')
-                        }
+            if not cities_db:
+                logger.warning("No databases found, using fallback")
+                return self._get_fallback_database()
             
-            logger.info(f"Loaded {len(cities_db)} cities from comprehensive database")
+            logger.info(f"Total cities loaded: {len(cities_db)} from merged databases")
             return cities_db
             
         except Exception as e:
-            logger.error(f"Failed to load comprehensive database: {e}")
+            logger.error(f"Failed to load any database: {e}")
             return self._get_fallback_database()
+    
+    def _get_country_name(self, country_key: str) -> str:
+        """Map country keys to proper country names."""
+        country_mapping = {
+            'france': 'France',
+            'italy': 'Italy', 
+            'spain': 'Spain',
+            'germany': 'Germany',
+            'portugal': 'Portugal',
+            'austria': 'Austria',
+            'switzerland': 'Switzerland',
+            'netherlands': 'Netherlands',
+            'belgium': 'Belgium',
+            'czech_republic': 'Czech Republic',
+            'croatia': 'Croatia',
+            'slovenia': 'Slovenia',
+            'hungary': 'Hungary',
+            'slovakia': 'Slovakia',
+            'poland': 'Poland'
+        }
+        return country_mapping.get(country_key, country_key.replace('_', ' ').title())
     
     def _get_fallback_database(self):
         """Fallback database in case the JSON file cannot be loaded."""
