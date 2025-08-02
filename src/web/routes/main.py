@@ -485,7 +485,18 @@ def create_app() -> Flask:
     @app.route('/trip-details')
     def trip_details():
         """Trip details page."""
-        return render_template('trip_details.html')
+        # Get trip data from session
+        trip_data = session.get('current_trip_data', {})
+        trip_id = session.get('current_trip_id')
+        trip_name = session.get('current_trip_name', 'Trip Details')
+        
+        if not trip_data:
+            return redirect('/')
+        
+        return render_template('trip_details.html', 
+                             trip_data=trip_data, 
+                             trip_id=trip_id,
+                             trip_name=trip_name)
     
     # Original API endpoints
     @app.route('/api/plan-trip', methods=['POST'])

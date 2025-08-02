@@ -518,8 +518,8 @@
         }
         
         function viewTrip(tripId) {
-            // For now, just show alert - this would navigate to trip details
-            alert('Trip viewing feature will be implemented with trip details integration');
+            // Redirect to the trip details page with the trip ID
+            window.location.href = `/auth/trips/${tripId}`;
         }
     </script>
 </body>

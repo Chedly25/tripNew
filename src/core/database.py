@@ -602,6 +602,16 @@ class TripManager:
         
         return False
     
+    def get_trip_by_id(self, user_id: int, trip_id: int) -> Optional[Dict]:
+        """Get a specific trip by ID."""
+        with self.db.get_connection() as conn:
+            trip = conn.execute('''
+                SELECT * FROM saved_trips 
+                WHERE id = ? AND user_id = ?
+            ''', (trip_id, user_id)).fetchone()
+            
+            return dict(trip) if trip else None
+    
     def delete_trip(self, user_id: int, trip_id: int) -> bool:
         """Delete a trip."""
         with self.db.get_connection() as conn:

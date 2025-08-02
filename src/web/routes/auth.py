@@ -317,6 +317,32 @@ def delete_trip(trip_id):
     else:
         return jsonify({'error': 'Trip not found or permission denied'}), 404
 
+@auth_bp.route('/trips/<int:trip_id>')
+@login_required
+def view_trip_details(trip_id):
+    """View details of a specific trip."""
+    user = get_current_user()
+    if not user:
+        return redirect(url_for('auth.login'))
+    
+    trip_manager = get_trip_manager()
+    trip = trip_manager.get_trip_by_id(user['id'], trip_id)
+    
+    if not trip:
+        flash('Trip not found or you do not have permission to view it.', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Retrieve the trip data (stored as JSON)
+    import json
+    trip_data = json.loads(trip['trip_data']) if trip['trip_data'] else {}
+    
+    # Redirect to the trip details page with the trip data in session
+    session['current_trip_data'] = trip_data
+    session['current_trip_id'] = trip_id
+    session['current_trip_name'] = trip['trip_name']
+    
+    return redirect('/trip-details')
+
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
