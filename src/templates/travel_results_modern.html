@@ -1255,9 +1255,11 @@
                     const responseData = await response.json();
                     
                     // Update button state
-                    const button = event.target.closest('.btn-save');
-                    button.classList.add('saved');
-                    button.innerHTML = '<i class="fas fa-check"></i> Saved';
+                    const button = document.querySelector(`[onclick="saveRoute(${routeIndex})"]`);
+                    if (button) {
+                        button.classList.add('saved');
+                        button.innerHTML = '<i class="fas fa-check"></i> Saved';
+                    }
                     
                     // Show success message with email info if applicable
                     showNotification(responseData.message || 'Trip saved successfully!', 'success');
