@@ -1104,7 +1104,35 @@
         }
         
         function initializeMap() {
-            map = L.map('tripMap').setView([48.8566, 2.3522], 6);
+            // Calculate initial map center based on trip data
+            let initialCenter = [48.8566, 2.3522]; // Default to Paris
+            let initialZoom = 6;
+            
+            {% if trip_data and trip_data.coordinates %}
+                const coordinates = {{ trip_data.coordinates | tojson }};
+                if (coordinates && coordinates.length > 0) {
+                    // Calculate center point of the route
+                    const latSum = coordinates.reduce((sum, coord) => sum + coord[0], 0);
+                    const lngSum = coordinates.reduce((sum, coord) => sum + coord[1], 0);
+                    initialCenter = [latSum / coordinates.length, lngSum / coordinates.length];
+                    
+                    // Adjust zoom based on route span
+                    const latDiff = Math.max(...coordinates.map(c => c[0])) - Math.min(...coordinates.map(c => c[0]));
+                    const lngDiff = Math.max(...coordinates.map(c => c[1])) - Math.min(...coordinates.map(c => c[1]));
+                    const maxDiff = Math.max(latDiff, lngDiff);
+                    
+                    if (maxDiff > 10) initialZoom = 4;
+                    else if (maxDiff > 5) initialZoom = 5;
+                    else if (maxDiff > 2) initialZoom = 6;
+                    else initialZoom = 7;
+                }
+            {% elif trip_data and trip_data.start_city and trip_data.start_city.coordinates %}
+                // Fallback to start city coordinates
+                initialCenter = {{ trip_data.start_city.coordinates | tojson }};
+                initialZoom = 7;
+            {% endif %}
+            
+            map = L.map('tripMap').setView(initialCenter, initialZoom);
             
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap contributors',
@@ -1113,8 +1141,10 @@
             
             // Add route if available
             {% if trip_data and trip_data.coordinates %}
-                const coordinates = {{ trip_data.coordinates | tojson }};
                 drawRoute(coordinates);
+            {% elif trip_data %}
+                // Create route from available city data
+                createRouteFromCityData().catch(console.error);
             {% endif %}
         }
         
@@ -1223,6 +1253,81 @@
             }
         }
         
+        async function createRouteFromCityData() {
+            // Create route from city information when coordinates aren't directly available
+            const cities = [];
+            const cityNames = [];
+            
+            {% if trip_data %}
+                // Collect city names for geocoding
+                {% if trip_data.start_city %}
+                    {% if trip_data.start_city.coordinates %}
+                        cities.push({{ trip_data.start_city.coordinates | tojson }});
+                    {% elif trip_data.start_city.name %}
+                        cityNames.push('{{ trip_data.start_city.name }}');
+                    {% endif %}
+                {% endif %}
+                
+                {% if trip_data.intermediate_cities %}
+                    {% for city in trip_data.intermediate_cities %}
+                        {% if city.coordinates %}
+                            cities.push({{ city.coordinates | tojson }});
+                        {% elif city.name %}
+                            cityNames.push('{{ city.name }}');
+                        {% elif city is string %}
+                            cityNames.push('{{ city }}');
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                
+                {% if trip_data.end_city %}
+                    {% if trip_data.end_city.coordinates %}
+                        cities.push({{ trip_data.end_city.coordinates | tojson }});
+                    {% elif trip_data.end_city.name %}
+                        cityNames.push('{{ trip_data.end_city.name }}');
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+            
+            // Geocode city names to get coordinates
+            if (cityNames.length > 0) {
+                console.log('Geocoding cities:', cityNames);
+                for (const cityName of cityNames) {
+                    const coords = await geocodeCity(cityName);
+                    if (coords) {
+                        cities.push(coords);
+                        console.log(`Geocoded ${cityName}:`, coords);
+                    }
+                }
+            }
+            
+            console.log('All cities for routing:', cities);
+            
+            if (cities.length >= 2) {
+                drawRoute(cities);
+            } else if (cities.length === 1) {
+                // Center map on single city
+                map.setView(cities[0], 10);
+                L.marker(cities[0]).addTo(map);
+            } else {
+                console.warn('No valid city coordinates found for mapping');
+            }
+        }
+        
+        // Simple geocoding function for city names
+        async function geocodeCity(cityName) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`);
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                }
+            } catch (error) {
+                console.warn('Geocoding failed for:', cityName, error);
+            }
+            return null;
+        }
+        
         // View toggle
         let itineraryMap;
         
@@ -1256,7 +1361,20 @@
             const mapElement = document.getElementById('itineraryMap');
             if (!mapElement || itineraryMap) return;
             
-            itineraryMap = L.map('itineraryMap').setView([48.8566, 2.3522], 6);
+            // Calculate center for itinerary map
+            let mapCenter = [48.8566, 2.3522]; // Default to Paris
+            {% if trip_data and trip_data.coordinates %}
+                const coords = {{ trip_data.coordinates | tojson }};
+                if (coords && coords.length > 0) {
+                    const latSum = coords.reduce((sum, coord) => sum + coord[0], 0);
+                    const lngSum = coords.reduce((sum, coord) => sum + coord[1], 0);
+                    mapCenter = [latSum / coords.length, lngSum / coords.length];
+                }
+            {% elif trip_data and trip_data.start_city and trip_data.start_city.coordinates %}
+                mapCenter = {{ trip_data.start_city.coordinates | tojson }};
+            {% endif %}
+            
+            itineraryMap = L.map('itineraryMap').setView(mapCenter, 6);
             
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap contributors',
@@ -1375,6 +1493,13 @@
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
+            // Debug trip data structure
+            {% if trip_data %}
+                console.log('Trip data received:', {{ trip_data | tojson }});
+            {% else %}
+                console.log('No trip data available');
+            {% endif %}
+            
             initializeMap();
             
             // Close user dropdown when clicking outside

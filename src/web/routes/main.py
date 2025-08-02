@@ -1230,7 +1230,7 @@ def create_app() -> Flask:
     
     # AI-Powered Features using Claude
     @app.route('/api/ai/chat', methods=['POST'])
-    def ai_chat():
+    def ai_chat_endpoint():
         """AI travel assistant chat endpoint."""
         try:
             data = request.get_json()
