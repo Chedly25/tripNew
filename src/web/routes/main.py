@@ -1595,6 +1595,196 @@ def create_app() -> Flask:
             logger.error(f"AI trip matcher error: {e}")
             return jsonify({'error': 'Trip matching service unavailable'}), 500
 
+    @app.route('/api/ai/surprise-trip', methods=['POST'])
+    def ai_surprise_trip():
+        """Generate a surprise trip using AI inspiration engine."""
+        try:
+            from services.ai_inspiration_engine import AIInspirationEngine
+            
+            engine = AIInspirationEngine()
+            surprise_trip = engine.generate_surprise_trip()
+            
+            return jsonify({
+                'success': True,
+                'trip': {
+                    'start_city': surprise_trip.start_city,
+                    'end_city': surprise_trip.end_city,
+                    'duration': surprise_trip.duration,
+                    'budget': surprise_trip.budget,
+                    'travel_style': surprise_trip.travel_style
+                },
+                'inspiration_message': surprise_trip.inspiration_message,
+                'theme': surprise_trip.theme,
+                'season_perfect': surprise_trip.season_perfect
+            })
+            
+        except Exception as e:
+            logger.error(f"Surprise trip generation error: {e}")
+            return jsonify({'error': 'Surprise trip service unavailable'}), 500
+
+    @app.route('/api/ai/seasonal-inspiration', methods=['GET'])
+    def ai_seasonal_inspiration():
+        """Get seasonal inspiration suggestions."""
+        try:
+            from services.ai_inspiration_engine import AIInspirationEngine
+            
+            season = request.args.get('season')
+            engine = AIInspirationEngine()
+            suggestions = engine.get_seasonal_suggestions(season)
+            
+            trips_data = []
+            for trip in suggestions:
+                trips_data.append({
+                    'start_city': trip.start_city,
+                    'end_city': trip.end_city,
+                    'duration': trip.duration,
+                    'budget': trip.budget,
+                    'travel_style': trip.travel_style,
+                    'inspiration_message': trip.inspiration_message,
+                    'theme': trip.theme,
+                    'season_perfect': trip.season_perfect
+                })
+            
+            return jsonify({
+                'success': True,
+                'suggestions': trips_data,
+                'season': season or 'current'
+            })
+            
+        except Exception as e:
+            logger.error(f"Seasonal inspiration error: {e}")
+            return jsonify({'error': 'Seasonal inspiration service unavailable'}), 500
+
+    @app.route('/api/ai/themed-trip', methods=['POST'])
+    def ai_themed_trip():
+        """Generate a trip based on specific theme."""
+        try:
+            data = request.get_json()
+            theme = data.get('theme') if data else None
+            
+            if not theme:
+                return jsonify({'error': 'Theme is required'}), 400
+            
+            from services.ai_inspiration_engine import AIInspirationEngine
+            
+            engine = AIInspirationEngine()
+            themed_trip = engine.generate_themed_trip(theme)
+            
+            if not themed_trip:
+                return jsonify({'error': f'No trips found for theme: {theme}'}), 404
+            
+            return jsonify({
+                'success': True,
+                'trip': {
+                    'start_city': themed_trip.start_city,
+                    'end_city': themed_trip.end_city,
+                    'duration': themed_trip.duration,
+                    'budget': themed_trip.budget,
+                    'travel_style': themed_trip.travel_style
+                },
+                'inspiration_message': themed_trip.inspiration_message,
+                'theme': themed_trip.theme
+            })
+            
+        except Exception as e:
+            logger.error(f"Themed trip generation error: {e}")
+            return jsonify({'error': 'Themed trip service unavailable'}), 500
+
+    @app.route('/api/ai/discover-cities', methods=['POST'])
+    def ai_discover_cities():
+        """AI-powered city discovery."""
+        try:
+            data = request.get_json()
+            query = data.get('query', '') if data else ''
+            filter_type = data.get('filter', 'all') if data else 'all'
+            limit = data.get('limit', 12) if data else 12
+            
+            from services.ai_city_discovery import AICityDiscovery
+            from services.google_places_city_service import GooglePlacesCityService
+            
+            city_service = GooglePlacesCityService()
+            discovery = AICityDiscovery(city_service)
+            
+            discovered_cities = discovery.discover_cities(query, filter_type, limit)
+            
+            cities_data = []
+            for city in discovered_cities:
+                cities_data.append({
+                    'name': city.name,
+                    'country': city.country,
+                    'description': city.description,
+                    'ai_score': city.ai_score,
+                    'tags': city.tags,
+                    'population': city.population,
+                    'coordinates': city.coordinates,
+                    'hidden_gem_score': city.hidden_gem_score,
+                    'uniqueness_score': city.uniqueness_score,
+                    'accessibility_score': city.accessibility_score,
+                    'reasons': city.reasons
+                })
+            
+            return jsonify({
+                'success': True,
+                'cities': cities_data,
+                'query': query,
+                'filter': filter_type,
+                'total': len(cities_data)
+            })
+            
+        except Exception as e:
+            logger.error(f"City discovery error: {e}")
+            return jsonify({'error': 'City discovery service unavailable'}), 500
+
+    @app.route('/discover')
+    def city_discovery_page():
+        """Smart City Discovery page."""
+        return render_template('city_discovery.html')
+
+    @app.route('/quiz')
+    def travel_quiz_page():
+        """Travel Personality Quiz page."""
+        return render_template('travel_quiz.html')
+
+    @app.route('/api/ai/dream-trip', methods=['POST'])
+    def ai_dream_trip():
+        """AI Dream Trip Builder - converts natural language to trip parameters."""
+        try:
+            data = request.get_json()
+            dream_text = data.get('dream_text', '') if data else ''
+            
+            if not dream_text.strip():
+                return jsonify({'error': 'Dream text is required'}), 400
+            
+            from services.ai_dream_trip_builder import AIDreamTripBuilder
+            
+            builder = AIDreamTripBuilder()
+            params = builder.parse_dream_trip(dream_text)
+            
+            # Enhance with suggestions if confidence is low or missing parameters
+            if params.confidence < 0.5 or not all([params.start_city, params.end_city]):
+                params = builder.enhance_with_suggestions(params)
+            
+            return jsonify({
+                'success': True,
+                'trip': {
+                    'start_city': params.start_city,
+                    'end_city': params.end_city,
+                    'duration': params.duration,
+                    'budget': params.budget,
+                    'travel_style': params.travel_style,
+                    'group_type': params.group_type,
+                    'season': params.season
+                },
+                'confidence': params.confidence,
+                'extracted_intent': params.extracted_intent,
+                'interests': params.interests or [],
+                'original_text': dream_text
+            })
+            
+        except Exception as e:
+            logger.error(f"Dream trip builder error: {e}")
+            return jsonify({'error': 'Dream trip service unavailable'}), 500
+
     @app.route('/api/ai/travel-insights', methods=['GET'])
     @login_required
     def get_ai_travel_insights():

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Discovery - EuroRoam</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='modern-theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .discovery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .discovery-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .discovery-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .discovery-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .search-section {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 3rem;
+        }
+        
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--gray);
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .discover-btn {
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--gray);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .results-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+        
+        .sort-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .sort-select {
+            padding: 0.5rem;
+            border: 1px solid var(--gray);
+            border-radius: var(--radius-sm);
+        }
+        
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .city-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .city-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .city-image {
+            height: 200px;
+            background: var(--gradient-primary);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .city-score {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .city-content {
+            padding: 1.5rem;
+        }
+        
+        .city-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .city-country {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .city-description {
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .city-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .city-tag {
+            background: var(--light-gray);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .city-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-sm);
+            background: white;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .action-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cities-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="/" class="brand-link">
+                    <i class="fas fa-route"></i>
+                    <span>EuroRoam</span>
+                </a>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item" onclick="goHome()">Home</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">City Discovery</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="header-btn" onclick="goHome()">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="discovery-container">
+        <!-- Header Section -->
+        <div class="discovery-header">
+            <h1 class="discovery-title">
+                <i class="fas fa-compass"></i>
+                Smart City Discovery
+            </h1>
+            <p class="discovery-subtitle">
+                Discover your next favorite European destination. Our AI analyzes thousands of cities to find hidden gems and perfect matches for your travel style.
+            </p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-grid">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">What are you looking for?</label>
+                    <input type="text" class="search-input" id="searchInput" 
+                           placeholder="e.g. 'romantic cities like Paris but less crowded' or 'mountain towns with great food'">
+                </div>
+                <button class="discover-btn" onclick="discoverCities()">
+                    <i class="fas fa-search"></i>
+                    Discover
+                </button>
+            </div>
+            
+            <div class="filter-section">
+                <button class="filter-btn active" data-filter="all">All Cities</button>
+                <button class="filter-btn" data-filter="hidden_gems">Hidden Gems</button>
+                <button class="filter-btn" data-filter="romantic">Romantic</button>
+                <button class="filter-btn" data-filter="cultural">Cultural</button>
+                <button class="filter-btn" data-filter="foodie">Foodie</button>
+                <button class="filter-btn" data-filter="adventure">Adventure</button>
+                <button class="filter-btn" data-filter="coastal">Coastal</button>
+                <button class="filter-btn" data-filter="mountain">Mountain</button>
+            </div>
+        </div>
+
+        <!-- Loading Section -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <h3>Discovering perfect cities for you...</h3>
+            <p>AI is analyzing thousands of destinations</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2 class="results-title">Discovered Cities</h2>
+                <div class="sort-controls">
+                    <label>Sort by:</label>
+                    <select class="sort-select" id="sortSelect" onchange="sortCities()">
+                        <option value="score">AI Score</option>
+                        <option value="name">Name</option>
+                        <option value="country">Country</option>
+                        <option value="size">City Size</option>
+                    </select>
+                </div>
+            </div>
+            <div class="cities-grid" id="citiesGrid"></div>
+        </div>
+    </main>
+
+    <script>
+        let discoveredCities = [];
+        let currentFilter = 'all';
+
+        // Initialize filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                if (discoveredCities.length > 0) {
+                    displayCities(filterCities(discoveredCities));
+                }
+            });
+        });
+
+        async function discoverCities() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Show loading
+            loadingSpinner.style.display = 'block';
+            resultsSection.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/ai/discover-cities', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        filter: currentFilter,
+                        limit: 12
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    discoveredCities = result.cities;
+                    displayCities(discoveredCities);
+                    resultsSection.style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Failed to discover cities');
+                }
+                
+            } catch (error) {
+                console.error('Discovery error:', error);
+                alert('Failed to discover cities. Please try again.');
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function filterCities(cities) {
+            if (currentFilter === 'all') return cities;
+            return cities.filter(city => city.tags.includes(currentFilter));
+        }
+
+        function sortCities() {
+            const sortBy = document.getElementById('sortSelect').value;
+            const filtered = filterCities(discoveredCities);
+            
+            filtered.sort((a, b) => {
+                switch(sortBy) {
+                    case 'score':
+                        return b.ai_score - a.ai_score;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'country':
+                        return a.country.localeCompare(b.country);
+                    case 'size':
+                        return b.population - a.population;
+                    default:
+                        return 0;
+                }
+            });
+            
+            displayCities(filtered);
+        }
+
+        function displayCities(cities) {
+            const grid = document.getElementById('citiesGrid');
+            grid.innerHTML = '';
+            
+            cities.forEach((city, index) => {
+                const cityCard = document.createElement('div');
+                cityCard.className = 'city-card';
+                cityCard.onclick = () => selectCity(city);
+                
+                cityCard.innerHTML = `
+                    <div class="city-image">
+                        <i class="fas fa-city"></i>
+                        <div class="city-score">${Math.round(city.ai_score)}% Match</div>
+                    </div>
+                    <div class="city-content">
+                        <div class="city-name">${city.name}</div>
+                        <div class="city-country">${city.country}</div>
+                        <div class="city-description">${city.description}</div>
+                        <div class="city-tags">
+                            ${city.tags.map(tag => `<span class="city-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="city-actions">
+                            <button class="action-btn" onclick="event.stopPropagation(); planTripFrom('${city.name}')">
+                                <i class="fas fa-route"></i> Plan Trip
+                            </button>
+                            <button class="action-btn primary" onclick="event.stopPropagation(); learnMore('${city.name}')">
+                                <i class="fas fa-info-circle"></i> Learn More
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(cityCard);
+            });
+        }
+
+        function selectCity(city) {
+            // Show city details or integrate with trip planning
+            console.log('Selected city:', city);
+        }
+
+        function planTripFrom(cityName) {
+            // Redirect to main planner with this city pre-filled
+            window.location.href = `/?start=${encodeURIComponent(cityName)}`;
+        }
+
+        function learnMore(cityName) {
+            // Open city information
+            alert(`Learning more about ${cityName}... (This would show detailed city information)`);
+        }
+
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        // Auto-discover on page load with current filter
+        window.addEventListener('load', function() {
+            discoverCities();
+        });
+    </script>
+</body>
+</html>

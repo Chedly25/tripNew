@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Personality Quiz - EuroRoam</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='modern-theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .quiz-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .quiz-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .progress-bar {
+            background: var(--light-gray);
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: var(--gradient-primary);
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .quiz-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            flex: 1;
+        }
+        
+        .question {
+            display: none;
+        }
+        
+        .question.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .question-number {
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            line-height: 1.3;
+        }
+        
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .answer-option {
+            padding: 1.5rem;
+            border: 2px solid var(--gray);
+            border-radius: var(--radius-md);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .answer-option:hover {
+            border-color: var(--primary);
+            background: var(--light-gray);
+        }
+        
+        .answer-option.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+        
+        .answer-emoji {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn.prev {
+            background: var(--gray);
+            color: var(--text-primary);
+        }
+        
+        .nav-btn.next {
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .nav-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+        }
+        
+        .results-container {
+            display: none;
+            text-align: center;
+        }
+        
+        .personality-type {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 2rem;
+        }
+        
+        .personality-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .personality-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .personality-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .traits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .trait {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+        
+        .trait-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .trait-text {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .recommended-trips {
+            text-align: left;
+            margin-top: 2rem;
+        }
+        
+        .trip-card {
+            background: var(--white);
+            border: 1px solid var(--gray);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .trip-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .trip-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .trip-route {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .trip-description {
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .action-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .action-btn.primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        .action-btn.secondary {
+            background: var(--gray);
+            color: var(--text-primary);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="/" class="brand-link">
+                    <i class="fas fa-route"></i>
+                    <span>EuroRoam</span>
+                </a>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item" onclick="goHome()">Home</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">Travel Quiz</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="header-btn" onclick="goHome()">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="quiz-container">
+        <!-- Quiz Header -->
+        <div class="quiz-header">
+            <h1 class="quiz-title">
+                <i class="fas fa-user-astronaut"></i>
+                Travel Personality Quiz
+            </h1>
+            <p class="quiz-subtitle">
+                Discover your unique travel personality and get perfectly matched European routes
+            </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="quiz-card" id="quizCard">
+            <!-- Questions will be populated here -->
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer">
+            <!-- Results will be populated here -->
+        </div>
+    </main>
+
+    <script>
+        const quizData = {
+            questions: [
+                {
+                    text: "What's your ideal vacation pace?",
+                    answers: [
+                        { text: "🚂 Slow and immersive - I want to really experience each place", value: "slow", traits: ["cultural", "authentic"] },
+                        { text: "⚡ Fast-paced adventure - I want to see everything!", value: "fast", traits: ["adventure", "energetic"] },
+                        { text: "🎯 Focused exploration - A few places, but deeply", value: "focused", traits: ["cultural", "thoughtful"] },
+                        { text: "🎲 Spontaneous discovery - No fixed plans needed", value: "spontaneous", traits: ["flexible", "adventurous"] }
+                    ]
+                },
+                {
+                    text: "Which experience excites you most?",
+                    answers: [
+                        { text: "🏛️ Exploring ancient history and museums", value: "cultural", traits: ["cultural", "intellectual"] },
+                        { text: "🍷 Tasting local cuisine and wines", value: "foodie", traits: ["foodie", "social"] },
+                        { text: "🏔️ Hiking through stunning landscapes", value: "nature", traits: ["adventure", "nature"] },
+                        { text: "💕 Romantic moments in beautiful settings", value: "romantic", traits: ["romantic", "aesthetic"] }
+                    ]
+                },
+                {
+                    text: "How do you prefer to discover new places?",
+                    answers: [
+                        { text: "📖 Research everything beforehand", value: "planner", traits: ["organized", "thorough"] },
+                        { text: "🗺️ Follow local recommendations", value: "local", traits: ["authentic", "social"] },
+                        { text: "📱 Use apps and online guides", value: "digital", traits: ["modern", "efficient"] },
+                        { text: "👟 Just wander and see what happens", value: "wanderer", traits: ["spontaneous", "adventurous"] }
+                    ]
+                },
+                {
+                    text: "Your ideal accommodation is:",
+                    answers: [
+                        { text: "🏰 Historic hotels with character", value: "historic", traits: ["cultural", "luxury"] },
+                        { text: "🏠 Local B&Bs for authentic experiences", value: "authentic", traits: ["authentic", "social"] },
+                        { text: "🏨 Modern hotels with all amenities", value: "modern", traits: ["comfort", "convenient"] },
+                        { text: "🎒 Hostels to meet other travelers", value: "social", traits: ["social", "budget"] }
+                    ]
+                },
+                {
+                    text: "When traveling, you're most likely to:",
+                    answers: [
+                        { text: "📸 Capture every beautiful moment", value: "photographer", traits: ["aesthetic", "memories"] },
+                        { text: "🍽️ Seek out the best local restaurants", value: "foodie", traits: ["foodie", "quality"] },
+                        { text: "🎭 Attend cultural events and shows", value: "cultural", traits: ["cultural", "experiential"] },
+                        { text: "🌅 Find the perfect sunrise/sunset spots", value: "nature", traits: ["nature", "peaceful"] }
+                    ]
+                },
+                {
+                    text: "Your budget preference is:",
+                    answers: [
+                        { text: "💰 Luxury - I want the best experiences", value: "luxury", traits: ["luxury", "quality"] },
+                        { text: "💳 Moderate - Good value for money", value: "moderate", traits: ["balanced", "practical"] },
+                        { text: "💝 Budget-conscious but not cheap", value: "budget", traits: ["budget", "smart"] },
+                        { text: "🎁 Mix of splurges and savings", value: "mixed", traits: ["flexible", "strategic"] }
+                    ]
+                },
+                {
+                    text: "Your ideal group size is:",
+                    answers: [
+                        { text: "👤 Solo - just me and my thoughts", value: "solo", traits: ["independent", "introspective"] },
+                        { text: "💑 Couple - intimate shared experiences", value: "couple", traits: ["romantic", "intimate"] },
+                        { text: "👨‍👩‍👧‍👦 Family - creating memories together", value: "family", traits: ["family", "practical"] },
+                        { text: "👥 Friends - shared adventures and fun", value: "friends", traits: ["social", "fun"] }
+                    ]
+                },
+                {
+                    text: "What draws you to a destination?",
+                    answers: [
+                        { text: "🎨 Incredible art and architecture", value: "art", traits: ["cultural", "aesthetic"] },
+                        { text: "🌊 Stunning natural beauty", value: "nature", traits: ["nature", "peaceful"] },
+                        { text: "🎪 Vibrant nightlife and entertainment", value: "nightlife", traits: ["social", "energetic"] },
+                        { text: "🏛️ Rich history and heritage", value: "history", traits: ["cultural", "intellectual"] }
+                    ]
+                }
+            ]
+        };
+
+        let currentQuestion = 0;
+        let answers = [];
+        let personality = null;
+
+        const personalityTypes = {
+            "cultural_explorer": {
+                title: "The Cultural Explorer",
+                subtitle: "You seek deep cultural immersion and historical understanding",
+                icon: "🏛️",
+                traits: ["Intellectually curious", "Appreciates history", "Loves museums", "Values authenticity"],
+                trips: [
+                    { title: "Classical Heritage Route", route: "Rome → Florence → Athens", description: "Journey through the cradle of Western civilization" },
+                    { title: "Imperial Cities Tour", route: "Vienna → Prague → Budapest", description: "Explore the grandeur of European empires" },
+                    { title: "Art Lover's Paradise", route: "Paris → Brussels → Amsterdam", description: "World-class museums and artistic treasures" }
+                ]
+            },
+            "romantic_dreamer": {
+                title: "The Romantic Dreamer",
+                subtitle: "You're drawn to beauty, romance, and intimate experiences",
+                icon: "💕",
+                traits: ["Appreciates beauty", "Seeks intimate moments", "Loves scenic views", "Values quality over quantity"],
+                trips: [
+                    { title: "Fairytale Romance", route: "Prague → Vienna → Venice", description: "Enchanting cities perfect for couples" },
+                    { title: "Coastal Romance", route: "Nice → Barcelona → Lisbon", description: "Mediterranean charm and sunset views" },
+                    { title: "Mountain Romance", route: "Interlaken → Salzburg → Hallstatt", description: "Alpine beauty and cozy mountain towns" }
+                ]
+            },
+            "adventure_seeker": {
+                title: "The Adventure Seeker",
+                subtitle: "You crave excitement, new experiences, and active exploration",
+                icon: "⛰️",
+                traits: ["Loves outdoor activities", "Seeks adrenaline", "Embraces challenges", "Always exploring"],
+                trips: [
+                    { title: "Alpine Adventure", route: "Chamonix → Interlaken → Innsbruck", description: "Mountain thrills and outdoor activities" },
+                    { title: "Nordic Explorer", route: "Oslo → Stockholm → Copenhagen", description: "Scandinavian adventures and natural wonders" },
+                    { title: "Balkan Discovery", route: "Ljubljana → Zagreb → Sarajevo", description: "Off-beaten-path adventures in emerging destinations" }
+                ]
+            },
+            "foodie_enthusiast": {
+                title: "The Foodie Enthusiast",
+                subtitle: "Your travels revolve around culinary discoveries and local flavors",
+                icon: "🍷",
+                traits: ["Passionate about food", "Seeks local experiences", "Appreciates quality", "Social dining lover"],
+                trips: [
+                    { title: "Culinary Capitals", route: "Lyon → Bologna → San Sebastian", description: "Europe's greatest food cities" },
+                    { title: "Wine & Dine", route: "Bordeaux → Tuscany → Porto", description: "Wine regions and gastronomic excellence" },
+                    { title: "Market Explorer", route: "Barcelona → Brussels → Copenhagen", description: "Food markets and culinary innovation" }
+                ]
+            },
+            "authentic_wanderer": {
+                title: "The Authentic Wanderer",
+                subtitle: "You seek genuine experiences away from tourist crowds",
+                icon: "🎒",
+                traits: ["Values authenticity", "Avoids crowds", "Connects with locals", "Flexible and adaptable"],
+                trips: [
+                    { title: "Hidden Gems", route: "Ljubljana → Bratislava → Tallinn", description: "Undiscovered European treasures" },
+                    { title: "Local Life", route: "Porto → Ghent → Riga", description: "Experience Europe like a local" },
+                    { title: "Off-Season Magic", route: "Venice → Prague → Bruges", description: "Popular places in their authentic seasons" }
+                ]
+            }
+        };
+
+        function initializeQuiz() {
+            showQuestion(currentQuestion);
+            updateProgress();
+        }
+
+        function showQuestion(index) {
+            const quizCard = document.getElementById('quizCard');
+            const question = quizData.questions[index];
+            
+            quizCard.innerHTML = `
+                <div class="question active">
+                    <div class="question-number">Question ${index + 1} of ${quizData.questions.length}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="answers">
+                        ${question.answers.map((answer, i) => `
+                            <button class="answer-option" onclick="selectAnswer(${i})">
+                                ${answer.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="navigation">
+                        <button class="nav-btn prev" onclick="previousQuestion()" ${index === 0 ? 'disabled' : ''}>
+                            Previous
+                        </button>
+                        <button class="nav-btn next" onclick="nextQuestion()" id="nextBtn" disabled>
+                            ${index === quizData.questions.length - 1 ? 'Get Results' : 'Next'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectAnswer(answerIndex) {
+            const answerOptions = document.querySelectorAll('.answer-option');
+            answerOptions.forEach(option => option.classList.remove('selected'));
+            answerOptions[answerIndex].classList.add('selected');
+            
+            answers[currentQuestion] = quizData.questions[currentQuestion].answers[answerIndex];
+            
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < quizData.questions.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+                updateProgress();
+            } else {
+                calculatePersonality();
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / quizData.questions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function calculatePersonality() {
+            const traitCounts = {};
+            
+            // Count traits from answers
+            answers.forEach(answer => {
+                answer.traits.forEach(trait => {
+                    traitCounts[trait] = (traitCounts[trait] || 0) + 1;
+                });
+            });
+            
+            // Determine personality type based on dominant traits and answer patterns
+            const values = answers.map(a => a.value);
+            
+            if (values.includes('cultural') && values.includes('history')) {
+                personality = 'cultural_explorer';
+            } else if (values.includes('romantic') && (values.includes('couple') || values.includes('historic'))) {
+                personality = 'romantic_dreamer';
+            } else if (values.includes('nature') && (values.includes('adventure') || values.includes('fast'))) {
+                personality = 'adventure_seeker';
+            } else if (values.includes('foodie') && values.includes('local')) {
+                personality = 'foodie_enthusiast';
+            } else if (values.includes('authentic') && (values.includes('wanderer') || values.includes('local'))) {
+                personality = 'authentic_wanderer';
+            } else {
+                // Default based on most common traits
+                const topTrait = Object.keys(traitCounts).reduce((a, b) => 
+                    traitCounts[a] > traitCounts[b] ? a : b
+                );
+                
+                if (['cultural', 'intellectual'].includes(topTrait)) {
+                    personality = 'cultural_explorer';
+                } else if (['romantic', 'aesthetic'].includes(topTrait)) {
+                    personality = 'romantic_dreamer';
+                } else if (['adventure', 'nature'].includes(topTrait)) {
+                    personality = 'adventure_seeker';
+                } else if (['foodie', 'social'].includes(topTrait)) {
+                    personality = 'foodie_enthusiast';
+                } else {
+                    personality = 'authentic_wanderer';
+                }
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quizCard').style.display = 'none';
+            
+            const resultsContainer = document.getElementById('resultsContainer');
+            const personalityData = personalityTypes[personality];
+            
+            resultsContainer.innerHTML = `
+                <div class="personality-type">
+                    <div class="personality-icon">${personalityData.icon}</div>
+                    <div class="personality-title">${personalityData.title}</div>
+                    <div class="personality-subtitle">${personalityData.subtitle}</div>
+                </div>
+                
+                <div class="traits">
+                    ${personalityData.traits.map(trait => `
+                        <div class="trait">
+                            <div class="trait-icon">✨</div>
+                            <div class="trait-text">${trait}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="recommended-trips">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary);">
+                        Perfect Trips for You
+                    </h3>
+                    ${personalityData.trips.map(trip => `
+                        <div class="trip-card" onclick="selectTrip('${trip.route}')">
+                            <div class="trip-title">${trip.title}</div>
+                            <div class="trip-route">${trip.route}</div>
+                            <div class="trip-description">${trip.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn secondary" onclick="restartQuiz()">
+                        <i class="fas fa-redo"></i> Retake Quiz
+                    </button>
+                    <a href="/" class="action-btn primary">
+                        <i class="fas fa-route"></i> Plan My Trip
+                    </a>
+                </div>
+            `;
+            
+            resultsContainer.style.display = 'block';
+        }
+
+        function selectTrip(route) {
+            // Extract start and end cities from route
+            const cities = route.split(' → ');
+            const startCity = cities[0];
+            const endCity = cities[cities.length - 1];
+            
+            // Redirect to main planner with pre-filled data
+            window.location.href = `/?start=${encodeURIComponent(startCity)}&end=${encodeURIComponent(endCity)}`;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            personality = null;
+            
+            document.getElementById('quizCard').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+            
+            initializeQuiz();
+        }
+
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        // Initialize quiz on page load
+        window.addEventListener('load', initializeQuiz);
+    </script>
+</body>
+</html>

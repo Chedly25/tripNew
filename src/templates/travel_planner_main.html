@@ -1231,20 +1231,42 @@
             <div class="planning-container">
                 <h2 class="form-title">Design Your European Journey</h2>
                 
+                <!-- Dream Trip Builder -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <h3 style="color: white; margin-bottom: 1rem; font-size: 1.1rem;">
+                            <i class="fas fa-sparkles"></i> Dream Trip Builder
+                        </h3>
+                        <input type="text" id="dreamTripInput" placeholder="Describe your dream trip... e.g., 'romantic week in Paris to Venice' or 'budget adventure from Barcelona to Prague'" 
+                               style="width: 100%; padding: 1rem; border: none; border-radius: 8px; font-size: 1rem; margin-bottom: 1rem;">
+                        <button onclick="buildDreamTrip()" style="background: var(--accent-gradient); color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            <i class="fas fa-magic"></i> Build My Dream Trip
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- AI Features -->
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
-                        <a href="/ai-travel-planner" class="ai-suggestions-btn">
-                            <i class="fas fa-brain"></i>
-                            AI Destination Discovery
-                        </a>
                         <a href="/ai-trip-matcher" class="ai-suggestions-btn">
                             <i class="fas fa-magic"></i>
                             AI Trip Matcher
                         </a>
+                        <a href="/quiz" class="ai-suggestions-btn">
+                            <i class="fas fa-user-astronaut"></i>
+                            Personality Quiz
+                        </a>
+                        <a href="/discover" class="ai-suggestions-btn">
+                            <i class="fas fa-compass"></i>
+                            City Discovery
+                        </a>
+                        <button onclick="surpriseMe()" class="ai-suggestions-btn" style="background: var(--accent-gradient); border: none; cursor: pointer;">
+                            <i class="fas fa-dice"></i>
+                            Surprise Me!
+                        </button>
                     </div>
                     <p style="color: rgba(255,255,255,0.8); margin-top: 0.5rem; font-size: 0.9rem;">
-                        Let our intelligent system curate personalized destinations or find perfect trips based on your budget and preferences
+                        Discover your travel personality, explore hidden gems, or let our AI surprise you with perfect matches
                     </p>
                 </div>
                 
@@ -1765,6 +1787,106 @@
                 chatToggle.style.animation = 'bounce 1s ease-in-out 3';
             }
         }, 3000);
+        
+        // Dream Trip Builder functionality
+        async function buildDreamTrip() {
+            const input = document.getElementById('dreamTripInput');
+            const dreamText = input.value.trim();
+            
+            if (!dreamText) {
+                showNotification('Please describe your dream trip first!', 'warning');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            // Show loading state
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Building your dream...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/ai/dream-trip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dream_text: dreamText })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Fill the form with the dream trip parameters
+                    if (result.trip.start_city) document.getElementById('start-city').value = result.trip.start_city;
+                    if (result.trip.end_city) document.getElementById('end-city').value = result.trip.end_city;
+                    if (result.trip.duration) document.getElementById('duration').value = result.trip.duration;
+                    if (result.trip.budget) document.getElementById('budget').value = result.trip.budget;
+                    if (result.trip.travel_style) document.getElementById('travel-style').value = result.trip.travel_style;
+                    
+                    // Show success message with extracted intent
+                    const message = result.extracted_intent ? 
+                        `Dream trip built! ${result.extracted_intent}` : 
+                        'Your dream trip has been configured!';
+                    showNotification(message, 'success');
+                    
+                    // Clear the input
+                    input.value = '';
+                    
+                    // Scroll to form
+                    document.getElementById('travel-form').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(result.error || 'Failed to build dream trip');
+                }
+            } catch (error) {
+                console.error('Dream trip error:', error);
+                showNotification('Failed to build dream trip. Please try describing it differently!', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        // Surprise Me functionality
+        async function surpriseMe() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            // Show loading state
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Surprising you...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/ai/surprise-trip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Fill the form with the surprise trip
+                    if (result.trip.start_city) document.getElementById('start-city').value = result.trip.start_city;
+                    if (result.trip.end_city) document.getElementById('end-city').value = result.trip.end_city;
+                    if (result.trip.duration) document.getElementById('duration').value = result.trip.duration;
+                    if (result.trip.budget) document.getElementById('budget').value = result.trip.budget;
+                    if (result.trip.travel_style) document.getElementById('travel-style').value = result.trip.travel_style;
+                    
+                    // Show notification
+                    showNotification(result.inspiration_message || 'Surprise trip generated! Ready to explore?', 'success');
+                    
+                    // Scroll to form
+                    document.getElementById('travel-form').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(result.error || 'Failed to generate surprise trip');
+                }
+            } catch (error) {
+                console.error('Surprise trip error:', error);
+                showNotification('Failed to generate surprise trip. Please try again!', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
     </script>
     
     <!-- AI Travel Assistant Chat Widget -->
