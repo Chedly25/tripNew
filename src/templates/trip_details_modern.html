@@ -1175,48 +1175,37 @@
         }
         
         function initializeMap() {
-            // Calculate initial map center based on trip data
-            let initialCenter = [48.8566, 2.3522]; // Default to Paris
-            let initialZoom = 6;
+            console.log('Initializing map...');
             
-            {% if trip_data and trip_data.coordinates %}
-                const coordinates = {{ trip_data.coordinates | tojson }};
-                if (coordinates && coordinates.length > 0) {
-                    // Calculate center point of the route
-                    const latSum = coordinates.reduce((sum, coord) => sum + coord[0], 0);
-                    const lngSum = coordinates.reduce((sum, coord) => sum + coord[1], 0);
-                    initialCenter = [latSum / coordinates.length, lngSum / coordinates.length];
-                    
-                    // Adjust zoom based on route span
-                    const latDiff = Math.max(...coordinates.map(c => c[0])) - Math.min(...coordinates.map(c => c[0]));
-                    const lngDiff = Math.max(...coordinates.map(c => c[1])) - Math.min(...coordinates.map(c => c[1]));
-                    const maxDiff = Math.max(latDiff, lngDiff);
-                    
-                    if (maxDiff > 10) initialZoom = 4;
-                    else if (maxDiff > 5) initialZoom = 5;
-                    else if (maxDiff > 2) initialZoom = 6;
-                    else initialZoom = 7;
-                }
-            {% elif trip_data and trip_data.start_city and trip_data.start_city.coordinates %}
-                // Fallback to start city coordinates
-                initialCenter = {{ trip_data.start_city.coordinates | tojson }};
-                initialZoom = 7;
-            {% endif %}
-            
-            map = L.map('tripMap').setView(initialCenter, initialZoom);
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-            
-            // Always prioritize creating route from city data to ensure accuracy
-            {% if trip_data %}
-                console.log('Creating route from city data to ensure correct itinerary');
-                createRouteFromCityData().catch(console.error);
-            {% else %}
-                console.log('No trip data available');
-            {% endif %}
+            try {
+                // Create basic map first
+                map = L.map('tripMap').setView([46.2276, 2.2137], 6); // Center of France
+                console.log('Map created successfully');
+                
+                // Add tile layer
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+                console.log('Tile layer added');
+                
+                // Add a simple test marker to prove map is working
+                L.marker([46.2276, 2.2137]).addTo(map)
+                    .bindPopup('Map is working!')
+                    .openPopup();
+                console.log('Test marker added');
+                
+                // Try to create route after a delay
+                setTimeout(() => {
+                    console.log('Attempting to create route...');
+                    createRouteFromCityData().catch(error => {
+                        console.error('Route creation failed:', error);
+                    });
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Map initialization failed:', error);
+            }
         }
         
         function drawRoute(coordinates) {
@@ -1452,16 +1441,32 @@
             console.log('City info with names:', cityInfo);
             console.log(`Found ${cities.length} cities for route creation`);
             
-            if (cities.length >= 2) {
-                console.log('Creating route with waypoints:', cities);
+            // Normalize coordinate formats - convert all to [lat, lng] arrays
+            const normalizedCities = cities.map(city => {
+                if (Array.isArray(city)) {
+                    return city; // Already in correct format
+                } else if (city && typeof city === 'object' && city.latitude && city.longitude) {
+                    return [city.latitude, city.longitude];
+                } else if (city && typeof city === 'object' && city.lat && city.lng) {
+                    return [city.lat, city.lng];
+                } else {
+                    console.warn('Invalid coordinate format:', city);
+                    return null;
+                }
+            }).filter(city => city !== null);
+            
+            console.log('Normalized coordinates:', normalizedCities);
+            
+            if (normalizedCities.length >= 2) {
+                console.log('Creating route with normalized waypoints:', normalizedCities);
                 // Force using simple route with polyline to ensure it works
-                drawSimpleRoute(cities, cityInfo);
-            } else if (cities.length === 1) {
+                drawSimpleRoute(normalizedCities, cityInfo);
+            } else if (normalizedCities.length === 1) {
                 console.log('Only one city found, centering map');
                 // Center map on single city
-                map.setView(cities[0], 10);
+                map.setView(normalizedCities[0], 10);
                 const cityName = cityInfo.length > 0 ? cityInfo[0].name : 'City';
-                L.marker(cities[0]).bindTooltip(cityName, {permanent: false, direction: 'top'}).addTo(map);
+                L.marker(normalizedCities[0]).bindTooltip(cityName, {permanent: false, direction: 'top'}).addTo(map);
             } else {
                 console.warn('No valid city coordinates found for mapping');
                 // Show a default view if no cities found
