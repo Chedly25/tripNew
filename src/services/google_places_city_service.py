@@ -37,11 +37,8 @@ class GooglePlacesCityService:
         if cache_key in self._city_cache:
             return self._city_cache[cache_key]
         
-        # Always use fallback since we're removing Google Places API
-        city = self._get_fallback_city(name)
-        if city:
-            self._city_cache[cache_key] = city
-        return city
+        # Use comprehensive database for lookup
+        return self._lookup_city_in_database(name)
     
     def get_city_by_name_sync(self, name: str) -> Optional[City]:
         """Synchronous version of get_city_by_name for compatibility."""
@@ -53,7 +50,49 @@ class GooglePlacesCityService:
         if cache_key in self._city_cache:
             return self._city_cache[cache_key]
         
-        # Always use fallback since we're removing Google Places API
+        # Use comprehensive database for lookup
+        return self._lookup_city_in_database(name)
+    
+    def _lookup_city_in_database(self, name: str) -> Optional[City]:
+        """Look up a city in the comprehensive database."""
+        if not name or not name.strip():
+            return None
+        
+        # Get the comprehensive database
+        cities_db = self._get_comprehensive_city_database()
+        
+        # Try different variations of the city name
+        search_variations = [
+            name.lower().strip(),
+            name.lower().strip().replace(' ', '_'),
+            name.lower().strip().replace('-', '_'),
+            name.lower().strip().replace(' ', ''),
+            name.lower().strip().replace('-', ''),
+        ]
+        
+        for city_key in search_variations:
+            if city_key in cities_db:
+                city_data = cities_db[city_key]
+                
+                # Create City object from database data
+                city = City(
+                    name=name.title(),  # Use the original requested name, but title case
+                    coordinates=Coordinates(
+                        latitude=city_data['lat'],
+                        longitude=city_data['lon']
+                    ),
+                    country=city_data['country'],
+                    types=city_data.get('types', []),
+                    population=city_data.get('population')
+                )
+                
+                # Cache the result
+                cache_key = name.lower().strip()
+                self._city_cache[cache_key] = city
+                
+                return city
+        
+        # If not found in comprehensive database, try fallback
         return self._get_fallback_city(name)
     
     async def find_cities_near_route(self, start: Coordinates, end: Coordinates, 
@@ -524,116 +563,42 @@ class GooglePlacesCityService:
             return candidates[:8]
     
     def _get_comprehensive_city_database(self):
-        """Load and parse the comprehensive city database from JSON files."""
+        """Get comprehensive European cities database with major cities included."""
         try:
-            import json
-            import os
+            # Start with the fallback database and enhance it with major missing cities
+            cities_db = self._get_fallback_database().copy()
             
-            # Get the database file paths
-            current_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            db_file = os.path.join(current_dir, 'data', 'comprehensive_european_cities.json')
-            massive_db_file = os.path.join(current_dir, 'data', 'massive_european_cities.json')
+            # Add major European cities that are commonly requested
+            major_cities = {
+                'barcelona': {'lat': 41.3851, 'lon': 2.1734, 'country': 'Spain', 'types': ['cultural', 'coastal', 'gaudi', 'major']},
+                'prague': {'lat': 50.0755, 'lon': 14.4378, 'country': 'Czech Republic', 'types': ['fairytale', 'historic', 'beer', 'cultural', 'unesco']},
+                'paris': {'lat': 48.8566, 'lon': 2.3522, 'country': 'France', 'types': ['major', 'cultural', 'romantic', 'fashion']},
+                'rome': {'lat': 41.9028, 'lon': 12.4964, 'country': 'Italy', 'types': ['historic', 'cultural', 'major', 'ancient', 'vatican']},
+                'venice': {'lat': 45.4408, 'lon': 12.3155, 'country': 'Italy', 'types': ['romantic', 'unique', 'canals', 'cultural', 'unesco']},
+                'madrid': {'lat': 40.4168, 'lon': -3.7038, 'country': 'Spain', 'types': ['major', 'cultural', 'museums', 'capital']},
+                'berlin': {'lat': 52.5200, 'lon': 13.4050, 'country': 'Germany', 'types': ['major', 'historic', 'cultural', 'capital']},
+                'vienna': {'lat': 48.2082, 'lon': 16.3738, 'country': 'Austria', 'types': ['imperial', 'cultural', 'music', 'coffee', 'major']},
+                'amsterdam': {'lat': 52.3676, 'lon': 4.9041, 'country': 'Netherlands', 'types': ['canals', 'cultural', 'cycling', 'major']},
+                'brussels': {'lat': 50.8503, 'lon': 4.3517, 'country': 'Belgium', 'types': ['european', 'chocolate', 'cultural', 'major']},
+                'lisbon': {'lat': 38.7223, 'lon': -9.1393, 'country': 'Portugal', 'types': ['coastal', 'historic', 'major', 'trams']},
+                'porto': {'lat': 41.1579, 'lon': -8.6291, 'country': 'Portugal', 'types': ['wine', 'historic', 'cultural', 'coastal']},
+                'copenhagen': {'lat': 55.6761, 'lon': 12.5683, 'country': 'Denmark', 'types': ['scandinavian', 'design', 'hygge', 'major']},
+                'stockholm': {'lat': 59.3293, 'lon': 18.0686, 'country': 'Sweden', 'types': ['scandinavian', 'archipelago', 'design', 'major']},
+                'budapest': {'lat': 47.4979, 'lon': 19.0402, 'country': 'Hungary', 'types': ['thermal', 'danube', 'cultural', 'major']},
+                'zurich': {'lat': 47.3769, 'lon': 8.5417, 'country': 'Switzerland', 'types': ['alpine', 'expensive', 'financial', 'scenic']},
+                'salzburg': {'lat': 47.8095, 'lon': 13.0550, 'country': 'Austria', 'types': ['mozart', 'alpine', 'unesco', 'cultural']},
+                'krakow': {'lat': 50.0647, 'lon': 19.9450, 'country': 'Poland', 'types': ['medieval', 'cultural', 'unesco', 'historic']},
+                'warsaw': {'lat': 52.2297, 'lon': 21.0122, 'country': 'Poland', 'types': ['capital', 'historic', 'cultural', 'major']},
+                'dublin': {'lat': 53.3498, 'lon': -6.2603, 'country': 'Ireland', 'types': ['literary', 'cultural', 'pubs', 'major']},
+                'edinburgh': {'lat': 55.9533, 'lon': -3.1883, 'country': 'Scotland', 'types': ['historic', 'cultural', 'castle', 'festivals']},
+                'london': {'lat': 51.5074, 'lon': -0.1278, 'country': 'United Kingdom', 'types': ['major', 'cultural', 'historic', 'museums']},
+            }
             
-            cities_db = {}
+            # Add major cities to the database
+            for city_key, city_data in major_cities.items():
+                cities_db[city_key] = city_data
             
-            # Load both databases and merge them
-            for db_path, db_name in [(db_file, "comprehensive"), (massive_db_file, "massive")]:
-                if os.path.exists(db_path):
-                    try:
-                        with open(db_path, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                        
-                        # Process all countries in the database
-                        if 'cities' in data:
-                            for country_key, country_data in data['cities'].items():
-                                # Map country keys to proper country names
-                                country_name = self._get_country_name(country_key)
-                                
-                                for region_name, region_cities in country_data.items():
-                                    for city_key, city_data in region_cities.items():
-                                        # Skip if already exists (prefer comprehensive over massive)
-                                        if city_key in cities_db and db_name == "massive":
-                                            continue
-                                        
-                                        # Handle different coordinate formats
-                                        try:
-                                            if 'coordinates' in city_data:
-                                                coords = city_data['coordinates']
-                                                lat = coords['lat']
-                                                lon = coords['lon']
-                                            else:
-                                                # Fallback for old format
-                                                lat = city_data.get('lat', 45.0)
-                                                lon = city_data.get('lon', 7.0)
-                                                
-                                            cities_db[city_key] = {
-                                                'lat': lat,
-                                                'lon': lon,
-                                                'country': country_name,
-                                                'types': city_data.get('types', []),
-                                                'population': city_data.get('population'),
-                                                'travel_appeal': city_data.get('travel_appeal', 'medium'),
-                                                'authenticity_score': city_data.get('authenticity_score', 5),
-                                                'specialties': city_data.get('specialties', []),
-                                                'hidden_gems': city_data.get('hidden_gems', []),
-                                                'region': city_data.get('region'),
-                                                'local_character': city_data.get('local_character', '')
-                                            }
-                                        except Exception as e:
-                                            logger.warning(f"Skipping city {city_key} due to coordinate error: {e}")
-                                            continue
-                        
-                        logger.info(f"Loaded {db_name} database with cities")
-                        
-                    except Exception as e:
-                        logger.warning(f"Failed to load {db_name} database: {e}")
-                else:
-                    logger.warning(f"Database not found: {db_path}")
-            
-            if not cities_db:
-                logger.warning("No databases found, using fallback")
-                return self._get_fallback_database()
-            
-            # Limit database size for performance (especially in production)
-            if len(cities_db) > 3000:
-                # Keep high-quality cities and spread geographically
-                limited_db = {}
-                country_limits = {
-                    'France': 800,
-                    'Italy': 600,
-                    'Spain': 400,
-                    'Germany': 400,
-                    'Portugal': 200,
-                    'Austria': 150,
-                    'Switzerland': 150,
-                    'Netherlands': 100,
-                    'Belgium': 100,
-                    'Czech Republic': 100,
-                    'Croatia': 100,
-                    'Slovenia': 100,
-                    'Hungary': 100,
-                    'Slovakia': 100,
-                    'Poland': 100
-                }
-                
-                # Select best cities per country
-                for country, limit in country_limits.items():
-                    country_cities = [(k, v) for k, v in cities_db.items() if v['country'] == country]
-                    # Sort by authenticity score and travel appeal
-                    country_cities.sort(key=lambda x: (
-                        x[1].get('authenticity_score', 5),
-                        1 if x[1].get('travel_appeal') == 'very_high' else 
-                        2 if x[1].get('travel_appeal') == 'high' else 3
-                    ), reverse=True)
-                    
-                    # Take top cities for this country
-                    for city_key, city_data in country_cities[:limit]:
-                        limited_db[city_key] = city_data
-                
-                logger.info(f"Limited cities to {len(limited_db)} for performance (from {len(cities_db)})")
-                cities_db = limited_db
-            
-            logger.info(f"Total cities loaded: {len(cities_db)} from merged databases")
+            logger.info(f"Total cities loaded: {len(cities_db)} including major European cities")
             return cities_db
             
         except Exception as e:
