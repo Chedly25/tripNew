@@ -15,6 +15,7 @@ from ..core.models import City, Coordinates, TripRequest
 from .enhanced_city_service import get_enhanced_city_service
 from .opentripmap_service import get_opentripmap_service
 from .ml_recommendation_service import MLRecommendationService, TripPreference
+from .preference_scoring_service import get_preference_scoring_service, UserPreferences
 
 logger = structlog.get_logger(__name__)
 
@@ -51,6 +52,7 @@ class EnhancedIntermediateCityService:
         self.enhanced_city_service = get_enhanced_city_service()
         self.opentripmap_service = get_opentripmap_service()
         self.ml_service = ml_service or MLRecommendationService(city_service)
+        self.preference_service = get_preference_scoring_service()
         
         # Scoring weights for different factors
         self.scoring_weights = {
@@ -499,7 +501,32 @@ class EnhancedIntermediateCityService:
     async def _calculate_preference_score(
         self, city: City, request: TripRequest, route_type: str
     ) -> float:
-        """Calculate how well the city matches user preferences."""
+        """Calculate how well the city matches user preferences using advanced scoring."""
+        
+        try:
+            # Create user preferences from request
+            user_preferences = self.preference_service.create_user_preferences_from_request(request)
+            
+            # Get contextual factors
+            contextual_factors = self.preference_service.get_contextual_factors()
+            
+            # Calculate comprehensive personalization score
+            personalization_score = self.preference_service.calculate_personalization_score(
+                city, user_preferences, contextual_factors, request
+            )
+            
+            # Use the overall score as the preference score
+            return personalization_score.overall_score
+            
+        except Exception as e:
+            logger.warning(f"Advanced preference scoring failed for {city.name}: {e}")
+            # Fallback to basic scoring
+            return self._calculate_basic_preference_score(city, request, route_type)
+    
+    def _calculate_basic_preference_score(
+        self, city: City, request: TripRequest, route_type: str
+    ) -> float:
+        """Fallback basic preference calculation."""
         
         base_score = 0.5
         
