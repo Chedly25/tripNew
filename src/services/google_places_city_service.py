@@ -68,13 +68,13 @@ class GooglePlacesCityService:
         
         try:
             # Calculate midpoint and search radius
-            mid_lat = (start.latitude + end.latitude) / 2
+            mid_lat = (start.coordinates.latitude + end.coordinates.latitude) / 2
             mid_lng = (start.longitude + end.longitude) / 2
             
             # Calculate distance between start and end to determine search radius
             route_distance = geodesic(
-                (start.latitude, start.longitude),
-                (end.latitude, end.longitude)
+                (start.coordinates.latitude, start.coordinates.longitude),
+                (end.coordinates.latitude, end.coordinates.longitude)
             ).kilometers
             
             # Search radius should cover the route corridor
@@ -296,17 +296,17 @@ class GooglePlacesCityService:
             # Calculate distance from place to route line (simplified)
             start_dist = geodesic(
                 (place_lat, place_lng),
-                (route_start.latitude, route_start.longitude)
+                (route_start.coordinates.latitude, route_start.coordinates.longitude)
             ).kilometers
             
             end_dist = geodesic(
                 (place_lat, place_lng),
-                (route_end.latitude, route_end.longitude)
+                (route_end.coordinates.latitude, route_end.coordinates.longitude)
             ).kilometers
             
             route_dist = geodesic(
-                (route_start.latitude, route_start.longitude),
-                (route_end.latitude, route_end.longitude)
+                (route_start.coordinates.latitude, route_start.coordinates.longitude),
+                (route_end.coordinates.latitude, route_end.coordinates.longitude)
             ).kilometers
             
             # If the place forms a reasonable triangle with start/end, it's likely on route
@@ -330,17 +330,17 @@ class GooglePlacesCityService:
             # Calculate distance from place to route line (simplified)
             start_dist = geodesic(
                 (place_lat, place_lng),
-                (route_start.latitude, route_start.longitude)
+                (route_start.coordinates.latitude, route_start.coordinates.longitude)
             ).kilometers
             
             end_dist = geodesic(
                 (place_lat, place_lng),
-                (route_end.latitude, route_end.longitude)
+                (route_end.coordinates.latitude, route_end.coordinates.longitude)
             ).kilometers
             
             route_dist = geodesic(
-                (route_start.latitude, route_start.longitude),
-                (route_end.latitude, route_end.longitude)
+                (route_start.coordinates.latitude, route_start.coordinates.longitude),
+                (route_end.coordinates.latitude, route_end.coordinates.longitude)
             ).kilometers
             
             # If the place forms a reasonable triangle with start/end, it's likely on route
@@ -593,7 +593,7 @@ class GooglePlacesCityService:
         # Sort by distance from start point for initial ordering
         from geopy.distance import geodesic
         candidates.sort(key=lambda c: geodesic(
-            (start.latitude, start.longitude),
+            (start.coordinates.latitude, start.coordinates.longitude),
             (c.coordinates.latitude, c.coordinates.longitude)
         ).kilometers)
         
@@ -640,20 +640,34 @@ class GooglePlacesCityService:
                                         # Skip if already exists (prefer comprehensive over massive)
                                         if city_key in cities_db and db_name == "massive":
                                             continue
-                                            
-                                        cities_db[city_key] = {
-                                            'lat': city_data['coordinates']['lat'],
-                                            'lon': city_data['coordinates']['lon'],
-                                            'country': country_name,
-                                            'types': city_data.get('types', []),
-                                            'population': city_data.get('population'),
-                                            'travel_appeal': city_data.get('travel_appeal', 'medium'),
-                                            'authenticity_score': city_data.get('authenticity_score', 5),
-                                            'specialties': city_data.get('specialties', []),
-                                            'hidden_gems': city_data.get('hidden_gems', []),
-                                            'region': city_data.get('region'),
-                                            'local_character': city_data.get('local_character', '')
-                                        }
+                                        
+                                        # Handle different coordinate formats
+                                        try:
+                                            if 'coordinates' in city_data:
+                                                coords = city_data['coordinates']
+                                                lat = coords['lat']
+                                                lon = coords['lon']
+                                            else:
+                                                # Fallback for old format
+                                                lat = city_data.get('lat', 45.0)
+                                                lon = city_data.get('lon', 7.0)
+                                                
+                                            cities_db[city_key] = {
+                                                'lat': lat,
+                                                'lon': lon,
+                                                'country': country_name,
+                                                'types': city_data.get('types', []),
+                                                'population': city_data.get('population'),
+                                                'travel_appeal': city_data.get('travel_appeal', 'medium'),
+                                                'authenticity_score': city_data.get('authenticity_score', 5),
+                                                'specialties': city_data.get('specialties', []),
+                                                'hidden_gems': city_data.get('hidden_gems', []),
+                                                'region': city_data.get('region'),
+                                                'local_character': city_data.get('local_character', '')
+                                            }
+                                        except Exception as e:
+                                            logger.warning(f"Skipping city {city_key} due to coordinate error: {e}")
+                                            continue
                         
                         logger.info(f"Loaded {db_name} database with cities")
                         
@@ -665,6 +679,45 @@ class GooglePlacesCityService:
             if not cities_db:
                 logger.warning("No databases found, using fallback")
                 return self._get_fallback_database()
+            
+            # Limit database size for performance (especially in production)
+            if len(cities_db) > 3000:
+                # Keep high-quality cities and spread geographically
+                limited_db = {}
+                country_limits = {
+                    'France': 800,
+                    'Italy': 600,
+                    'Spain': 400,
+                    'Germany': 400,
+                    'Portugal': 200,
+                    'Austria': 150,
+                    'Switzerland': 150,
+                    'Netherlands': 100,
+                    'Belgium': 100,
+                    'Czech Republic': 100,
+                    'Croatia': 100,
+                    'Slovenia': 100,
+                    'Hungary': 100,
+                    'Slovakia': 100,
+                    'Poland': 100
+                }
+                
+                # Select best cities per country
+                for country, limit in country_limits.items():
+                    country_cities = [(k, v) for k, v in cities_db.items() if v['country'] == country]
+                    # Sort by authenticity score and travel appeal
+                    country_cities.sort(key=lambda x: (
+                        x[1].get('authenticity_score', 5),
+                        1 if x[1].get('travel_appeal') == 'very_high' else 
+                        2 if x[1].get('travel_appeal') == 'high' else 3
+                    ), reverse=True)
+                    
+                    # Take top cities for this country
+                    for city_key, city_data in country_cities[:limit]:
+                        limited_db[city_key] = city_data
+                
+                logger.info(f"Limited cities to {len(limited_db)} for performance (from {len(cities_db)})")
+                cities_db = limited_db
             
             logger.info(f"Total cities loaded: {len(cities_db)} from merged databases")
             return cities_db
@@ -757,17 +810,17 @@ class GooglePlacesCityService:
         # Calculate distances
         start_dist = geodesic(
             (city_coords.latitude, city_coords.longitude),
-            (start.latitude, start.longitude)
+            (start.coordinates.latitude, start.coordinates.longitude)
         ).kilometers
         
         end_dist = geodesic(
             (city_coords.latitude, city_coords.longitude),
-            (end.latitude, end.longitude)
+            (end.coordinates.latitude, end.coordinates.longitude)
         ).kilometers
         
         route_dist = geodesic(
-            (start.latitude, start.longitude),
-            (end.latitude, end.longitude)
+            (start.coordinates.latitude, start.coordinates.longitude),
+            (end.coordinates.latitude, end.coordinates.longitude)
         ).kilometers
         
         # If the city creates a reasonable detour, it's on the route
