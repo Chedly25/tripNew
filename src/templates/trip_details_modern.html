@@ -1431,6 +1431,8 @@
                         cities.push(coords);
                         cityInfo.push({ name: cityName, coords: coords });
                         console.log(`Geocoded ${cityName}:`, coords);
+                    } else {
+                        console.warn(`Failed to geocode ${cityName}`);
                     }
                 }
             }
@@ -1451,66 +1453,88 @@
                 L.marker(cities[0]).bindTooltip(cityName, {permanent: false, direction: 'top'}).addTo(map);
             } else {
                 console.warn('No valid city coordinates found for mapping');
+                // Show a default view if no cities found
+                map.setView([48.8566, 2.3522], 5); // Default to Europe view
+                console.log('Showing default Europe view');
             }
         }
         
         // Simple route drawing function that always works
         function drawSimpleRoute(coordinates, cityInfo) {
-            console.log('Drawing simple route connecting all cities');
-            
-            // Clear existing route
-            if (routeLayer) {
-                console.log('Removing existing route layer');
-                map.removeLayer(routeLayer);
-            }
-            if (routingControl) {
-                console.log('Removing existing routing control');
-                map.removeControl(routingControl);
-            }
-            
-            // Create polyline connecting all cities
-            routeLayer = L.polyline(coordinates, {
-                color: '#e94560',
-                weight: 4,
-                opacity: 0.8,
-                smoothFactor: 1
-            }).addTo(map);
-            
-            console.log('Route polyline created');
-            
-            // Add markers for each city with tooltips
-            coordinates.forEach((coord, index) => {
-                const isStart = index === 0;
-                const isEnd = index === coordinates.length - 1;
-                const color = isStart ? '#00b894' : isEnd ? '#e94560' : '#f59e0b';
+            try {
+                console.log('Drawing simple route connecting all cities');
+                console.log('Coordinates:', coordinates);
+                console.log('CityInfo:', cityInfo);
                 
-                // Get city name from cityInfo
-                const cityName = cityInfo[index] ? cityInfo[index].name : `City ${index + 1}`;
-                const cityType = isStart ? 'Start' : isEnd ? 'End' : 'Stop';
+                // Clear existing route
+                if (routeLayer) {
+                    console.log('Removing existing route layer');
+                    map.removeLayer(routeLayer);
+                }
+                if (routingControl) {
+                    console.log('Removing existing routing control');
+                    map.removeControl(routingControl);
+                }
                 
-                const marker = L.marker(coord, {
-                    icon: L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div style="background: ${color}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    })
+                // Validate coordinates
+                if (!coordinates || coordinates.length === 0) {
+                    console.error('No coordinates provided to drawSimpleRoute');
+                    return;
+                }
+                
+                // Create polyline connecting all cities
+                routeLayer = L.polyline(coordinates, {
+                    color: '#e94560',
+                    weight: 4,
+                    opacity: 0.8,
+                    smoothFactor: 1
                 }).addTo(map);
                 
-                // Add tooltip with city name
-                marker.bindTooltip(`<strong>${cityName}</strong><br/><small>${cityType}</small>`, {
-                    permanent: false,
-                    direction: 'top',
-                    offset: [0, -10],
-                    className: 'custom-tooltip'
+                console.log('Route polyline created successfully');
+                
+                // Add markers for each city with tooltips
+                coordinates.forEach((coord, index) => {
+                    try {
+                        const isStart = index === 0;
+                        const isEnd = index === coordinates.length - 1;
+                        const color = isStart ? '#00b894' : isEnd ? '#e94560' : '#f59e0b';
+                        
+                        // Get city name from cityInfo
+                        const cityName = cityInfo[index] ? cityInfo[index].name : `City ${index + 1}`;
+                        const cityType = isStart ? 'Start' : isEnd ? 'End' : 'Stop';
+                        
+                        const marker = L.marker(coord, {
+                            icon: L.divIcon({
+                                className: 'custom-marker',
+                                html: `<div style="background: ${color}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }).addTo(map);
+                        
+                        // Add tooltip with city name
+                        marker.bindTooltip(`<strong>${cityName}</strong><br/><small>${cityType}</small>`, {
+                            permanent: false,
+                            direction: 'top',
+                            offset: [0, -10],
+                            className: 'custom-tooltip'
+                        });
+                        
+                        console.log(`Added marker for ${cityName} at ${coord}`);
+                    } catch (markerError) {
+                        console.error('Error adding marker:', markerError);
+                    }
                 });
                 
-                console.log(`Added marker for ${cityName} at ${coord}`);
-            });
-            
-            // Fit map to show entire route
-            map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
-            console.log('Map fitted to route bounds');
+                // Fit map to show entire route
+                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                console.log('Map fitted to route bounds');
+                
+            } catch (error) {
+                console.error('Error in drawSimpleRoute:', error);
+                // Fallback: just show a basic map
+                map.setView([48.8566, 2.3522], 5);
+            }
         }
         
         // Enhanced geocoding function for European cities
