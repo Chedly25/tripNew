@@ -406,6 +406,30 @@
             box-shadow: var(--shadow-sm);
         }
         
+        .ai-enhance-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            font-weight: 600;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ai-enhance-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .ai-enhance-btn.loading {
+            background: linear-gradient(135deg, #ccc 0%, #999 100%) !important;
+            cursor: not-allowed;
+        }
+        
+        .ai-enhance-btn.loading i {
+            animation: spin 1s linear infinite;
+        }
+        
         /* Day Cards */
         .itinerary-days {
             display: flex;
@@ -908,6 +932,10 @@
                     <button class="toggle-btn active" onclick="showView('timeline')">Timeline</button>
                     <button class="toggle-btn" onclick="showView('list')">List View</button>
                     <button class="toggle-btn" onclick="showView('map')">Map View</button>
+                    <button class="toggle-btn ai-enhance-btn" onclick="generateAIItinerary()" title="Generate detailed AI-powered itinerary">
+                        <i class="fas fa-robot"></i>
+                        AI Enhance
+                    </button>
                 </div>
             </div>
             
@@ -1358,6 +1386,311 @@
                 }
             });
         });
+        
+        // AI Itinerary Generation
+        async function generateAIItinerary() {
+            const btn = document.querySelector('.ai-enhance-btn');
+            const originalContent = btn.innerHTML;
+            
+            // Set loading state
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-robot"></i> Generating...';
+            btn.disabled = true;
+            
+            try {
+                // Get current trip data
+                const tripData = {
+                    {% if trip_data %}
+                    start_city: {{ trip_data.start_city | tojson if trip_data.start_city else '{}' }},
+                    end_city: {{ trip_data.end_city | tojson if trip_data.end_city else '{}' }},
+                    intermediate_cities: {{ trip_data.intermediate_cities | tojson if trip_data.intermediate_cities else '[]' }},
+                    route_type: '{{ trip_data.route_type if trip_data.route_type else "scenic" }}',
+                    total_distance_km: {{ trip_data.total_distance_km if trip_data.total_distance_km else 0 }}
+                    {% else %}
+                    start_city: { name: 'Paris' },
+                    end_city: { name: 'Rome' },
+                    intermediate_cities: [],
+                    route_type: 'scenic',
+                    total_distance_km: 1000
+                    {% endif %}
+                };
+                
+                const response = await fetch('/api/ai/generate-itinerary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        route_data: tripData,
+                        user_preferences: {
+                            interests: ['culture', 'food', 'history'],
+                            budget_level: 'medium',
+                            pace: 'moderate'
+                        },
+                        days: 5
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.itinerary) {
+                    displayAIItinerary(data.itinerary);
+                    showNotificationAI('AI-powered itinerary generated successfully!', 'success');
+                } else {
+                    showNotificationAI('Failed to generate AI itinerary. Please try again.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('AI itinerary generation failed:', error);
+                showNotificationAI('Failed to generate AI itinerary. Please try again.', 'error');
+            } finally {
+                // Reset button state
+                btn.classList.remove('loading');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+        
+        function displayAIItinerary(itinerary) {
+            const timelineView = document.getElementById('timeline-view');
+            
+            if (!itinerary.itinerary || itinerary.itinerary.length === 0) {
+                timelineView.innerHTML = '<p>No detailed itinerary could be generated.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            itinerary.itinerary.forEach(day => {
+                html += `
+                    <div class="day-card-modern ai-enhanced">
+                        <div class="ai-badge">
+                            <i class="fas fa-robot"></i>
+                            AI Generated
+                        </div>
+                        <div class="day-header">
+                            <h3 class="day-number">Day ${day.day}</h3>
+                            <span class="day-date">${day.location}</span>
+                        </div>
+                        <div class="day-content">
+                            <div class="day-theme">
+                                <h4><i class="fas fa-star"></i> ${day.theme}</h4>
+                            </div>
+                            
+                            <div class="activity-timeline">
+                                <div class="activity-item morning">
+                                    <div class="activity-time">Morning</div>
+                                    <div class="activity-details">
+                                        <h5>${day.morning.activity}</h5>
+                                        <p>${day.morning.description}</p>
+                                        <div class="activity-meta">
+                                            <span><i class="fas fa-clock"></i> ${day.morning.duration}</span>
+                                            <span class="tip"><i class="fas fa-lightbulb"></i> ${day.morning.tips}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item afternoon">
+                                    <div class="activity-time">Afternoon</div>
+                                    <div class="activity-details">
+                                        <h5>${day.afternoon.activity}</h5>
+                                        <p>${day.afternoon.description}</p>
+                                        <div class="activity-meta">
+                                            <span><i class="fas fa-clock"></i> ${day.afternoon.duration}</span>
+                                            <span class="tip"><i class="fas fa-lightbulb"></i> ${day.afternoon.tips}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-item evening">
+                                    <div class="activity-time">Evening</div>
+                                    <div class="activity-details">
+                                        <h5>${day.evening.activity}</h5>
+                                        <p>${day.evening.description}</p>
+                                        <div class="activity-meta">
+                                            <span><i class="fas fa-clock"></i> ${day.evening.duration}</span>
+                                            <span class="tip"><i class="fas fa-lightbulb"></i> ${day.evening.tips}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${day.restaurants && day.restaurants.length > 0 ? `
+                                <div class="restaurants-section">
+                                    <h5><i class="fas fa-utensils"></i> Recommended Restaurants</h5>
+                                    <div class="restaurant-list">
+                                        ${day.restaurants.map(restaurant => `
+                                            <div class="restaurant-item">
+                                                <strong>${restaurant.name}</strong> - ${restaurant.cuisine} (${restaurant.price_range})
+                                                <p>${restaurant.why_special}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${day.driving_info ? `
+                                <div class="driving-info">
+                                    <h5><i class="fas fa-car"></i> Driving Information</h5>
+                                    <div class="driving-details">
+                                        <span><i class="fas fa-route"></i> ${day.driving_info.distance}</span>
+                                        <span><i class="fas fa-clock"></i> ${day.driving_info.duration}</span>
+                                        <p>${day.driving_info.route_notes}</p>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            timelineView.innerHTML = html;
+            
+            // Add CSS for AI-enhanced content
+            if (!document.getElementById('ai-itinerary-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'ai-itinerary-styles';
+                styles.textContent = `
+                    .ai-enhanced {
+                        border: 2px solid #667eea;
+                        position: relative;
+                    }
+                    
+                    .ai-badge {
+                        position: absolute;
+                        top: -10px;
+                        right: 20px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 0.25rem 0.75rem;
+                        border-radius: 15px;
+                        font-size: 0.8rem;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        z-index: 10;
+                    }
+                    
+                    .day-theme {
+                        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+                        padding: 1rem;
+                        border-radius: 8px;
+                        margin-bottom: 1rem;
+                    }
+                    
+                    .activity-timeline {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1rem;
+                    }
+                    
+                    .activity-item {
+                        border-left: 3px solid #667eea;
+                        padding-left: 1rem;
+                        position: relative;
+                    }
+                    
+                    .activity-item::before {
+                        content: '';
+                        position: absolute;
+                        left: -7px;
+                        top: 0;
+                        width: 11px;
+                        height: 11px;
+                        background: #667eea;
+                        border-radius: 50%;
+                        border: 3px solid white;
+                    }
+                    
+                    .activity-time {
+                        font-weight: 600;
+                        color: #667eea;
+                        font-size: 0.9rem;
+                        margin-bottom: 0.5rem;
+                    }
+                    
+                    .activity-details h5 {
+                        margin: 0 0 0.5rem 0;
+                        color: var(--primary);
+                    }
+                    
+                    .activity-meta {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 1rem;
+                        margin-top: 0.5rem;
+                        font-size: 0.85rem;
+                    }
+                    
+                    .tip {
+                        color: #667eea;
+                        font-style: italic;
+                    }
+                    
+                    .restaurants-section, .driving-info {
+                        margin-top: 1.5rem;
+                        padding-top: 1rem;
+                        border-top: 1px solid #e0e0e0;
+                    }
+                    
+                    .restaurant-item {
+                        background: white;
+                        padding: 0.75rem;
+                        border-radius: 8px;
+                        margin-bottom: 0.5rem;
+                        border-left: 3px solid #e94560;
+                    }
+                    
+                    .driving-details {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 1rem;
+                        align-items: center;
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+        }
+        
+        function showNotificationAI(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 2rem;
+                background: ${type === 'success' ? '#00b894' : type === 'error' ? '#ef4444' : '#667eea'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'robot'}" style="margin-right: 0.5rem;"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
     </script>
+    
+    <!-- AI Travel Assistant Chat Widget -->
+    {% include 'ai_chat_widget.html' %}
 </body>
 </html>

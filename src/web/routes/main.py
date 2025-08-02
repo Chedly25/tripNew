@@ -1228,6 +1228,247 @@ def create_app() -> Flask:
             logger.error(f"City data collection failed: {e}")
             return jsonify({'error': 'Failed to initiate data collection'}), 500
     
+    # AI-Powered Features using Claude
+    @app.route('/api/ai/chat', methods=['POST'])
+    def ai_chat():
+        """AI travel assistant chat endpoint."""
+        try:
+            data = request.get_json()
+            if not data or 'message' not in data:
+                return jsonify({'error': 'Message is required'}), 400
+            
+            user_message = data['message']
+            chat_history = data.get('chat_history', [])
+            
+            # Get Claude service
+            claude_service = get_claude_service()
+            
+            # Run async chat in sync context
+            import asyncio
+            try:
+                response = asyncio.run(claude_service.travel_chat_assistant(
+                    user_message=user_message,
+                    chat_history=chat_history
+                ))
+                
+                return jsonify({
+                    'success': True,
+                    'response': response,
+                    'timestamp': datetime.now().isoformat()
+                })
+                
+            except Exception as e:
+                logger.error(f"Claude chat failed: {e}")
+                return jsonify({
+                    'success': True,
+                    'response': "I'm sorry, I'm having trouble connecting to my AI assistant right now. Please try again later.",
+                    'timestamp': datetime.now().isoformat()
+                })
+                
+        except Exception as e:
+            logger.error(f"AI chat endpoint failed: {e}")
+            return jsonify({'error': 'Chat service unavailable'}), 500
+    
+    @app.route('/api/ai/personalize-trip', methods=['POST'])
+    @login_required
+    def personalize_trip():
+        """Get AI-powered trip personalization recommendations."""
+        try:
+            user = get_current_user()
+            if not user:
+                return jsonify({'error': 'Authentication required'}), 401
+            
+            # Get user's travel history for analysis
+            trip_manager = get_trip_manager()
+            user_trips = trip_manager.get_user_trips(user['id'], limit=50)
+            
+            # Analyze user data
+            user_data = {
+                'total_trips': len(user_trips),
+                'total_distance': sum(trip.get('total_distance', 0) for trip in user_trips),
+                'average_cost': sum(trip.get('estimated_cost', 0) for trip in user_trips) / max(len(user_trips), 1),
+                'recent_trips': user_trips[:5],
+                'cities_visited': list(set([
+                    city for trip in user_trips 
+                    for city in trip.get('cities_visited', [])
+                ])),
+                'favorite_route_type': max(
+                    [trip.get('route_type', 'scenic') for trip in user_trips],
+                    key=[trip.get('route_type', 'scenic') for trip in user_trips].count,
+                    default='scenic'
+                ) if user_trips else 'scenic'
+            }
+            
+            # Get Claude service
+            claude_service = get_claude_service()
+            
+            # Run async analysis in sync context
+            import asyncio
+            try:
+                analysis = asyncio.run(claude_service.analyze_travel_preferences(user_data))
+                
+                return jsonify({
+                    'success': True,
+                    'analysis': analysis,
+                    'user_stats': user_data
+                })
+                
+            except Exception as e:
+                logger.error(f"AI personalization failed: {e}")
+                # Return fallback analysis
+                return jsonify({
+                    'success': True,
+                    'analysis': claude_service._get_fallback_analysis(),
+                    'user_stats': user_data
+                })
+                
+        except Exception as e:
+            logger.error(f"Personalization endpoint failed: {e}")
+            return jsonify({'error': 'Personalization service unavailable'}), 500
+    
+    @app.route('/api/ai/generate-itinerary', methods=['POST'])
+    def generate_ai_itinerary():
+        """Generate detailed AI-powered itinerary."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Route data is required'}), 400
+            
+            route_data = data.get('route_data', {})
+            user_preferences = data.get('user_preferences', {})
+            days = data.get('days', 5)
+            
+            # Get Claude service
+            claude_service = get_claude_service()
+            
+            # Run async itinerary generation in sync context
+            import asyncio
+            try:
+                itinerary = asyncio.run(claude_service.generate_smart_itinerary(
+                    route_data=route_data,
+                    user_preferences=user_preferences,
+                    days=days
+                ))
+                
+                return jsonify({
+                    'success': True,
+                    'itinerary': itinerary
+                })
+                
+            except Exception as e:
+                logger.error(f"AI itinerary generation failed: {e}")
+                # Return fallback itinerary
+                cities = [route_data.get('start_city', {}).get('name', 'Start')] + \
+                        [city.get('name', '') if isinstance(city, dict) else str(city) 
+                         for city in route_data.get('intermediate_cities', [])] + \
+                        [route_data.get('end_city', {}).get('name', 'End')]
+                
+                fallback_itinerary = claude_service._create_fallback_itinerary(
+                    cities, days, route_data.get('route_type', 'scenic')
+                )
+                
+                return jsonify({
+                    'success': True,
+                    'itinerary': fallback_itinerary
+                })
+                
+        except Exception as e:
+            logger.error(f"Itinerary generation endpoint failed: {e}")
+            return jsonify({'error': 'Itinerary generation service unavailable'}), 500
+    
+    @app.route('/api/ai/analyze-photo', methods=['POST'])
+    def analyze_photo_destinations():
+        """Analyze uploaded photo for destination recommendations."""
+        try:
+            if 'photo' not in request.files:
+                return jsonify({'error': 'No photo uploaded'}), 400
+            
+            photo = request.files['photo']
+            if photo.filename == '':
+                return jsonify({'error': 'No photo selected'}), 400
+            
+            # Validate file type
+            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+            if not ('.' in photo.filename and 
+                    photo.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+                return jsonify({'error': 'Invalid file type. Please upload an image.'}), 400
+            
+            # Convert image to base64 for Claude API
+            import base64
+            image_data = base64.b64encode(photo.read()).decode('utf-8')
+            
+            # Get Claude service
+            claude_service = get_claude_service()
+            
+            # Analyze photo for destinations
+            destinations = claude_service.analyze_photo_for_destinations(image_data=image_data)
+            
+            return jsonify({
+                'success': True,
+                'destinations': destinations,
+                'message': f'Found {len(destinations)} similar destinations'
+            })
+            
+        except Exception as e:
+            logger.error(f"Photo analysis failed: {e}")
+            return jsonify({'error': 'Photo analysis service unavailable'}), 500
+    
+    @app.route('/api/ai/travel-insights', methods=['GET'])
+    @login_required
+    def get_travel_insights():
+        """Get AI-powered travel insights and achievements."""
+        try:
+            user = get_current_user()
+            if not user:
+                return jsonify({'error': 'Authentication required'}), 401
+            
+            # Get user analytics
+            trip_manager = get_trip_manager()
+            user_trips = trip_manager.get_user_trips(user['id'])
+            
+            analytics = {
+                'total_trips': len(user_trips),
+                'total_distance': sum(trip.get('total_distance', 0) for trip in user_trips),
+                'total_cost': sum(trip.get('estimated_cost', 0) for trip in user_trips),
+                'countries_visited': len(set([
+                    trip.get('country', 'Unknown') for trip in user_trips
+                ])),
+                'average_trip_length': sum(trip.get('duration_days', 5) for trip in user_trips) / max(len(user_trips), 1),
+                'favorite_season': 'Spring',  # Could be calculated from trip dates
+                'travel_frequency': len(user_trips) / max((datetime.now().year - 2023), 1)  # trips per year
+            }
+            
+            # Get Claude service
+            claude_service = get_claude_service()
+            
+            # Run async insights generation in sync context
+            import asyncio
+            try:
+                insights = asyncio.run(claude_service.generate_travel_insights(analytics))
+                
+                return jsonify({
+                    'success': True,
+                    'insights': insights,
+                    'analytics': analytics
+                })
+                
+            except Exception as e:
+                logger.error(f"AI insights generation failed: {e}")
+                # Return fallback insights
+                return jsonify({
+                    'success': True,
+                    'insights': {
+                        'insights': 'Your travel journey is amazing! Keep exploring Europe!',
+                        'achievements': ['Explorer', 'Road Trip Enthusiast'],
+                        'next_milestones': ['Visit 10 countries', 'Complete 25 trips']
+                    },
+                    'analytics': analytics
+                })
+                
+        except Exception as e:
+            logger.error(f"Travel insights endpoint failed: {e}")
+            return jsonify({'error': 'Travel insights service unavailable'}), 500
+
     logger.info("Enhanced application initialized with all new features")
     return app
 

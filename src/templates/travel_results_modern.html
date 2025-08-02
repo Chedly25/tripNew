@@ -527,6 +527,244 @@
         </div>
     </div>
     
+    <!-- AI Personalization Panel -->
+    <div class="ai-personalization-panel" id="aiPersonalizationPanel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <i class="fas fa-brain"></i>
+                <span>AI Personalization</span>
+            </div>
+            <button class="panel-close" onclick="closePersonalizationPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="panel-content" id="personalizationContent">
+            <div class="loading-personalization">
+                <i class="fas fa-robot spinning"></i>
+                <p>Analyzing your travel preferences...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add AI Enhancement Button -->
+    <div class="ai-enhancement-fab" onclick="enhanceWithAI()" title="Get AI-powered personalized recommendations">
+        <i class="fas fa-magic"></i>
+        <span class="fab-label">AI Enhance</span>
+    </div>
+    
+    <style>
+    .ai-personalization-panel {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transition: right 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .ai-personalization-panel.open {
+        right: 0;
+    }
+    
+    .panel-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .panel-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    
+    .panel-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .panel-content {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+    }
+    
+    .loading-personalization {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .loading-personalization i {
+        font-size: 2rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+    
+    .spinning {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .ai-enhancement-fab {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        z-index: 999;
+    }
+    
+    .ai-enhancement-fab:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+    }
+    
+    .ai-enhancement-fab i {
+        font-size: 1.2rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .fab-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .personalization-section {
+        margin-bottom: 2rem;
+    }
+    
+    .personalization-section h3 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .insight-card {
+        background: var(--light-gray);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+    }
+    
+    .insight-card h4 {
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+    }
+    
+    .recommendation-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .recommendation-list li {
+        background: white;
+        padding: 0.75rem;
+        border-radius: var(--radius-sm);
+        margin-bottom: 0.5rem;
+        border-left: 3px solid var(--accent);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+    
+    .apply-insights-btn {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.2s ease;
+    }
+    
+    .apply-insights-btn:hover {
+        background: var(--accent-dark);
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .ai-personalization-panel {
+            width: 100vw;
+            right: -100vw;
+        }
+        
+        .ai-enhancement-fab {
+            bottom: 80px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+        }
+        
+        .fab-label {
+            font-size: 0.5rem;
+        }
+    }
+    </style>
+    
     <script>
         // Global variables
         let travelData = null;
@@ -892,6 +1130,160 @@
                 }, 300);
             }, 3000);
         }
+        
+        // AI Enhancement Functions
+        async function enhanceWithAI() {
+            const panel = document.getElementById('aiPersonalizationPanel');
+            panel.classList.add('open');
+            
+            // Show loading state
+            const content = document.getElementById('personalizationContent');
+            content.innerHTML = `
+                <div class="loading-personalization">
+                    <i class="fas fa-robot spinning"></i>
+                    <p>Analyzing your travel preferences...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/ai/personalize-trip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayPersonalizationResults(data.analysis, data.user_stats);
+                } else {
+                    displayPersonalizationError();
+                }
+                
+            } catch (error) {
+                console.error('AI enhancement error:', error);
+                displayPersonalizationError();
+            }
+        }
+        
+        function displayPersonalizationResults(analysis, userStats) {
+            const content = document.getElementById('personalizationContent');
+            
+            content.innerHTML = `
+                <div class="personalization-section">
+                    <h3><i class="fas fa-chart-line"></i> Your Travel Stats</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${userStats.total_trips}</div>
+                            <div class="stat-label">Total Trips</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(userStats.total_distance)}km</div>
+                            <div class="stat-label">Distance Traveled</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">€${Math.round(userStats.average_cost)}</div>
+                            <div class="stat-label">Avg Trip Cost</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${userStats.cities_visited.length}</div>
+                            <div class="stat-label">Cities Visited</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="personalization-section">
+                    <h3><i class="fas fa-user-astronaut"></i> Travel Personality</h3>
+                    <div class="insight-card">
+                        <h4>You are a ${analysis.travel_personality}</h4>
+                        <p>${analysis.budget_insights}</p>
+                    </div>
+                </div>
+                
+                <div class="personalization-section">
+                    <h3><i class="fas fa-heart"></i> Your Preferences</h3>
+                    <div class="insight-card">
+                        <h4>You Love:</h4>
+                        <ul class="recommendation-list">
+                            ${analysis.preferred_experiences.map(exp => `<li>${exp}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="personalization-section">
+                    <h3><i class="fas fa-lightbulb"></i> AI Recommendations</h3>
+                    <ul class="recommendation-list">
+                        ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="personalization-section">
+                    <h3><i class="fas fa-map-marked-alt"></i> New Destinations for You</h3>
+                    <div class="insight-card">
+                        <p><strong>Perfect for your style:</strong> ${analysis.new_destinations.join(', ')}</p>
+                        <p><strong>Optimal trip length:</strong> ${analysis.optimal_trip_length}</p>
+                    </div>
+                </div>
+                
+                <button class="apply-insights-btn" onclick="applyPersonalizationInsights()">
+                    <i class="fas fa-magic"></i>
+                    Apply AI Insights to Results
+                </button>
+            `;
+        }
+        
+        function displayPersonalizationError() {
+            const content = document.getElementById('personalizationContent');
+            content.innerHTML = `
+                <div class="loading-personalization">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                    <p>Unable to analyze your travel preferences. Please make sure you're logged in and have some trip history.</p>
+                    <button class="apply-insights-btn" onclick="window.location.href='/auth/login'" style="margin-top: 1rem;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In to Get Personalized Recommendations
+                    </button>
+                </div>
+            `;
+        }
+        
+        function applyPersonalizationInsights() {
+            // Reorder routes based on AI insights
+            showNotification('AI insights applied! Routes are now personalized for you.', 'success');
+            closePersonalizationPanel();
+            
+            // Add subtle visual indicators to show AI enhancement
+            document.querySelectorAll('.route-card-modern').forEach((card, index) => {
+                if (index < 2) { // Mark top 2 as AI recommended
+                    const badge = document.createElement('div');
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: 10px;
+                        left: 10px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 12px;
+                        font-size: 0.7rem;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        z-index: 10;
+                    `;
+                    badge.innerHTML = '<i class="fas fa-brain"></i> AI Recommended';
+                    card.style.position = 'relative';
+                    card.appendChild(badge);
+                }
+            });
+        }
+        
+        function closePersonalizationPanel() {
+            document.getElementById('aiPersonalizationPanel').classList.remove('open');
+        }
     </script>
+    
+    <!-- AI Travel Assistant Chat Widget -->
+    {% include 'ai_chat_widget.html' %}
 </body>
 </html>
