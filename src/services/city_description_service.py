@@ -213,8 +213,26 @@ Focus on authentic experiences, local culture, and what makes this destination s
                 messages=[{"role": "user", "content": prompt}]
             )
             
-            # Parse the JSON response
-            description_data = json.loads(response.content[0].text)
+            # Parse the JSON response with error handling
+            response_text = response.content[0].text
+            
+            # Clean the response text of any control characters
+            import re
+            cleaned_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
+            
+            # Try to extract JSON if it's wrapped in markdown code blocks
+            if '```json' in cleaned_text:
+                start = cleaned_text.find('```json') + 7
+                end = cleaned_text.find('```', start)
+                if end != -1:
+                    cleaned_text = cleaned_text[start:end].strip()
+            elif '```' in cleaned_text:
+                start = cleaned_text.find('```') + 3
+                end = cleaned_text.find('```', start)
+                if end != -1:
+                    cleaned_text = cleaned_text[start:end].strip()
+            
+            description_data = json.loads(cleaned_text)
             
             return CityDescription(
                 city_name=city.name,
@@ -294,7 +312,16 @@ Focus on authentic experiences, local culture, and what makes this destination s
         
         # Run the async function
         try:
-            return asyncio.run(process_cities())
+            # Check if we're already in an event loop
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an event loop, can't use asyncio.run()
+                logger.warning("Already in event loop, skipping async city enhancement")
+                # Return basic city data without async processing
+                return [{'city': city, 'description': None} for city in cities]
+            except RuntimeError:
+                # No event loop running, we can use asyncio.run()
+                return asyncio.run(process_cities())
         except Exception as e:
             logger.error(f"Failed to enhance cities: {e}")
             # Return basic city data
