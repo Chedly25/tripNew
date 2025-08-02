@@ -2442,15 +2442,29 @@
         let currentAmenityTab = 'hotels';
 
         function initializeAmenities() {
+            console.log('Initializing amenities section...');
+            
+            // Check if amenities section exists
+            const amenitiesSection = document.querySelector('.amenities-section');
+            if (!amenitiesSection) {
+                console.warn('Amenities section not found on page');
+                return;
+            }
+
             // Set up tab switching
-            document.querySelectorAll('.amenities-tab').forEach(tab => {
+            const tabs = document.querySelectorAll('.amenities-tab');
+            console.log(`Found ${tabs.length} amenity tabs`);
+            
+            tabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
                     const tabName = e.target.closest('.amenities-tab').dataset.tab;
+                    console.log(`Switching to ${tabName} tab`);
                     switchAmenityTab(tabName);
                 });
             });
 
             // Load data for all tabs but only show hotels initially
+            console.log('Starting to load amenities data...');
             loadAmenitiesData();
         }
 
@@ -2481,21 +2495,41 @@
         }
 
         async function loadAmenityData(type) {
+            console.log(`Loading ${type} data...`);
             try {
                 // Get trip data to extract city information
                 const tripData = getCurrentTripData();
-                if (!tripData || !tripData.intermediate_cities || tripData.intermediate_cities.length === 0) {
+                console.log('Trip data for amenities:', tripData);
+                
+                if (!tripData) {
+                    console.warn(`No trip data available for ${type}`);
+                    showNoAmenities(type);
+                    return;
+                }
+
+                if (!tripData.intermediate_cities || tripData.intermediate_cities.length === 0) {
+                    console.warn(`No intermediate cities found for ${type}:`, tripData.intermediate_cities);
                     showNoAmenities(type);
                     return;
                 }
 
                 // Use the first intermediate city for amenities
                 const city = tripData.intermediate_cities[0];
-                if (!city || !city.latitude || !city.longitude) {
+                console.log(`Using city for ${type}:`, city);
+                
+                if (!city) {
+                    console.warn(`First intermediate city is null for ${type}`);
                     showNoAmenities(type);
                     return;
                 }
 
+                if (!city.latitude || !city.longitude) {
+                    console.warn(`City missing coordinates for ${type}:`, city);
+                    showNoAmenities(type);
+                    return;
+                }
+
+                console.log(`Making API call for ${type} in ${city.name || 'Unknown'} at [${city.latitude}, ${city.longitude}]`);
                 showLoading(type);
 
                 const response = await fetch(`/api/${type}`, {
@@ -2511,15 +2545,23 @@
                     })
                 });
 
+                console.log(`API response status for ${type}:`, response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log(`API response data for ${type}:`, data);
+                    
                     if (data.success && data[type] && data[type].length > 0) {
+                        console.log(`Found ${data[type].length} ${type} items`);
                         amenitiesData[type] = data[type];
                         displayAmenities(type, data[type]);
                     } else {
+                        console.warn(`No ${type} data in successful response:`, data);
                         showNoAmenities(type);
                     }
                 } else {
+                    const errorText = await response.text();
+                    console.error(`API error for ${type}:`, response.status, errorText);
                     showNoAmenities(type);
                 }
             } catch (error) {
@@ -2528,21 +2570,34 @@
             }
         }
 
+        // Global trip data from template
+        const globalTripData = {{ trip_data | tojson if trip_data else 'null' }};
+
         function getCurrentTripData() {
-            // Try to get from session storage or global variable
+            // First try template data
+            if (globalTripData) {
+                console.log('Using template trip data for amenities:', globalTripData);
+                return globalTripData;
+            }
+
+            // Fallback to global variable
             if (typeof tripData !== 'undefined' && tripData) {
+                console.log('Using global trip data for amenities:', tripData);
                 return tripData;
             }
             
+            // Final fallback to session storage
             try {
                 const sessionData = sessionStorage.getItem('currentTripData');
                 if (sessionData) {
+                    console.log('Using session trip data for amenities');
                     return JSON.parse(sessionData);
                 }
             } catch (e) {
                 console.warn('Could not parse session trip data');
             }
             
+            console.warn('No trip data found for amenities');
             return null;
         }
 
@@ -2640,8 +2695,52 @@
             return icons[type] || '<i class="fas fa-map-marker-alt"></i>';
         }
 
+        // Test function to verify API endpoints
+        async function testAmenitiesAPIs() {
+            console.log('Testing amenities API endpoints...');
+            
+            const testData = {
+                city_name: 'Paris',
+                latitude: 48.8566,
+                longitude: 2.3522,
+                limit: 3
+            };
+
+            for (const type of ['hotels', 'restaurants', 'events']) {
+                try {
+                    console.log(`Testing /api/${type}...`);
+                    const response = await fetch(`/api/${type}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(testData)
+                    });
+                    
+                    console.log(`${type} API status:`, response.status);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`${type} API response:`, data);
+                    } else {
+                        const errorText = await response.text();
+                        console.error(`${type} API error:`, errorText);
+                    }
+                } catch (error) {
+                    console.error(`${type} API test failed:`, error);
+                }
+            }
+        }
+
         // Initialize amenities when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Add test button for debugging (only in development)
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                console.log('Development mode detected - adding API test function to window');
+                window.testAmenitiesAPIs = testAmenitiesAPIs;
+                console.log('You can test the APIs by running: testAmenitiesAPIs() in the console');
+            }
+            
             // Wait a bit for other initializations to complete
             setTimeout(initializeAmenities, 1000);
         });
