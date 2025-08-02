@@ -1148,7 +1148,7 @@
                         <div class="stat-label">Travel Style</div>
                         <div class="stat-value route-type-display" data-route-type="{{ trip_data.route_type if trip_data.route_type else 'scenic' }}">
                             <span class="route-type-icon"></span>
-                            <span id="route-type-text">{{ trip_data.route_type|title if trip_data else 'Scenic' }}</span>
+                            <span id="route-type-text">{% if trip_data and trip_data.route_type %}{% if trip_data.route_type == 'hidden_gems' %}Hidden Gems{% else %}{{ trip_data.route_type|replace('_', ' ')|title }}{% endif %}{% else %}Scenic{% endif %}</span>
                         </div>
                     </div>
                 </div>
@@ -1272,6 +1272,18 @@
                                             </ul>
                                         </div>
                                         {% endif %}
+                                        <div class="city-actions" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                            {% if city.coordinates %}
+                                                {% if city.coordinates.latitude and city.coordinates.longitude %}
+                                                    <button class="btn btn-sm" onclick="openInGoogleMaps({{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}, '{{ city.name }}')" style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                        <i class="fas fa-map-marked-alt"></i> Open in Maps
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                            <button class="btn btn-sm" onclick="exploreCity('{{ city.name }}')" style="padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                <i class="fas fa-compass"></i> Explore
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -1460,7 +1472,7 @@
         }
         
         // Initialize map
-        let map;
+        window.map = null;
         let routeLayer;
         let routingControl;
         
@@ -1502,20 +1514,26 @@
         function initializeMap() {
             console.log('Initializing map...');
             
+            // Check if map already exists
+            if (window.map && window.map._container) {
+                console.log('Map already initialized');
+                return;
+            }
+            
             try {
                 // Create basic map first
-                map = L.map('tripMap').setView([46.2276, 2.2137], 6); // Center of France
+                window.map = L.map('tripMap').setView([46.2276, 2.2137], 6); // Center of France
                 console.log('Map created successfully');
                 
                 // Add tile layer
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors',
                     maxZoom: 19
-                }).addTo(map);
+                }).addTo(window.map);
                 console.log('Tile layer added');
                 
                 // Add a simple test marker to prove map is working
-                L.marker([46.2276, 2.2137]).addTo(map)
+                L.marker([46.2276, 2.2137]).addTo(window.map)
                     .bindPopup('Map is working!')
                     .openPopup();
                 console.log('Test marker added');
