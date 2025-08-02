@@ -1261,14 +1261,20 @@
                                     </div>
                                     <div class="city-info">
                                         <h4>{{ city.name if city.name else city }}</h4>
-                                        <p>{{ city.description if city.description else 'Explore this beautiful destination' }}</p>
-                                        {% if city.attractions %}
+                                        <p>{% if city.description %}{% if city.description is mapping %}{{ city.description.detailed if city.description.detailed else city.description.short if city.description.short else 'Explore this beautiful destination' }}{% else %}{{ city.description }}{% endif %}{% else %}Explore this beautiful destination{% endif %}</p>
+                                        {% if city.attractions or (city.description and city.description is mapping and city.description.highlights) %}
                                         <div class="attractions">
                                             <strong>Top Attractions:</strong>
                                             <ul>
-                                                {% for attraction in city.attractions[:3] %}
-                                                <li>{{ attraction }}</li>
-                                                {% endfor %}
+                                                {% if city.attractions %}
+                                                    {% for attraction in city.attractions[:3] %}
+                                                    <li>{{ attraction }}</li>
+                                                    {% endfor %}
+                                                {% elif city.description and city.description is mapping and city.description.highlights %}
+                                                    {% for highlight in city.description.highlights[:3] %}
+                                                    <li>{{ highlight }}</li>
+                                                    {% endfor %}
+                                                {% endif %}
                                             </ul>
                                         </div>
                                         {% endif %}
