@@ -585,6 +585,14 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         strategy_highlights = strategy.get('highlights', []) if strategy else []
         strategy_ideal_for = strategy.get('ideal_for', '') if strategy else ''
         
+        enhanced_cities = self._enhance_cities_with_descriptions(
+            route.intermediate_cities, strategy.get('type', 'scenic'), request
+        )
+        
+        # Debug log the intermediate cities being added to route
+        city_names = [city.get('name') for city in enhanced_cities if city.get('name')]
+        logger.info(f"Route {strategy_name} enhanced with intermediate cities: {city_names}")
+        
         return {
             'route_type': route.route_type.value,
             'name': strategy_name,
@@ -602,9 +610,7 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 'coordinates': [route.end_city.coordinates.latitude, 
                               route.end_city.coordinates.longitude]
             },
-            'intermediate_cities': self._enhance_cities_with_descriptions(
-                route.intermediate_cities, strategy.get('type', 'scenic'), request
-            ),
+            'intermediate_cities': enhanced_cities,
             'highlights': strategy_highlights,
             'ideal_for': strategy_ideal_for,
             'season_tips': self._get_season_tips(route, request.season),

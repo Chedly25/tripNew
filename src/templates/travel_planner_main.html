@@ -1557,6 +1557,10 @@
                 if (response.ok) {
                     const result = await response.json();
                     
+                    // Clear any stale session data before storing new results
+                    sessionStorage.removeItem('travelPlanResult');
+                    sessionStorage.removeItem('currentTripData');
+                    
                     // Store result in sessionStorage for the results page
                     sessionStorage.setItem('travelPlanResult', JSON.stringify(result));
                     

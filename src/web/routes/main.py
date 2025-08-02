@@ -319,6 +319,12 @@ def create_app() -> Flask:
     def plan_trip_enhanced():
         """Enhanced trip planning endpoint with budget and duration."""
         try:
+            # Clear any existing trip data from session to ensure fresh results
+            session.pop('current_trip_data', None)
+            session.pop('current_trip_id', None)
+            session.pop('current_trip_name', None)
+            session.pop('last_trip_results', None)
+            
             data = request.get_json()
             if not data:
                 return jsonify({'error': 'Invalid JSON data'}), 400
