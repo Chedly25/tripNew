@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EuroRoam - Plan Your Epic European Adventure</title>
+    <title>🚗✨ EuroRoam - Your Magical European Adventure Awaits! ✨🚗</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Global Theme -->
+    <link rel="stylesheet" href="/static/global-theme.css?v=2025-magical">
     
     <style>
         * {
@@ -594,6 +596,288 @@
         @keyframes fill {
             100% { box-shadow: inset 0px 0px 0px 30px var(--coastal-mint); }
         }
+
+        /* ===== FLOATING AI CHAT WIDGET ===== */
+        .floating-ai-chat {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        
+        .chat-toggle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 12px 32px rgba(255, 107, 53, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 20px 48px rgba(255, 107, 53, 0.6);
+        }
+        
+        .chat-toggle i {
+            color: white;
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+        }
+        
+        .chat-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            animation: pulse 2s infinite;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+        
+        .chat-panel {
+            position: absolute;
+            bottom: 90px;
+            right: 0;
+            width: 400px;
+            height: 500px;
+            background: var(--glass-bg);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-panel.active {
+            display: flex;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .chat-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 24px 24px 0 0;
+        }
+        
+        .chat-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .ai-message, .user-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            max-width: 85%;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .user-message .message-avatar {
+            background: var(--cobblestone-gray);
+        }
+        
+        .message-content {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 1rem;
+            color: var(--midnight-navy);
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-message .message-content {
+            background: var(--accent-gradient);
+            color: white;
+        }
+        
+        .chat-input-area {
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 0.75rem 1rem;
+            color: var(--midnight-navy);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--sunset-orange);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+        }
+        
+        .chat-input::placeholder {
+            color: var(--cobblestone-gray);
+        }
+        
+        .chat-send {
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .chat-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+        
+        .chat-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* AI Suggestions Button */
+        .ai-suggestions-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #FFD23F 0%, #FF6B35 50%, #7209B7 100%);
+            color: white;
+            text-decoration: none;
+            padding: 1.25rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        
+        .ai-suggestions-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(255, 107, 53, 0.6);
+            color: white;
+            text-decoration: none;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 15px 35px rgba(255, 107, 53, 0.4); }
+            50% { box-shadow: 0 20px 45px rgba(255, 107, 53, 0.7); }
+        }
+        
+        @media (max-width: 768px) {
+            .floating-ai-chat {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            
+            .chat-toggle {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .chat-toggle i {
+                font-size: 1.5rem;
+            }
+            
+            .chat-panel {
+                width: calc(100vw - 2rem);
+                right: -1rem;
+                height: 450px;
+            }
+            
+            .ai-suggestions-btn {
+                font-size: 1rem;
+                padding: 1rem 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -618,18 +902,29 @@
     <section class="hero">
         <div class="hero-content">
             <h1 class="hero-title">
-                Your Epic
+                🎨✨ Your Magical
                 <span class="handwritten-accent">European</span>
-                Road Trip Awaits
+                Adventure Starts Here! ✨🎨
             </h1>
             <p class="hero-subtitle">
-                From the romantic canals of Amsterdam to the sun-kissed shores of the Mediterranean, 
-                craft your perfect European adventure with AI-powered route planning
+                🤖 Let Claude AI be your travel wizard! From romantic Parisian cafés to thrilling Alpine adventures - 
+                discover breathtaking routes, hidden gems, and create memories that will last a lifetime! 🌟
             </p>
 
             <!-- Trip Planning Form -->
             <div class="planning-container">
-                <h2 class="form-title">Plan Your Journey</h2>
+                <h2 class="form-title">🎯 Create Your Magical Journey 🎯</h2>
+                
+                <!-- AI Suggestions Button -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <a href="/ai-travel-planner" class="ai-suggestions-btn">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        ✨ Get AI Travel Suggestions First! ✨
+                    </a>
+                    <p style="color: rgba(255,255,255,0.8); margin-top: 0.5rem; font-size: 0.9rem;">
+                        🤖 Let Claude AI suggest perfect destinations based on your preferences!
+                    </p>
+                </div>
                 
                 <form id="travel-form">
                     <div class="form-grid">
@@ -915,6 +1210,136 @@
             
             document.body.style.backgroundPosition = `${cursor * 50}px ${vertical * 50}px`;
         });
+    </script>
+
+    <!-- Floating AI Chat Widget -->
+    <div class="floating-ai-chat" id="aiChatWidget">
+        <div class="chat-toggle" onclick="toggleAiChat()">
+            <i class="fas fa-robot"></i>
+            <div class="chat-pulse"></div>
+        </div>
+        <div class="chat-panel" id="aiChatPanel">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="fas fa-robot me-2"></i>
+                    🤖 Claude Travel Assistant
+                </div>
+                <button class="chat-close" onclick="toggleAiChat()">×</button>
+            </div>
+            <div class="chat-messages" id="aiChatMessages">
+                <div class="ai-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        👋 Hi! I'm Claude, your AI travel companion! I can help you plan amazing European adventures, suggest destinations, or answer any travel questions. What's your dream trip?
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="aiChatInput" placeholder="Ask me about European destinations..." onkeypress="handleChatKeyPress(event)">
+                <button class="chat-send" onclick="sendAiMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // AI Chat Widget Functions
+        function toggleAiChat() {
+            const chatPanel = document.getElementById('aiChatPanel');
+            chatPanel.classList.toggle('active');
+            
+            if (chatPanel.classList.contains('active')) {
+                setTimeout(() => {
+                    document.getElementById('aiChatInput').focus();
+                }, 300);
+            }
+        }
+        
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendAiMessage();
+            }
+        }
+        
+        async function sendAiMessage() {
+            const input = document.getElementById('aiChatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addChatMessage('user', message);
+            input.value = '';
+            
+            const sendBtn = document.querySelector('.chat-send');
+            sendBtn.disabled = true;
+            
+            addChatMessage('ai', '🤖 Claude is thinking...', true);
+            
+            try {
+                const response = await fetch('/api/ai-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        context: 'main_page_chat'
+                    })
+                });
+                
+                const data = await response.json();
+                removeLoadingMessage();
+                
+                if (data.success) {
+                    addChatMessage('ai', data.response);
+                } else {
+                    addChatMessage('ai', '😅 Sorry, I encountered an issue. Try asking about European destinations, travel tips, or let me help you plan your next adventure!');
+                }
+                
+            } catch (error) {
+                console.error('AI chat error:', error);
+                removeLoadingMessage();
+                addChatMessage('ai', '🛠️ I\'m having connectivity issues right now. But I\'d love to help you plan an amazing European adventure! Try planning your trip above for instant magic!');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+        
+        function addChatMessage(sender, message, isLoading = false) {
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'ai' ? 'ai-message' : 'user-message';
+            
+            if (isLoading) {
+                messageDiv.classList.add('loading-message');
+            }
+            
+            const avatar = sender === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">${message}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function removeLoadingMessage() {
+            const loadingMessage = document.querySelector('.loading-message');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+        
+        // Auto-bounce the chat widget to get attention
+        setTimeout(() => {
+            const chatToggle = document.querySelector('.chat-toggle');
+            if (chatToggle) {
+                chatToggle.style.animation = 'bounce 1s ease-in-out 3';
+            }
+        }, 3000);
     </script>
 </body>
 </html>
