@@ -5,10 +5,10 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import asyncio
 
-from models.trip_models import TripRequest, ServiceResult
-from services.city_description_service import CityDescriptionService
-from services.google_places_city_service import GooglePlacesCityService
-from services.travel_planner import TravelPlanner
+from src.core.models import TripRequest, ServiceResult
+from src.services.city_description_service import CityDescriptionService
+from src.services.google_places_city_service import GooglePlacesCityService
+from src.services.travel_planner import TravelPlannerServiceImpl
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class MatchedTrip:
 class AITripMatcher:
     """AI-powered trip matching based on constraints."""
     
-    def __init__(self, travel_planner: TravelPlanner, city_service: GooglePlacesCityService, 
+    def __init__(self, travel_planner: TravelPlannerServiceImpl, city_service: GooglePlacesCityService, 
                  description_service: CityDescriptionService):
         self.travel_planner = travel_planner
         self.city_service = city_service

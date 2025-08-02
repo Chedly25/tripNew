@@ -1539,15 +1539,15 @@ def create_app() -> Flask:
                     return jsonify({'error': f'Missing required field: {field}'}), 400
             
             # Import here to avoid circular imports
-            from services.ai_trip_matcher import AITripMatcher, TripConstraints
-            from services.travel_planner import TravelPlanner
-            from services.google_places_city_service import GooglePlacesCityService
-            from services.city_description_service import CityDescriptionService
+            from src.services.ai_trip_matcher import AITripMatcher, TripConstraints
+            from src.services.travel_planner import TravelPlannerServiceImpl
+            from src.services.google_places_city_service import GooglePlacesCityService
+            from src.services.city_description_service import CityDescriptionService
             
             # Initialize services
             city_service = GooglePlacesCityService()
             description_service = CityDescriptionService()
-            travel_planner = TravelPlanner(city_service, description_service)
+            travel_planner = TravelPlannerServiceImpl(city_service, route_service, validation_service)
             matcher = AITripMatcher(travel_planner, city_service, description_service)
             
             # Create constraints object
@@ -1599,7 +1599,7 @@ def create_app() -> Flask:
     def ai_surprise_trip():
         """Generate a surprise trip using AI inspiration engine."""
         try:
-            from services.ai_inspiration_engine import AIInspirationEngine
+            from src.services.ai_inspiration_engine import AIInspirationEngine
             
             engine = AIInspirationEngine()
             surprise_trip = engine.generate_surprise_trip()
@@ -1626,7 +1626,7 @@ def create_app() -> Flask:
     def ai_seasonal_inspiration():
         """Get seasonal inspiration suggestions."""
         try:
-            from services.ai_inspiration_engine import AIInspirationEngine
+            from src.services.ai_inspiration_engine import AIInspirationEngine
             
             season = request.args.get('season')
             engine = AIInspirationEngine()
@@ -1665,7 +1665,7 @@ def create_app() -> Flask:
             if not theme:
                 return jsonify({'error': 'Theme is required'}), 400
             
-            from services.ai_inspiration_engine import AIInspirationEngine
+            from src.services.ai_inspiration_engine import AIInspirationEngine
             
             engine = AIInspirationEngine()
             themed_trip = engine.generate_themed_trip(theme)
@@ -1699,8 +1699,8 @@ def create_app() -> Flask:
             filter_type = data.get('filter', 'all') if data else 'all'
             limit = data.get('limit', 12) if data else 12
             
-            from services.ai_city_discovery import AICityDiscovery
-            from services.google_places_city_service import GooglePlacesCityService
+            from src.services.ai_city_discovery import AICityDiscovery
+            from src.services.google_places_city_service import GooglePlacesCityService
             
             city_service = GooglePlacesCityService()
             discovery = AICityDiscovery(city_service)
@@ -1755,7 +1755,7 @@ def create_app() -> Flask:
             if not dream_text.strip():
                 return jsonify({'error': 'Dream text is required'}), 400
             
-            from services.ai_dream_trip_builder import AIDreamTripBuilder
+            from src.services.ai_dream_trip_builder import AIDreamTripBuilder
             
             builder = AIDreamTripBuilder()
             params = builder.parse_dream_trip(dream_text)
