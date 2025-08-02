@@ -1415,6 +1415,46 @@
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     
     <script>
+        // Check if trip data is available, fallback to session storage if needed
+        let tripData = {{ trip_data | tojson | safe }};
+        
+        // If no trip data from server, try session storage
+        if (!tripData || Object.keys(tripData).length === 0) {
+            console.log('No trip data from server, trying session storage...');
+            const sessionData = sessionStorage.getItem('currentTripData');
+            if (sessionData) {
+                try {
+                    tripData = JSON.parse(sessionData);
+                    console.log('Retrieved trip data from session storage:', tripData);
+                    
+                    // Send to server to restore session state
+                    fetch('/api/set-trip-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            trip_data: tripData,
+                            trip_name: tripData.name || 'Trip Details',
+                            trip_id: 0
+                        })
+                    }).then(() => {
+                        console.log('Session state restored');
+                        // Reload page to get proper server data
+                        window.location.reload();
+                    }).catch(error => {
+                        console.error('Failed to restore session:', error);
+                    });
+                    return; // Exit early, page will reload
+                } catch (e) {
+                    console.error('Failed to parse session data:', e);
+                }
+            }
+            
+            // If no valid data available, redirect to home
+            console.log('No valid trip data available, redirecting to home');
+            window.location.href = '/';
+            return;
+        }
+        
         // Initialize map
         let map;
         let routeLayer;
