@@ -12,6 +12,7 @@ from .route_service import ProductionRouteService
 from .validation_service import ValidationService
 from .itinerary_generator import ItineraryGenerator
 from .hidden_gems_service import HiddenGemsService
+from .enhanced_intermediate_city_service import get_enhanced_intermediate_city_service
 
 logger = structlog.get_logger(__name__)
 
@@ -24,6 +25,8 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         self.city_service = city_service
         self.route_service = route_service
         self.validation_service = validation_service
+        # Initialize enhanced intermediate city service
+        self.enhanced_intermediate_service = get_enhanced_intermediate_city_service()
         # Initialize itinerary generator
         hidden_gems_service = HiddenGemsService(city_service)
         self.itinerary_generator = ItineraryGenerator(city_service, hidden_gems_service)
@@ -268,18 +271,32 @@ class TravelPlannerServiceImpl(TravelPlannerService):
     
     def _find_intermediate_cities(self, strategy: Dict, start_city, end_city, 
                                 request: TripRequest) -> List:
-        """Find intermediate cities based on route strategy."""
+        """Find intermediate cities using enhanced multi-source algorithm."""
         strategy_type = strategy['type']
         
         # Calculate optimal number of intermediate cities based on trip duration and type
         max_cities = self._calculate_optimal_city_count(strategy_type, request.travel_days)
         
-        logger.info("Dynamic city calculation", 
+        logger.info("Enhanced city selection", 
                    strategy=strategy_type, 
                    trip_days=request.travel_days, 
                    max_cities=max_cities)
         
-        # Get cities near the route using sync fallback method, filtered by route type
+        try:
+            # Use enhanced intermediate city service for better selection
+            enhanced_cities = self._find_intermediate_cities_enhanced_sync(
+                strategy, start_city, end_city, request, max_cities
+            )
+            
+            if enhanced_cities:
+                logger.info(f"Enhanced service found {len(enhanced_cities)} cities")
+                return enhanced_cities
+            
+        except Exception as e:
+            logger.warning(f"Enhanced service failed, using fallback: {e}")
+        
+        # Fallback to original method if enhanced service fails
+        logger.info("Using fallback city selection method")
         nearby_cities = self.city_service._get_fallback_route_cities(
             start_city.coordinates, end_city.coordinates, max_deviation_km=120, route_type=strategy_type
         )
@@ -332,6 +349,45 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         else:
             # Default: select diverse cities near route
             return self._select_diverse_cities(nearby_cities, max_cities=max_cities, route_type=strategy_type, request=request)
+    
+    def _find_intermediate_cities_enhanced_sync(self, strategy: Dict, start_city, end_city, 
+                                              request: TripRequest, max_cities: int) -> List:
+        """Synchronous wrapper for enhanced intermediate city selection."""
+        try:
+            # Check if we can run async
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an event loop, create a task
+                logger.info("Using thread pool for enhanced city selection")
+                import concurrent.futures
+                
+                def run_async():
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    try:
+                        return new_loop.run_until_complete(
+                            self.enhanced_intermediate_service.find_optimal_intermediate_cities(
+                                start_city, end_city, request, strategy['type'], max_cities
+                            )
+                        )
+                    finally:
+                        new_loop.close()
+                
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_async)
+                    return future.result(timeout=30)  # 30 second timeout
+                    
+            except RuntimeError:
+                # No running loop, can use asyncio.run directly
+                return asyncio.run(
+                    self.enhanced_intermediate_service.find_optimal_intermediate_cities(
+                        start_city, end_city, request, strategy['type'], max_cities
+                    )
+                )
+                
+        except Exception as e:
+            logger.error(f"Enhanced city selection failed: {e}")
+            return []
     
     async def _find_intermediate_cities_async(self, strategy: Dict, start_city, end_city, 
                                             request: TripRequest) -> List:
