@@ -13,6 +13,7 @@ from .validation_service import ValidationService
 from .itinerary_generator import ItineraryGenerator
 from .hidden_gems_service import HiddenGemsService
 from .enhanced_intermediate_city_service import get_enhanced_intermediate_city_service
+from .city_description_service import get_city_description_service
 
 logger = structlog.get_logger(__name__)
 
@@ -27,6 +28,8 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         self.validation_service = validation_service
         # Initialize enhanced intermediate city service
         self.enhanced_intermediate_service = get_enhanced_intermediate_city_service()
+        # Initialize city description service
+        self.description_service = get_city_description_service()
         # Initialize itinerary generator
         hidden_gems_service = HiddenGemsService(city_service)
         self.itinerary_generator = ItineraryGenerator(city_service, hidden_gems_service)
@@ -599,16 +602,9 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 'coordinates': [route.end_city.coordinates.latitude, 
                               route.end_city.coordinates.longitude]
             },
-            'intermediate_cities': [
-                {
-                    'name': city.name,
-                    'country': city.country,
-                    'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
-                    'types': city.types,
-                    'region': city.region
-                }
-                for city in route.intermediate_cities
-            ],
+            'intermediate_cities': self._enhance_cities_with_descriptions(
+                route.intermediate_cities, strategy.get('type', 'scenic'), request
+            ),
             'highlights': strategy_highlights,
             'ideal_for': strategy_ideal_for,
             'season_tips': self._get_season_tips(route, request.season),
@@ -690,6 +686,81 @@ class TravelPlannerServiceImpl(TravelPlannerService):
             enriched_route['daily_itinerary'] = []
         
         return enriched_route
+    
+    def _enhance_cities_with_descriptions(self, cities: List, route_type: str, request) -> List[Dict]:
+        """Enhance cities with AI-generated descriptions."""
+        try:
+            enhanced_cities = []
+            for city in cities:
+                # Get description synchronously (the service handles async internally)
+                import asyncio
+                try:
+                    # Try to get existing event loop
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # We're in an async context, create task
+                        import concurrent.futures
+                        def get_desc():
+                            new_loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(new_loop)
+                            try:
+                                return new_loop.run_until_complete(
+                                    self.description_service.get_city_description(city, route_type, request)
+                                )
+                            finally:
+                                new_loop.close()
+                        
+                        with concurrent.futures.ThreadPoolExecutor() as executor:
+                            description = executor.submit(get_desc).result(timeout=10)
+                    else:
+                        # No running loop
+                        description = asyncio.run(
+                            self.description_service.get_city_description(city, route_type, request)
+                        )
+                except Exception:
+                    # Fallback: run in new event loop
+                    description = asyncio.run(
+                        self.description_service.get_city_description(city, route_type, request)
+                    )
+                
+                enhanced_city = {
+                    'name': city.name,
+                    'country': city.country,
+                    'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
+                    'types': city.types,
+                    'region': city.region,
+                    'description': {
+                        'short': description.short_description,
+                        'detailed': description.detailed_description,
+                        'highlights': description.highlights,
+                        'best_for': description.best_for,
+                        'hidden_gems': description.hidden_gems,
+                        'practical_info': description.practical_info,
+                        'why_visit': description.why_visit_reason,
+                        'photo_keywords': description.photo_keywords
+                    }
+                }
+                enhanced_cities.append(enhanced_city)
+            
+            return enhanced_cities
+            
+        except Exception as e:
+            logger.warning(f"Failed to enhance cities with descriptions: {e}")
+            # Fallback to basic city data
+            return [
+                {
+                    'name': city.name,
+                    'country': city.country,
+                    'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
+                    'types': city.types,
+                    'region': city.region,
+                    'description': {
+                        'short': f"A charming destination in {city.country}",
+                        'why_visit': f"Experience the unique character of {city.name}"
+                    }
+                }
+                for city in cities
+            ]
     
     def _get_season_tips(self, route: TravelRoute, season) -> List[str]:
         """Get season-specific tips for the route."""
