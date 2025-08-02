@@ -313,7 +313,7 @@ def create_app() -> Flask:
     @app.route('/results')
     def results():
         """Enhanced results page with save functionality."""
-        return render_template('travel_results_enhanced.html')
+        return render_template('travel_results_modern.html')
     
     @app.route('/plan_trip', methods=['POST'])
     def plan_trip_enhanced():
@@ -1031,6 +1031,42 @@ def create_app() -> Flask:
         except Exception as e:
             logger.error("Restore session state failed", error=str(e))
             return jsonify({'error': 'Failed to restore session state'}), 500
+    
+    @app.route('/api/set-trip-session', methods=['POST'])
+    def set_trip_session():
+        """Set trip data in session for viewing details."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
+            
+            # Store trip data in session
+            session['current_trip_data'] = data.get('trip_data', {})
+            session['current_trip_id'] = data.get('trip_id')
+            session['current_trip_name'] = data.get('trip_name', 'Trip Details')
+            
+            return jsonify({
+                'success': True,
+                'message': 'Trip data stored in session'
+            })
+        except Exception as e:
+            logger.error(f"Set trip session failed: {e}")
+            return jsonify({'error': 'Failed to store trip data'}), 500
+    
+    @app.route('/api/get-current-trip-data', methods=['GET'])
+    def get_current_trip_data():
+        """Get current trip data from session."""
+        try:
+            # Try to get from session first
+            trip_data = session.get('last_trip_results')
+            if trip_data:
+                return jsonify(trip_data)
+            
+            # If no session data, return empty
+            return jsonify({'data': {'routes': []}}), 404
+        except Exception as e:
+            logger.error(f"Get current trip data failed: {e}")
+            return jsonify({'error': 'Failed to get trip data'}), 500
     
     @app.route('/api/trip-preparation/save', methods=['POST'])
     def save_trip_preparation():

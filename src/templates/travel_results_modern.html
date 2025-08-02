@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Results - EuroRoam</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Modern Theme -->
+    <link rel="stylesheet" href="/static/modern-theme.css">
+    
+    <style>
+        /* Global text color fixes */
+        * {
+            color: var(--text-primary);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary) !important;
+        }
+        
+        p, span, div, li, td, th, label {
+            color: var(--text-primary) !important;
+        }
+        
+        .results-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 2rem 2rem 2rem; /* Top padding for fixed navbar */
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .results-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .results-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .results-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            background: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-accent);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.2rem;
+        }
+        
+        .stat-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Route Cards Grid */
+        .routes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .route-card-modern {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 0;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-smooth);
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+        
+        .route-card-modern:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--accent);
+        }
+        
+        .route-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1.5rem;
+            position: relative;
+        }
+        
+        .route-header * {
+            color: var(--white) !important;
+        }
+        
+        .route-type-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .route-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .route-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .route-content {
+            padding: 1.5rem;
+        }
+        
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .route-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+        }
+        
+        .route-stat-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        
+        .route-stat-info {
+            flex: 1;
+        }
+        
+        .route-stat-value {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        
+        .route-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .route-highlights {
+            margin-bottom: 1.5rem;
+        }
+        
+        .highlights-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .highlights-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .highlight-tag {
+            background: var(--accent);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .route-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: space-between;
+        }
+        
+        .btn-route-action {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .btn-view-details {
+            background: var(--primary);
+            color: var(--white) !important;
+        }
+        
+        .btn-view-details:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn-save {
+            background: var(--light-gray);
+            color: var(--text-primary) !important;
+            border: 1px solid var(--gray);
+        }
+        
+        .btn-save:hover {
+            background: var(--gray);
+        }
+        
+        .btn-save.saved {
+            background: var(--gradient-accent);
+            color: var(--white) !important;
+            border-color: var(--accent);
+        }
+        
+        /* Loading state */
+        .loading-skeleton {
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            height: 20px;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        
+        @keyframes skeleton-loading {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .routes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .route-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar-modern">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-route" style="margin-right: 0.5rem;"></i>
+                EuroRoam
+            </a>
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a>
+                <a href="/auth/profile" style="color: var(--text-secondary); text-decoration: none;">My Trips</a>
+                <button class="btn-modern btn-primary-modern">
+                    <i class="fas fa-user"></i>
+                    Account
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Results Container -->
+    <div class="results-container">
+        <!-- Header -->
+        <div class="results-header">
+            <h1 class="results-title">Your European Adventure Options</h1>
+            <p class="results-subtitle">We've found the perfect routes for your journey</p>
+            
+            <div class="results-stats" id="resultsStats">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Routes Grid -->
+        <div class="routes-grid" id="routesGrid">
+            <!-- Route cards will be populated by JavaScript -->
+            <div class="loading-skeleton" style="height: 400px;"></div>
+            <div class="loading-skeleton" style="height: 400px;"></div>
+            <div class="loading-skeleton" style="height: 400px;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let travelData = null;
+        let availableRoutes = [];
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTravelData();
+        });
+        
+        // Load travel data from session storage or API
+        async function loadTravelData() {
+            try {
+                // First try to get data from session storage
+                const sessionData = sessionStorage.getItem('currentTripData');
+                if (sessionData) {
+                    travelData = JSON.parse(sessionData);
+                    displayResults();
+                    return;
+                }
+                
+                // If no session data, try to fetch from API
+                const response = await fetch('/api/get-current-trip-data');
+                if (response.ok) {
+                    travelData = await response.json();
+                    displayResults();
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading travel data:', error);
+                showEmptyState();
+            }
+        }
+        
+        // Display results
+        function displayResults() {
+            if (!travelData || !travelData.data || !travelData.data.routes) {
+                showEmptyState();
+                return;
+            }
+            
+            availableRoutes = travelData.data.routes;
+            displayStats();
+            displayRouteCards();
+        }
+        
+        // Display summary stats
+        function displayStats() {
+            const statsContainer = document.getElementById('resultsStats');
+            const routes = travelData.data.routes;
+            
+            if (!routes || routes.length === 0) return;
+            
+            // Calculate averages
+            const avgDistance = routes.reduce((sum, route) => sum + (route.total_distance_km || 0), 0) / routes.length;
+            const avgDuration = routes.reduce((sum, route) => sum + (route.total_duration_hours || 0), 0) / routes.length;
+            const avgCost = routes.reduce((sum, route) => sum + (route.estimated_cost?.total_estimate || 0), 0) / routes.length;
+            
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">${Math.round(avgDistance)} km</span>
+                        <span class="stat-label">Avg Distance</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">${Math.round(avgDuration)}h</span>
+                        <span class="stat-label">Avg Duration</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">€${Math.round(avgCost)}</span>
+                        <span class="stat-label">Avg Cost</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-map"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">${routes.length}</span>
+                        <span class="stat-label">Route Options</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display route cards
+        function displayRouteCards() {
+            const gridContainer = document.getElementById('routesGrid');
+            const routes = travelData.data.routes;
+            
+            if (!routes || routes.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            gridContainer.innerHTML = routes.map((route, index) => `
+                <div class="route-card-modern">
+                    <div class="route-header">
+                        <div class="route-type-badge">${route.route_type || 'Scenic'}</div>
+                        <h3 class="route-title">${route.title || `Route ${index + 1}`}</h3>
+                        <p class="route-subtitle">${route.description || 'Discover amazing places along the way'}</p>
+                    </div>
+                    
+                    <div class="route-content">
+                        <div class="route-stats">
+                            <div class="route-stat">
+                                <div class="route-stat-icon">
+                                    <i class="fas fa-route"></i>
+                                </div>
+                                <div class="route-stat-info">
+                                    <div class="route-stat-value">${Math.round(route.total_distance_km || 0)} km</div>
+                                    <div class="route-stat-label">Distance</div>
+                                </div>
+                            </div>
+                            
+                            <div class="route-stat">
+                                <div class="route-stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="route-stat-info">
+                                    <div class="route-stat-value">${Math.round(route.total_duration_hours || 0)}h</div>
+                                    <div class="route-stat-label">Duration</div>
+                                </div>
+                            </div>
+                            
+                            <div class="route-stat">
+                                <div class="route-stat-icon">
+                                    <i class="fas fa-euro-sign"></i>
+                                </div>
+                                <div class="route-stat-info">
+                                    <div class="route-stat-value">€${Math.round(route.estimated_cost?.total_estimate || 0)}</div>
+                                    <div class="route-stat-label">Estimated Cost</div>
+                                </div>
+                            </div>
+                            
+                            <div class="route-stat">
+                                <div class="route-stat-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="route-stat-info">
+                                    <div class="route-stat-value">${route.intermediate_cities?.length || 0}</div>
+                                    <div class="route-stat-label">Stops</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${route.intermediate_cities && route.intermediate_cities.length > 0 ? `
+                            <div class="route-highlights">
+                                <h4 class="highlights-title">Route Highlights</h4>
+                                <div class="highlights-list">
+                                    ${route.intermediate_cities.slice(0, 4).map(city => 
+                                        `<span class="highlight-tag">${city.name || city}</span>`
+                                    ).join('')}
+                                    ${route.intermediate_cities.length > 4 ? `<span class="highlight-tag">+${route.intermediate_cities.length - 4} more</span>` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="route-actions">
+                            <button class="btn-route-action btn-view-details" onclick="viewRouteDetails(${index})">
+                                <i class="fas fa-eye"></i>
+                                View Details
+                            </button>
+                            <button class="btn-route-action btn-save" onclick="saveRoute(${index})">
+                                <i class="fas fa-bookmark"></i>
+                                Save Trip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // View route details - store in session and redirect
+        function viewRouteDetails(routeIndex) {
+            const route = availableRoutes[routeIndex];
+            if (!route) {
+                console.error('Route not found:', routeIndex);
+                return;
+            }
+            
+            // Store the complete trip data in session
+            const tripData = {
+                ...route,
+                start_city: travelData.data.start_city,
+                end_city: travelData.data.end_city,
+                trip_details: travelData.data.trip_details
+            };
+            
+            // Store in session storage for the trip details page
+            sessionStorage.setItem('currentTripData', JSON.stringify(tripData));
+            
+            // Also send to server session
+            fetch('/api/set-trip-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    trip_data: tripData,
+                    trip_name: `${route.route_type || 'Scenic'} Route`,
+                    trip_id: routeIndex
+                })
+            }).then(() => {
+                // Redirect to trip details page
+                window.location.href = '/trip-details';
+            }).catch(error => {
+                console.error('Error storing trip data:', error);
+                // Still redirect, relying on session storage
+                window.location.href = '/trip-details';
+            });
+        }
+        
+        // Save route for later
+        async function saveRoute(routeIndex) {
+            const route = availableRoutes[routeIndex];
+            if (!route) return;
+            
+            try {
+                const tripData = {
+                    ...route,
+                    start_city: travelData.data.start_city,
+                    end_city: travelData.data.end_city,
+                    trip_details: travelData.data.trip_details
+                };
+                
+                const response = await fetch('/api/save-trip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        trip_name: `${route.route_type || 'Scenic'} Route`,
+                        trip_data: tripData,
+                        is_favorite: false
+                    })
+                });
+                
+                if (response.ok) {
+                    // Update button state
+                    const button = event.target.closest('.btn-save');
+                    button.classList.add('saved');
+                    button.innerHTML = '<i class="fas fa-check"></i> Saved';
+                    
+                    // Show success message
+                    showNotification('Trip saved successfully!', 'success');
+                } else {
+                    showNotification('Failed to save trip. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving route:', error);
+                showNotification('Error saving trip. Please try again.', 'error');
+            }
+        }
+        
+        // Show empty state
+        function showEmptyState() {
+            const gridContainer = document.getElementById('routesGrid');
+            gridContainer.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-map"></i>
+                    <h3>No routes available</h3>
+                    <p>Please go back and plan a new trip.</p>
+                    <a href="/" class="btn-modern btn-primary-modern" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i>
+                        Plan New Trip
+                    </a>
+                </div>
+            `;
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-lg);
+                z-index: 1000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}" style="margin-right: 0.5rem;"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
