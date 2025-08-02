@@ -1378,6 +1378,17 @@
             console.log('Creating route from city data...');
             console.log('Trip data:', {{ trip_data | tojson if trip_data else 'null' }});
             
+            // Add some hardcoded coordinates as absolute fallback for testing
+            {% if not trip_data %}
+                console.log('No trip data found, using test coordinates');
+                cities.push([43.6047, 1.4442]); // Toulouse
+                cities.push([43.9352, 4.8357]); // Nîmes 
+                cities.push([43.2965, 5.3698]); // Marseille
+                cityInfo.push({ name: 'Toulouse', coords: [43.6047, 1.4442] });
+                cityInfo.push({ name: 'Nîmes', coords: [43.9352, 4.8357] });
+                cityInfo.push({ name: 'Marseille', coords: [43.2965, 5.3698] });
+            {% endif %}
+            
             {% if trip_data %}
                 // Collect city names for geocoding in correct order
                 {% if trip_data.start_city %}
