@@ -804,6 +804,32 @@
         .route-type-display[data-route-type="luxury"] { color: #fbbf24; }
         .route-type-display[data-route-type="fastest"] { color: #6b7280; }
         .route-type-display[data-route-type="culinary"] { color: #f97316; }
+
+        /* Custom tooltip styling */
+        .custom-tooltip {
+            background: rgba(26, 26, 46, 0.95) !important;
+            border: none !important;
+            border-radius: 8px !important;
+            color: white !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            padding: 8px 12px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .custom-tooltip::before {
+            border-top-color: rgba(26, 26, 46, 0.95) !important;
+        }
+
+        /* Custom marker styling */
+        .custom-marker {
+            cursor: pointer;
+        }
+
+        .custom-marker:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
     </style>
 </head>
 <body>
@@ -1347,16 +1373,18 @@
             // Create route from city information when coordinates aren't directly available
             const cities = [];
             const cityNames = [];
+            const cityInfo = []; // Store city names with coordinates for tooltips
             
             console.log('Creating route from city data...');
             console.log('Trip data:', {{ trip_data | tojson if trip_data else 'null' }});
             
             {% if trip_data %}
-                // Collect city names for geocoding
+                // Collect city names for geocoding in correct order
                 {% if trip_data.start_city %}
                     {% if trip_data.start_city.coordinates %}
                         console.log('Using start city coordinates:', {{ trip_data.start_city.coordinates | tojson }});
                         cities.push({{ trip_data.start_city.coordinates | tojson }});
+                        cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
                     {% elif trip_data.start_city.name %}
                         console.log('Will geocode start city:', '{{ trip_data.start_city.name }}');
                         cityNames.push('{{ trip_data.start_city.name }}');
@@ -1369,6 +1397,7 @@
                         {% if city.coordinates %}
                             console.log('Using intermediate city coordinates:', {{ city.coordinates | tojson }});
                             cities.push({{ city.coordinates | tojson }});
+                            cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
                         {% elif city.name %}
                             console.log('Will geocode intermediate city:', '{{ city.name }}');
                             cityNames.push('{{ city.name }}');
@@ -1385,6 +1414,7 @@
                     {% if trip_data.end_city.coordinates %}
                         console.log('Using end city coordinates:', {{ trip_data.end_city.coordinates | tojson }});
                         cities.push({{ trip_data.end_city.coordinates | tojson }});
+                        cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
                     {% elif trip_data.end_city.name %}
                         console.log('Will geocode end city:', '{{ trip_data.end_city.name }}');
                         cityNames.push('{{ trip_data.end_city.name }}');
@@ -1399,25 +1429,88 @@
                     const coords = await geocodeCity(cityName);
                     if (coords) {
                         cities.push(coords);
+                        cityInfo.push({ name: cityName, coords: coords });
                         console.log(`Geocoded ${cityName}:`, coords);
                     }
                 }
             }
             
             console.log('All cities for routing:', cities);
+            console.log('City info with names:', cityInfo);
             console.log(`Found ${cities.length} cities for route creation`);
             
             if (cities.length >= 2) {
                 console.log('Creating route with waypoints:', cities);
-                drawRoute(cities);
+                // Force using simple route with polyline to ensure it works
+                drawSimpleRoute(cities, cityInfo);
             } else if (cities.length === 1) {
                 console.log('Only one city found, centering map');
                 // Center map on single city
                 map.setView(cities[0], 10);
-                L.marker(cities[0]).addTo(map);
+                const cityName = cityInfo.length > 0 ? cityInfo[0].name : 'City';
+                L.marker(cities[0]).bindTooltip(cityName, {permanent: false, direction: 'top'}).addTo(map);
             } else {
                 console.warn('No valid city coordinates found for mapping');
             }
+        }
+        
+        // Simple route drawing function that always works
+        function drawSimpleRoute(coordinates, cityInfo) {
+            console.log('Drawing simple route connecting all cities');
+            
+            // Clear existing route
+            if (routeLayer) {
+                console.log('Removing existing route layer');
+                map.removeLayer(routeLayer);
+            }
+            if (routingControl) {
+                console.log('Removing existing routing control');
+                map.removeControl(routingControl);
+            }
+            
+            // Create polyline connecting all cities
+            routeLayer = L.polyline(coordinates, {
+                color: '#e94560',
+                weight: 4,
+                opacity: 0.8,
+                smoothFactor: 1
+            }).addTo(map);
+            
+            console.log('Route polyline created');
+            
+            // Add markers for each city with tooltips
+            coordinates.forEach((coord, index) => {
+                const isStart = index === 0;
+                const isEnd = index === coordinates.length - 1;
+                const color = isStart ? '#00b894' : isEnd ? '#e94560' : '#f59e0b';
+                
+                // Get city name from cityInfo
+                const cityName = cityInfo[index] ? cityInfo[index].name : `City ${index + 1}`;
+                const cityType = isStart ? 'Start' : isEnd ? 'End' : 'Stop';
+                
+                const marker = L.marker(coord, {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background: ${color}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(map);
+                
+                // Add tooltip with city name
+                marker.bindTooltip(`<strong>${cityName}</strong><br/><small>${cityType}</small>`, {
+                    permanent: false,
+                    direction: 'top',
+                    offset: [0, -10],
+                    className: 'custom-tooltip'
+                });
+                
+                console.log(`Added marker for ${cityName} at ${coord}`);
+            });
+            
+            // Fit map to show entire route
+            map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+            console.log('Map fitted to route bounds');
         }
         
         // Enhanced geocoding function for European cities
