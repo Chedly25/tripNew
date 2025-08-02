@@ -1737,8 +1737,8 @@
             
             if (normalizedCities.length >= 2) {
                 console.log('Creating route with normalized waypoints:', normalizedCities);
-                // Force using simple route with polyline to ensure it works
-                drawSimpleRoute(normalizedCities, cityInfo);
+                // Use proper OSRM routing for car directions
+                drawRoute(normalizedCities);
             } else if (normalizedCities.length === 1) {
                 console.log('Only one city found, centering map');
                 // Center map on single city
@@ -1976,13 +1976,29 @@
             console.log('Cities for itinerary routing:', cities);
             console.log('City info for itinerary:', cityInfo);
             
-            if (cities.length < 2) {
+            // Normalize coordinate formats - convert all to [lat, lng] arrays
+            const normalizedCities = cities.map(city => {
+                if (Array.isArray(city)) {
+                    return city; // Already in correct format
+                } else if (city && typeof city === 'object' && city.latitude && city.longitude) {
+                    return [city.latitude, city.longitude];
+                } else if (city && typeof city === 'object' && city.lat && city.lng) {
+                    return [city.lat, city.lng];
+                } else {
+                    console.warn('Invalid coordinate format:', city);
+                    return null;
+                }
+            }).filter(city => city !== null);
+            
+            console.log('Normalized itinerary coordinates:', normalizedCities);
+            
+            if (normalizedCities.length < 2) {
                 console.warn('Not enough cities for itinerary routing');
                 return;
             }
             
             // Create waypoints for routing
-            const waypoints = cities.map(coord => L.latLng(coord[0], coord[1]));
+            const waypoints = normalizedCities.map(coord => L.latLng(coord[0], coord[1]));
             
             // Create routing control with car routing
             const itineraryRouting = L.Routing.control({
