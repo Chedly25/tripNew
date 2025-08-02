@@ -319,12 +319,6 @@ def create_app() -> Flask:
     def plan_trip_enhanced():
         """Enhanced trip planning endpoint with budget and duration."""
         try:
-            # Clear any existing trip data from session to ensure fresh results
-            session.pop('current_trip_data', None)
-            session.pop('current_trip_id', None)
-            session.pop('current_trip_name', None)
-            session.pop('last_trip_results', None)
-            
             data = request.get_json()
             if not data:
                 return jsonify({'error': 'Invalid JSON data'}), 400
@@ -1123,13 +1117,22 @@ def create_app() -> Flask:
             
             # Store trip data in session
             trip_data = data.get('trip_data', {})
+            trip_id = data.get('trip_id')
+            trip_name = data.get('trip_name', 'Trip Details')
+            
+            # Validate that we have trip data
+            if not trip_data:
+                logger.warning("No trip data provided to set-trip-session")
+                return jsonify({'error': 'No trip data provided'}), 400
+                
             session['current_trip_data'] = trip_data
-            session['current_trip_id'] = data.get('trip_id')
-            session['current_trip_name'] = data.get('trip_name', 'Trip Details')
+            session['current_trip_id'] = trip_id
+            session['current_trip_name'] = trip_name
             
             # Debug logging
-            logger.info(f"Setting trip session - trip_id: {data.get('trip_id')}, data keys: {list(trip_data.keys()) if trip_data else 'No data'}")
+            logger.info(f"Setting trip session - trip_id: {trip_id}, data keys: {list(trip_data.keys()) if trip_data else 'No data'}")
             logger.info(f"Trip data has intermediate_cities: {bool(trip_data.get('intermediate_cities')) if trip_data else False}")
+            logger.info(f"Session updated - current_trip_data size: {len(str(trip_data)) if trip_data else 0} chars")
             
             return jsonify({
                 'success': True,

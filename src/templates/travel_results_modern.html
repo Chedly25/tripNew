@@ -1211,11 +1211,18 @@
                     trip_name: `${formatRouteType(route.route_type)} Route`,
                     trip_id: routeIndex
                 })
-            }).then(() => {
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Trip session set successfully:', data);
                 // Redirect to trip details page
                 window.location.href = '/trip-details';
             }).catch(error => {
                 console.error('Error storing trip data:', error);
+                console.log('Falling back to session storage only');
                 // Still redirect, relying on session storage
                 window.location.href = '/trip-details';
             });
