@@ -885,6 +885,12 @@ def create_app() -> Flask:
         """AI travel assistant chat interface."""
         return render_template('ai_assistant.html')
     
+    # AI Travel Planner page
+    @app.route('/ai-travel-planner')
+    def ai_travel_planner():
+        """AI travel suggestion planner page."""
+        return render_template('ai_travel_planner.html')
+    
     # Travel insights page
     @app.route('/travel-insights')
     @login_required
