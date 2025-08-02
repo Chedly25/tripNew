@@ -101,27 +101,37 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--gray);
-            padding: 0.75rem 2rem;
+            background: transparent;
+            backdrop-filter: none;
+            border-bottom: none;
+            padding: 1rem 2rem;
             z-index: 1000;
             transition: all 0.3s ease;
         }
 
         .navbar.scrolled {
-            background: var(--white);
-            backdrop-filter: blur(30px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
 
         .navbar * {
-            color: var(--text-primary) !important;
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .navbar a {
-            color: var(--text-primary) !important;
+            color: white !important;
             text-decoration: none;
+        }
+
+        .navbar.scrolled * {
+            color: var(--text-primary) !important;
+            text-shadow: none;
+        }
+
+        .navbar.scrolled a {
+            color: var(--text-primary) !important;
         }
 
         .nav-container {
@@ -207,13 +217,15 @@
         .login-btn {
             padding: 0.5rem 1rem;
             border-radius: 6px;
-            border: 1px solid var(--gray);
+            border: 1px solid rgba(255,255,255,0.3);
             transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
         }
 
         .login-btn:hover {
-            background: var(--gray);
-            color: var(--text-primary) !important;
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+            color: white !important;
         }
 
         .login-btn::after {
@@ -223,18 +235,35 @@
         .signup-btn {
             padding: 0.5rem 1rem;
             border-radius: 6px;
-            background: var(--accent);
+            background: rgba(233, 69, 96, 0.9);
             color: white !important;
             font-weight: 600;
+            backdrop-filter: blur(10px);
         }
 
         .signup-btn:hover {
-            background: var(--accent-dark);
+            background: var(--accent);
             transform: translateY(-1px);
         }
 
         .signup-btn::after {
             display: none;
+        }
+
+        /* Adjust auth buttons when scrolled */
+        .navbar.scrolled .login-btn {
+            border: 1px solid var(--gray);
+            backdrop-filter: none;
+        }
+
+        .navbar.scrolled .login-btn:hover {
+            background: var(--gray);
+            color: var(--text-primary) !important;
+        }
+
+        .navbar.scrolled .signup-btn {
+            background: var(--accent);
+            backdrop-filter: none;
         }
 
         /* Saved Trips Section */
@@ -673,7 +702,7 @@
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .navbar {
-                padding: 1rem;
+                padding: 0.75rem 1rem;
             }
 
             .nav-links {
