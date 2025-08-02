@@ -1697,6 +1697,77 @@ def create_app() -> Flask:
             logger.error(f"Events API error: {e}")
             return jsonify({'error': 'Events service unavailable'}), 500
 
+    @app.route('/api/cities/enrich', methods=['POST'])
+    def enrich_city_data():
+        """Get enriched city data from multiple free APIs."""
+        try:
+            data = request.get_json()
+            if not data or 'city_name' not in data:
+                return jsonify({'error': 'city_name is required'}), 400
+            
+            city_name = data.get('city_name')
+            country_code = data.get('country_code')
+            
+            # Import and use enhanced city service
+            from ...services.enhanced_city_service import get_enhanced_city_service
+            
+            async def get_enriched_data():
+                enhanced_service = get_enhanced_city_service()
+                async with enhanced_service:
+                    return await enhanced_service.enrich_city_data(city_name, country_code)
+            
+            # Run async function
+            enrichment = asyncio.run(get_enriched_data())
+            
+            return jsonify({
+                'success': True,
+                'city_name': city_name,
+                'enrichment': {
+                    'basic_info': enrichment.basic_info,
+                    'population_data': enrichment.population_data,
+                    'cultural_sites': enrichment.cultural_sites,
+                    'unesco_sites': enrichment.unesco_sites,
+                    'tourism_score': enrichment.tourism_score,
+                    'accessibility_info': enrichment.accessibility_info
+                }
+            })
+            
+        except Exception as e:
+            logger.error(f"City enrichment API error: {e}")
+            return jsonify({'error': 'City enrichment service unavailable'}), 500
+
+    @app.route('/api/cities/populate', methods=['POST'])
+    def populate_city_database():
+        """Trigger city database population (admin only)."""
+        try:
+            # This would typically require admin authentication
+            data = request.get_json()
+            admin_key = data.get('admin_key') if data else None
+            
+            if admin_key != os.getenv('ADMIN_API_KEY', 'your_secret_admin_key'):
+                return jsonify({'error': 'Unauthorized'}), 403
+            
+            # Import population script
+            from ...scripts.populate_city_database import CityDatabasePopulator
+            
+            async def run_population():
+                populator = CityDatabasePopulator()
+                await populator.populate_database()
+                return True
+            
+            # Run async population
+            success = asyncio.run(run_population())
+            
+            return jsonify({
+                'success': True,
+                'message': 'City database population completed',
+                'data_file': 'data/european_cities_enhanced.json'
+            })
+            
+        except Exception as e:
+            logger.error(f"Database population error: {e}")
+            return jsonify({'error': 'Database population failed'}), 500
+
     logger.info("Enhanced application initialized with all new features")
     return app
 
