@@ -7,14 +7,14 @@ import json
 import structlog
 
 try:
-    from ..services.budget_service import BudgetService
-    from ..services.journal_service import JournalService
-    from ..services.packing_service import PackingService
-    from ..services.transportation_service import TransportationService
-    from ..services.emergency_service import EmergencyService
-    from ..services.marketplace_service import MarketplaceService
-    from ..services.optimization_service import ItineraryOptimizationService as OptimizationService
-    from ..core.exceptions import ValidationError, ServiceError
+    from ...services.budget_service import BudgetService
+    from ...services.journal_service import JournalService
+    from ...services.packing_service import PackingService
+    from ...services.transportation_service import TransportationService
+    from ...services.emergency_service import EmergencyService
+    from ...services.marketplace_service import MarketplaceService
+    from ...services.optimization_service import ItineraryOptimizationService as OptimizationService
+    from ...core.exceptions import ValidationError, ServiceError
 except ImportError:
     # Fallback - services not available
     BudgetService = None

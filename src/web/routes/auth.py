@@ -10,7 +10,7 @@ import requests
 from urllib.parse import urlencode
 from typing import Optional, Dict
 import structlog
-from ..core.database import get_user_manager, get_trip_manager
+from ...core.database import get_user_manager, get_trip_manager
 
 logger = structlog.get_logger(__name__)
 
