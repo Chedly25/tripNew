@@ -496,7 +496,12 @@ def create_app() -> Flask:
         trip_id = session.get('current_trip_id')
         trip_name = session.get('current_trip_name', 'Trip Details')
         
+        # Debug logging
+        logger.info(f"Trip details page accessed - session keys: {list(session.keys())}")
+        logger.info(f"Trip data present: {bool(trip_data)}, trip_id: {trip_id}")
+        
         if not trip_data:
+            logger.warning("No trip data in session, redirecting to home page")
             return redirect('/')
         
         return render_template('trip_details_modern.html', 
@@ -1117,9 +1122,14 @@ def create_app() -> Flask:
                 return jsonify({'error': 'No data provided'}), 400
             
             # Store trip data in session
-            session['current_trip_data'] = data.get('trip_data', {})
+            trip_data = data.get('trip_data', {})
+            session['current_trip_data'] = trip_data
             session['current_trip_id'] = data.get('trip_id')
             session['current_trip_name'] = data.get('trip_name', 'Trip Details')
+            
+            # Debug logging
+            logger.info(f"Setting trip session - trip_id: {data.get('trip_id')}, data keys: {list(trip_data.keys()) if trip_data else 'No data'}")
+            logger.info(f"Trip data has intermediate_cities: {bool(trip_data.get('intermediate_cities')) if trip_data else False}")
             
             return jsonify({
                 'success': True,

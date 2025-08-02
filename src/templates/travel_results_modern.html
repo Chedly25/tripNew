@@ -1181,13 +1181,21 @@
                 return;
             }
             
+            // Debug log the data structure
+            console.log('Route data:', route);
+            console.log('Travel data structure:', travelData);
+            console.log('Travel data start_city:', travelData?.data?.start_city);
+            console.log('Travel data end_city:', travelData?.data?.end_city);
+            
             // Store the complete trip data in session
             const tripData = {
                 ...route,
-                start_city: travelData.data.start_city,
-                end_city: travelData.data.end_city,
-                trip_details: travelData.data.trip_details
+                start_city: travelData?.data?.start_city || route.start_city,
+                end_city: travelData?.data?.end_city || route.end_city,
+                trip_details: travelData?.data?.trip_details
             };
+            
+            console.log('Final trip data being sent:', tripData);
             
             // Store in session storage for the trip details page
             sessionStorage.setItem('currentTripData', JSON.stringify(tripData));
