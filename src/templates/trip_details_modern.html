@@ -1184,12 +1184,12 @@
                 maxZoom: 19
             }).addTo(map);
             
-            // Add route if available
-            {% if trip_data and trip_data.coordinates %}
-                drawRoute(coordinates);
-            {% elif trip_data %}
-                // Create route from available city data
+            // Always prioritize creating route from city data to ensure accuracy
+            {% if trip_data %}
+                console.log('Creating route from city data to ensure correct itinerary');
                 createRouteFromCityData().catch(console.error);
+            {% else %}
+                console.log('No trip data available');
             {% endif %}
         }
         
@@ -1303,32 +1303,45 @@
             const cities = [];
             const cityNames = [];
             
+            console.log('Creating route from city data...');
+            console.log('Trip data:', {{ trip_data | tojson if trip_data else 'null' }});
+            
             {% if trip_data %}
                 // Collect city names for geocoding
                 {% if trip_data.start_city %}
                     {% if trip_data.start_city.coordinates %}
+                        console.log('Using start city coordinates:', {{ trip_data.start_city.coordinates | tojson }});
                         cities.push({{ trip_data.start_city.coordinates | tojson }});
                     {% elif trip_data.start_city.name %}
+                        console.log('Will geocode start city:', '{{ trip_data.start_city.name }}');
                         cityNames.push('{{ trip_data.start_city.name }}');
                     {% endif %}
                 {% endif %}
                 
                 {% if trip_data.intermediate_cities %}
+                    console.log('Processing intermediate cities:', {{ trip_data.intermediate_cities | tojson }});
                     {% for city in trip_data.intermediate_cities %}
                         {% if city.coordinates %}
+                            console.log('Using intermediate city coordinates:', {{ city.coordinates | tojson }});
                             cities.push({{ city.coordinates | tojson }});
                         {% elif city.name %}
+                            console.log('Will geocode intermediate city:', '{{ city.name }}');
                             cityNames.push('{{ city.name }}');
                         {% elif city is string %}
+                            console.log('Will geocode intermediate city (string):', '{{ city }}');
                             cityNames.push('{{ city }}');
                         {% endif %}
                     {% endfor %}
+                {% else %}
+                    console.log('No intermediate cities found');
                 {% endif %}
                 
                 {% if trip_data.end_city %}
                     {% if trip_data.end_city.coordinates %}
+                        console.log('Using end city coordinates:', {{ trip_data.end_city.coordinates | tojson }});
                         cities.push({{ trip_data.end_city.coordinates | tojson }});
                     {% elif trip_data.end_city.name %}
+                        console.log('Will geocode end city:', '{{ trip_data.end_city.name }}');
                         cityNames.push('{{ trip_data.end_city.name }}');
                     {% endif %}
                 {% endif %}
@@ -1359,13 +1372,25 @@
             }
         }
         
-        // Simple geocoding function for city names
+        // Enhanced geocoding function for European cities
         async function geocodeCity(cityName) {
             try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`);
+                // Add country context for better accuracy
+                const searchQuery = `${cityName}, Europe`;
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=3&countrycodes=fr,it,es,de,at,ch,be,nl,pt,pl,cz,hu,hr,si,sk,ro,bg,gr,mt,cy,lv,lt,ee,fi,se,dk,ie,lu`);
                 const data = await response.json();
+                
                 if (data && data.length > 0) {
-                    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                    // Prefer results that are cities/towns/villages
+                    const cityResult = data.find(result => 
+                        result.type === 'city' || 
+                        result.type === 'town' || 
+                        result.type === 'village' || 
+                        result.class === 'place'
+                    ) || data[0];
+                    
+                    console.log(`Geocoded "${cityName}" to:`, cityResult.display_name);
+                    return [parseFloat(cityResult.lat), parseFloat(cityResult.lon)];
                 }
             } catch (error) {
                 console.warn('Geocoding failed for:', cityName, error);
