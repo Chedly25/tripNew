@@ -532,6 +532,12 @@
         let travelData = null;
         let availableRoutes = [];
         
+        // Utility function to format route type
+        function formatRouteType(routeType) {
+            if (!routeType) return 'Scenic';
+            return routeType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             loadTravelData();
@@ -674,7 +680,7 @@
             gridContainer.innerHTML = routes.map((route, index) => `
                 <div class="route-card-modern">
                     <div class="route-header">
-                        <div class="route-type-badge">${route.route_type || 'Scenic'}</div>
+                        <div class="route-type-badge">${formatRouteType(route.route_type)}</div>
                         <h3 class="route-title">${route.title || `Route ${index + 1}`}</h3>
                         <p class="route-subtitle">${route.description || 'Discover amazing places along the way'}</p>
                     </div>
@@ -776,7 +782,7 @@
                 },
                 body: JSON.stringify({
                     trip_data: tripData,
-                    trip_name: `${route.route_type || 'Scenic'} Route`,
+                    trip_name: `${formatRouteType(route.route_type)} Route`,
                     trip_id: routeIndex
                 })
             }).then(() => {
@@ -808,7 +814,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        trip_name: `${route.route_type || 'Scenic'} Route`,
+                        trip_name: `${formatRouteType(route.route_type)} Route`,
                         trip_data: tripData,
                         is_favorite: false
                     })
