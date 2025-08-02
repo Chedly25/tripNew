@@ -610,7 +610,71 @@ class GooglePlacesCityService:
             return candidates[:8]
     
     def _get_comprehensive_city_database(self):
-        """Get the comprehensive city database used throughout the service."""
+        """Load and parse the comprehensive city database from JSON file."""
+        try:
+            import json
+            import os
+            
+            # Get the database file path
+            current_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            db_file = os.path.join(current_dir, 'data', 'comprehensive_european_cities.json')
+            
+            if not os.path.exists(db_file):
+                logger.warning(f"Comprehensive database not found at {db_file}, using fallback")
+                return self._get_fallback_database()
+            
+            # Load and parse the JSON database
+            with open(db_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Flatten the nested structure into the format expected by the service
+            cities_db = {}
+            
+            # Process France
+            if 'cities' in data and 'france' in data['cities']:
+                for region_name, region_cities in data['cities']['france'].items():
+                    for city_key, city_data in region_cities.items():
+                        cities_db[city_key] = {
+                            'lat': city_data['coordinates']['lat'],
+                            'lon': city_data['coordinates']['lon'],
+                            'country': 'France',
+                            'types': city_data.get('types', []),
+                            'population': city_data.get('population'),
+                            'travel_appeal': city_data.get('travel_appeal', 'medium'),
+                            'authenticity_score': city_data.get('authenticity_score', 5),
+                            'specialties': city_data.get('specialties', []),
+                            'hidden_gems': city_data.get('hidden_gems', []),
+                            'region': city_data.get('region'),
+                            'local_character': city_data.get('local_character', '')
+                        }
+            
+            # Process Italy
+            if 'cities' in data and 'italy' in data['cities']:
+                for region_name, region_cities in data['cities']['italy'].items():
+                    for city_key, city_data in region_cities.items():
+                        cities_db[city_key] = {
+                            'lat': city_data['coordinates']['lat'],
+                            'lon': city_data['coordinates']['lon'],
+                            'country': 'Italy',
+                            'types': city_data.get('types', []),
+                            'population': city_data.get('population'),
+                            'travel_appeal': city_data.get('travel_appeal', 'medium'),
+                            'authenticity_score': city_data.get('authenticity_score', 5),
+                            'specialties': city_data.get('specialties', []),
+                            'hidden_gems': city_data.get('hidden_gems', []),
+                            'region': city_data.get('region'),
+                            'local_character': city_data.get('local_character', '')
+                        }
+            
+            logger.info(f"Loaded {len(cities_db)} cities from comprehensive database")
+            return cities_db
+            
+        except Exception as e:
+            logger.error(f"Failed to load comprehensive database: {e}")
+            return self._get_fallback_database()
+    
+    def _get_fallback_database(self):
+        """Fallback database in case the JSON file cannot be loaded."""
         return {
             # Major European cities
             'nice': {'lat': 43.7102, 'lon': 7.2620, 'country': 'France', 'types': ['scenic', 'coastal', 'luxury']},
