@@ -1539,6 +1539,164 @@ def create_app() -> Flask:
             logger.error(f"Travel insights endpoint failed: {e}")
             return jsonify({'error': 'Travel insights service unavailable'}), 500
 
+    @app.route('/api/hotels', methods=['POST'])
+    def get_hotels():
+        """Get hotels for a specific city using Amadeus API."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Request data required'}), 400
+            
+            city_name = data.get('city_name')
+            latitude = data.get('latitude')
+            longitude = data.get('longitude')
+            limit = data.get('limit', 8)
+            
+            if not city_name or latitude is None or longitude is None:
+                return jsonify({'error': 'city_name, latitude, and longitude are required'}), 400
+            
+            # Create coordinates object
+            from ...core.models import Coordinates
+            coordinates = Coordinates(latitude=float(latitude), longitude=float(longitude))
+            
+            # Get Amadeus service and find hotels
+            amadeus_service = get_amadeus_service()
+            
+            async def get_hotels_async():
+                async with amadeus_service:
+                    return await amadeus_service.find_hotels(
+                        coordinates=coordinates,
+                        city_name=city_name,
+                        limit=limit
+                    )
+            
+            # Run async function
+            hotels = asyncio.run(get_hotels_async())
+            
+            # Filter out hotels with no meaningful data
+            filtered_hotels = [
+                hotel for hotel in hotels 
+                if hotel.get('name') and hotel.get('name') != 'Unknown Hotel'
+            ]
+            
+            logger.info(f"Found {len(filtered_hotels)} hotels for {city_name}")
+            
+            return jsonify({
+                'success': True,
+                'hotels': filtered_hotels,
+                'city': city_name,
+                'total': len(filtered_hotels)
+            })
+            
+        except Exception as e:
+            logger.error(f"Hotels API error: {e}")
+            return jsonify({'error': 'Hotels service unavailable'}), 500
+
+    @app.route('/api/restaurants', methods=['POST'])
+    def get_restaurants():
+        """Get restaurants for a specific city using Foursquare API."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Request data required'}), 400
+            
+            city_name = data.get('city_name')
+            latitude = data.get('latitude')
+            longitude = data.get('longitude')
+            limit = data.get('limit', 8)
+            
+            if not city_name or latitude is None or longitude is None:
+                return jsonify({'error': 'city_name, latitude, and longitude are required'}), 400
+            
+            # Create coordinates object
+            from ...core.models import Coordinates
+            coordinates = Coordinates(latitude=float(latitude), longitude=float(longitude))
+            
+            # Get Foursquare service and find restaurants
+            foursquare_service = FoursquareService()
+            
+            async def get_restaurants_async():
+                return await foursquare_service.find_restaurants(
+                    coordinates=coordinates,
+                    city_name=city_name,
+                    limit=limit
+                )
+            
+            # Run async function
+            restaurants = asyncio.run(get_restaurants_async())
+            
+            # Filter out restaurants with no meaningful data
+            filtered_restaurants = [
+                restaurant for restaurant in restaurants 
+                if restaurant.get('name') and restaurant.get('name') != 'Unknown Restaurant'
+            ]
+            
+            logger.info(f"Found {len(filtered_restaurants)} restaurants for {city_name}")
+            
+            return jsonify({
+                'success': True,
+                'restaurants': filtered_restaurants,
+                'city': city_name,
+                'total': len(filtered_restaurants)
+            })
+            
+        except Exception as e:
+            logger.error(f"Restaurants API error: {e}")
+            return jsonify({'error': 'Restaurants service unavailable'}), 500
+
+    @app.route('/api/events', methods=['POST'])
+    def get_events():
+        """Get events for a specific city using Eventbrite API."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Request data required'}), 400
+            
+            city_name = data.get('city_name')
+            latitude = data.get('latitude')
+            longitude = data.get('longitude')
+            limit = data.get('limit', 6)
+            
+            if not city_name or latitude is None or longitude is None:
+                return jsonify({'error': 'city_name, latitude, and longitude are required'}), 400
+            
+            # Create coordinates object
+            from ...core.models import Coordinates
+            coordinates = Coordinates(latitude=float(latitude), longitude=float(longitude))
+            
+            # Get Eventbrite service and find events
+            eventbrite_service = get_eventbrite_service()
+            
+            async def get_events_async():
+                async with eventbrite_service:
+                    return await eventbrite_service.find_events_by_location(
+                        coordinates=coordinates,
+                        city_name=city_name,
+                        limit=limit
+                    )
+            
+            # Run async function
+            events = asyncio.run(get_events_async())
+            
+            # Filter out events with no meaningful data
+            filtered_events = [
+                event for event in events 
+                if event.get('name') and event.get('name') != 'Unknown Event'
+            ]
+            
+            logger.info(f"Found {len(filtered_events)} events for {city_name}")
+            
+            return jsonify({
+                'success': True,
+                'events': filtered_events,
+                'city': city_name,
+                'total': len(filtered_events)
+            })
+            
+        except Exception as e:
+            logger.error(f"Events API error: {e}")
+            return jsonify({'error': 'Events service unavailable'}), 500
+
     logger.info("Enhanced application initialized with all new features")
     return app
 

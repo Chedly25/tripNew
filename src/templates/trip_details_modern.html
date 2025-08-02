@@ -79,9 +79,19 @@
             font-size: 0.9rem;
         }
         
+        .breadcrumb-item {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .breadcrumb-item:hover:not(.current) {
+            color: var(--primary);
+        }
+        
         .breadcrumb-item.current {
             color: var(--primary);
             font-weight: 500;
+            cursor: default;
         }
         
         .header-right {
@@ -830,6 +840,210 @@
             transform: scale(1.1);
             transition: transform 0.2s ease;
         }
+
+        /* Hotels, Restaurants & Events Sections */
+        .amenities-section {
+            grid-column: 1 / -1;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .amenities-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .amenities-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .amenities-subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .amenities-content {
+            padding: 2rem;
+        }
+
+        .amenities-tabs {
+            display: flex;
+            background: var(--gray-light);
+            border-radius: var(--radius-lg);
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .amenities-tab {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .amenities-tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .amenities-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .amenity-card {
+            background: var(--white);
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .amenity-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .amenity-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--gray-light), var(--gray));
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 3rem;
+        }
+
+        .amenity-content {
+            padding: 1.5rem;
+        }
+
+        .amenity-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .amenity-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .amenity-rating .stars {
+            color: #ffc107;
+        }
+
+        .amenity-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .amenity-price {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .amenity-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .amenity-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .amenity-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .amenity-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .amenity-btn.secondary {
+            background: var(--gray-light);
+            color: var(--text);
+        }
+
+        .amenity-btn.secondary:hover {
+            background: var(--gray);
+        }
+
+        .loading-amenities {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-amenities i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        .no-amenities {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .no-amenities i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -842,9 +1056,9 @@
                     <span>EuroRoam</span>
                 </a>
                 <div class="breadcrumb">
-                    <span class="breadcrumb-item">Trip Planning</span>
+                    <span class="breadcrumb-item" onclick="goToTripPlanning()">Trip Planning</span>
                     <i class="fas fa-chevron-right"></i>
-                    <span class="breadcrumb-item">Results</span>
+                    <span class="breadcrumb-item" onclick="goToResults()">Results</span>
                     <i class="fas fa-chevron-right"></i>
                     <span class="breadcrumb-item current">Trip Details</span>
                 </div>
@@ -1091,6 +1305,69 @@
                                 <span>Final Destination</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotels, Restaurants & Events Section -->
+        <div class="amenities-section">
+            <div class="amenities-header">
+                <h2 class="amenities-title">🏨 Hotels, Restaurants & Events</h2>
+                <p class="amenities-subtitle">Discover amazing places to stay, dine, and experience along your route</p>
+            </div>
+            <div class="amenities-content">
+                <div class="amenities-tabs">
+                    <button class="amenities-tab active" data-tab="hotels">
+                        <i class="fas fa-bed"></i>
+                        Hotels
+                    </button>
+                    <button class="amenities-tab" data-tab="restaurants">
+                        <i class="fas fa-utensils"></i>
+                        Restaurants
+                    </button>
+                    <button class="amenities-tab" data-tab="events">
+                        <i class="fas fa-calendar-alt"></i>
+                        Events
+                    </button>
+                </div>
+
+                <!-- Hotels Tab -->
+                <div class="amenities-tab-content" id="hotels-content">
+                    <div class="loading-amenities" id="hotels-loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>Finding the best hotels for your trip...</p>
+                    </div>
+                    <div class="amenities-grid" id="hotels-grid" style="display: none;"></div>
+                    <div class="no-amenities" id="hotels-empty" style="display: none;">
+                        <i class="fas fa-bed"></i>
+                        <p>No hotels found for this location</p>
+                    </div>
+                </div>
+
+                <!-- Restaurants Tab -->
+                <div class="amenities-tab-content" id="restaurants-content" style="display: none;">
+                    <div class="loading-amenities" id="restaurants-loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>Finding amazing restaurants for your journey...</p>
+                    </div>
+                    <div class="amenities-grid" id="restaurants-grid" style="display: none;"></div>
+                    <div class="no-amenities" id="restaurants-empty" style="display: none;">
+                        <i class="fas fa-utensils"></i>
+                        <p>No restaurants found for this location</p>
+                    </div>
+                </div>
+
+                <!-- Events Tab -->
+                <div class="amenities-tab-content" id="events-content" style="display: none;">
+                    <div class="loading-amenities" id="events-loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>Discovering exciting events in the area...</p>
+                    </div>
+                    <div class="amenities-grid" id="events-grid" style="display: none;"></div>
+                    <div class="no-amenities" id="events-empty" style="display: none;">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>No events found for this location</p>
                     </div>
                 </div>
             </div>
@@ -1733,6 +2010,18 @@
             }
         }
         
+        function goToTripPlanning() {
+            window.location.href = '/';
+        }
+        
+        function goToResults() {
+            if (document.referrer && document.referrer.includes('/results')) {
+                window.history.back();
+            } else {
+                window.location.href = '/results';
+            }
+        }
+        
         function viewMyTrips() {
             window.location.href = '/auth/profile';
         }
@@ -2065,6 +2354,220 @@
                 }, 300);
             }, 4000);
         }
+
+        // Amenities (Hotels, Restaurants, Events) functionality
+        let amenitiesData = {
+            hotels: [],
+            restaurants: [],
+            events: []
+        };
+
+        let currentAmenityTab = 'hotels';
+
+        function initializeAmenities() {
+            // Set up tab switching
+            document.querySelectorAll('.amenities-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.closest('.amenities-tab').dataset.tab;
+                    switchAmenityTab(tabName);
+                });
+            });
+
+            // Load data for all tabs but only show hotels initially
+            loadAmenitiesData();
+        }
+
+        function switchAmenityTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.amenities-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Show/hide content
+            document.querySelectorAll('.amenities-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(`${tabName}-content`).style.display = 'block';
+
+            currentAmenityTab = tabName;
+
+            // Load data if not already loaded
+            if (amenitiesData[tabName].length === 0) {
+                loadAmenityData(tabName);
+            }
+        }
+
+        async function loadAmenitiesData() {
+            // Load hotels first (since it's the active tab)
+            await loadAmenityData('hotels');
+        }
+
+        async function loadAmenityData(type) {
+            try {
+                // Get trip data to extract city information
+                const tripData = getCurrentTripData();
+                if (!tripData || !tripData.intermediate_cities || tripData.intermediate_cities.length === 0) {
+                    showNoAmenities(type);
+                    return;
+                }
+
+                // Use the first intermediate city for amenities
+                const city = tripData.intermediate_cities[0];
+                if (!city || !city.latitude || !city.longitude) {
+                    showNoAmenities(type);
+                    return;
+                }
+
+                showLoading(type);
+
+                const response = await fetch(`/api/${type}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        city_name: city.name || 'Unknown',
+                        latitude: city.latitude,
+                        longitude: city.longitude,
+                        limit: type === 'events' ? 6 : 8
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data[type] && data[type].length > 0) {
+                        amenitiesData[type] = data[type];
+                        displayAmenities(type, data[type]);
+                    } else {
+                        showNoAmenities(type);
+                    }
+                } else {
+                    showNoAmenities(type);
+                }
+            } catch (error) {
+                console.error(`Error loading ${type}:`, error);
+                showNoAmenities(type);
+            }
+        }
+
+        function getCurrentTripData() {
+            // Try to get from session storage or global variable
+            if (typeof tripData !== 'undefined' && tripData) {
+                return tripData;
+            }
+            
+            try {
+                const sessionData = sessionStorage.getItem('currentTripData');
+                if (sessionData) {
+                    return JSON.parse(sessionData);
+                }
+            } catch (e) {
+                console.warn('Could not parse session trip data');
+            }
+            
+            return null;
+        }
+
+        function showLoading(type) {
+            document.getElementById(`${type}-loading`).style.display = 'block';
+            document.getElementById(`${type}-grid`).style.display = 'none';
+            document.getElementById(`${type}-empty`).style.display = 'none';
+        }
+
+        function showNoAmenities(type) {
+            document.getElementById(`${type}-loading`).style.display = 'none';
+            document.getElementById(`${type}-grid`).style.display = 'none';
+            document.getElementById(`${type}-empty`).style.display = 'block';
+        }
+
+        function displayAmenities(type, items) {
+            document.getElementById(`${type}-loading`).style.display = 'none';
+            document.getElementById(`${type}-empty`).style.display = 'none';
+            
+            const grid = document.getElementById(`${type}-grid`);
+            grid.style.display = 'grid';
+            grid.innerHTML = '';
+
+            items.forEach(item => {
+                const card = createAmenityCard(type, item);
+                grid.appendChild(card);
+            });
+        }
+
+        function createAmenityCard(type, item) {
+            const card = document.createElement('div');
+            card.className = 'amenity-card';
+
+            const imageUrl = item.photo || '';
+            const hasImage = imageUrl && imageUrl.trim() !== '';
+
+            const stars = Math.round(item.rating || 0);
+            const starsHtml = '★'.repeat(stars) + '☆'.repeat(Math.max(0, 5 - stars));
+
+            let priceDisplay = '';
+            if (type === 'hotels' && item.price_per_night) {
+                priceDisplay = `€${Math.round(item.price_per_night)}/night`;
+            } else if (type === 'restaurants' && item.price_level) {
+                priceDisplay = '€'.repeat(item.price_level) + '€'.repeat(Math.max(0, 4 - item.price_level)).replace(/€/g, '·');
+            } else if (type === 'events') {
+                priceDisplay = item.price_level === 1 ? 'Free' : 'Paid Event';
+            }
+
+            let categoryDisplay = '';
+            if (type === 'restaurants' && item.cuisine) {
+                categoryDisplay = item.cuisine;
+            } else if (type === 'events' && item.category) {
+                categoryDisplay = item.category;
+            } else if (type === 'hotels' && item.stars) {
+                categoryDisplay = `${item.stars} Star Hotel`;
+            }
+
+            card.innerHTML = `
+                <div class="amenity-image" ${hasImage ? `style="background-image: url('${imageUrl}')"` : ''}>
+                    ${!hasImage ? getAmenityIcon(type) : ''}
+                </div>
+                <div class="amenity-content">
+                    <h4 class="amenity-name">${item.name || 'Unknown'}</h4>
+                    ${item.rating ? `
+                        <div class="amenity-rating">
+                            <span class="stars">${starsHtml}</span>
+                            <span>(${item.rating.toFixed(1)})</span>
+                        </div>
+                    ` : ''}
+                    <div class="amenity-details">
+                        ${categoryDisplay ? `<span><i class="fas fa-tag"></i> ${categoryDisplay}</span>` : ''}
+                        ${item.address ? `<span><i class="fas fa-map-marker-alt"></i> ${item.address}</span>` : ''}
+                        ${priceDisplay ? `<div class="amenity-price">${priceDisplay}</div>` : ''}
+                    </div>
+                    ${item.url || item.website ? `
+                        <div class="amenity-actions">
+                            <a href="${item.url || item.website}" target="_blank" class="amenity-btn primary">
+                                <i class="fas fa-external-link-alt"></i>
+                                View Details
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        function getAmenityIcon(type) {
+            const icons = {
+                hotels: '<i class="fas fa-bed"></i>',
+                restaurants: '<i class="fas fa-utensils"></i>',
+                events: '<i class="fas fa-calendar-alt"></i>'
+            };
+            return icons[type] || '<i class="fas fa-map-marker-alt"></i>';
+        }
+
+        // Initialize amenities when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for other initializations to complete
+            setTimeout(initializeAmenities, 1000);
+        });
     </script>
     
     <!-- AI Travel Assistant Chat Widget -->

@@ -75,9 +75,19 @@
             font-size: 0.9rem;
         }
         
+        .breadcrumb-item {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .breadcrumb-item:hover:not(.current) {
+            color: var(--primary);
+        }
+        
         .breadcrumb-item.current {
             color: var(--primary);
             font-weight: 500;
+            cursor: default;
         }
         
         .header-right {
@@ -562,7 +572,7 @@
                     <span>EuroRoam</span>
                 </a>
                 <div class="breadcrumb">
-                    <span class="breadcrumb-item">Trip Planning</span>
+                    <span class="breadcrumb-item" onclick="goToTripPlanning()">Trip Planning</span>
                     <i class="fas fa-chevron-right"></i>
                     <span class="breadcrumb-item current">Results</span>
                 </div>
@@ -950,6 +960,10 @@
         
         // Header functions
         function goHome() {
+            window.location.href = '/';
+        }
+        
+        function goToTripPlanning() {
             window.location.href = '/';
         }
         
