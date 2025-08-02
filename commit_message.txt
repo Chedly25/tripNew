@@ -1,1 +1,1 @@
-Add Heroku deployment files
+Fix requirements.txt and update to .python-version
