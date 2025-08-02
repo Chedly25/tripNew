@@ -495,7 +495,7 @@ class TravelPlannerServiceImpl(TravelPlannerService):
                 exploration_factor = 0.25
                 
                 # Create a temporary city service with just our candidates
-                temp_service = type(self.city_service)(None)
+                temp_service = type(self.city_service)()
                 temp_service._city_cache = {city.name: city for city in candidates}
                 temp_ml_service = MLRecommendationService(temp_service)
                 
