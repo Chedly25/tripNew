@@ -547,18 +547,14 @@
         }
 
         .form-title::after {
-            content: '✈️';
+            content: '◦';
             position: absolute;
-            right: -3rem;
+            right: -2rem;
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.5rem;
-            animation: fly 3s ease-in-out infinite;
-        }
-
-        @keyframes fly {
-            0%, 100% { transform: translateY(-50%) translateX(0px); }
-            50% { transform: translateY(-50%) translateX(10px); }
+            opacity: 0.4;
+            color: var(--accent);
         }
 
         .form-grid {
@@ -1222,44 +1218,44 @@
     <section class="hero">
         <div class="hero-content">
             <h1 class="hero-title">
-                🎨✨ Your Magical
-                <span class="handwritten-accent">European</span>
-                Adventure Starts Here! ✨🎨
+                Discover Europe Through
+                <span class="handwritten-accent">Intelligent</span>
+                Travel Design
             </h1>
             <p class="hero-subtitle">
-                🤖 Let Claude AI be your travel wizard! From romantic Parisian cafés to thrilling Alpine adventures - 
-                discover breathtaking routes, hidden gems, and create memories that will last a lifetime! 🌟
+                Experience the sophistication of AI-powered travel planning. From intimate Parisian bistros to majestic Alpine vistas, 
+                we craft bespoke European journeys that transcend ordinary tourism.
             </p>
 
             <!-- Trip Planning Form -->
             <div class="planning-container">
-                <h2 class="form-title">🎯 Create Your Magical Journey 🎯</h2>
+                <h2 class="form-title">Design Your European Journey</h2>
                 
                 <!-- AI Suggestions Button -->
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <a href="/ai-travel-planner" class="ai-suggestions-btn">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                        ✨ Get AI Travel Suggestions First! ✨
+                        <i class="fas fa-brain"></i>
+                        AI-Powered Destination Discovery
                     </a>
                     <p style="color: rgba(255,255,255,0.8); margin-top: 0.5rem; font-size: 0.9rem;">
-                        🤖 Let Claude AI suggest perfect destinations based on your preferences!
+                        Let our intelligent system curate personalized destinations based on your unique preferences
                     </p>
                 </div>
                 
                 <form id="travel-form">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label class="form-label">🏛️ Starting City</label>
-                            <input type="text" class="form-control" id="start-city" name="start_city" placeholder="Paris, Amsterdam, Berlin..." required>
+                            <label class="form-label">Departure City</label>
+                            <input type="text" class="form-control" id="start-city" name="start_city" placeholder="e.g., Paris, Amsterdam, Berlin" required>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">🎯 Destination City</label>
-                            <input type="text" class="form-control" id="end-city" name="end_city" placeholder="Rome, Barcelona, Prague..." required>
+                            <label class="form-label">Destination City</label>
+                            <input type="text" class="form-control" id="end-city" name="end_city" placeholder="e.g., Rome, Barcelona, Prague" required>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">📅 Trip Duration</label>
+                            <label class="form-label">Trip Duration</label>
                             <div class="select-wrapper">
                                 <select class="form-control" id="duration" name="duration" required>
                                     <option value="">Choose duration</option>
@@ -1272,7 +1268,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">💰 Budget Range</label>
+                            <label class="form-label">Budget Range</label>
                             <div class="select-wrapper">
                                 <select class="form-control" id="budget" name="budget" required>
                                     <option value="">Select budget</option>
@@ -1285,7 +1281,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">🎨 Travel Style <small>(Select one or more)</small></label>
+                        <label class="form-label">Travel Style <small>(Select one or more)</small></label>
                         <div class="specialty-grid">
                             <div class="specialty-btn" data-specialty="scenic">
                                 <i class="fas fa-mountain"></i>
@@ -1641,7 +1637,7 @@
             <div class="chat-header">
                 <div class="chat-title">
                     <i class="fas fa-robot me-2"></i>
-                    🤖 Claude Travel Assistant
+                    Claude Travel Assistant
                 </div>
                 <button class="chat-close" onclick="toggleAiChat()">×</button>
             </div>
@@ -1695,7 +1691,7 @@
             const sendBtn = document.querySelector('.chat-send');
             sendBtn.disabled = true;
             
-            addChatMessage('ai', '🤖 Claude is thinking...', true);
+            addChatMessage('ai', 'Claude is analyzing your request...', true);
             
             try {
                 const response = await fetch('/api/ai-chat', {
@@ -1719,7 +1715,7 @@
             } catch (error) {
                 console.error('AI chat error:', error);
                 removeLoadingMessage();
-                addChatMessage('ai', '🛠️ I\'m having connectivity issues right now. But I\'d love to help you plan an amazing European adventure! Try planning your trip above for instant magic!');
+                addChatMessage('ai', 'I\'m currently experiencing connectivity issues. Please use the trip planning form above to create your European adventure.');
             } finally {
                 sendBtn.disabled = false;
             }
