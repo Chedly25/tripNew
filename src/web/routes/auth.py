@@ -377,9 +377,12 @@ def google_login():
     
     # Use library to construct the request for Google login and provide
     # scopes that let you retrieve user's profile from Google
+    # Use environment variable for redirect URI or construct from url_root
+    redirect_uri = os.getenv('GOOGLE_REDIRECT_URI') or (request.url_root.rstrip('/') + "/auth/google/callback")
+    
     request_uri = authorization_endpoint + "?" + urlencode({
         "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": request.url_root + "auth/google/callback",
+        "redirect_uri": redirect_uri,
         "scope": "openid email profile",
         "state": state,
         "response_type": "code",
