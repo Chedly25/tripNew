@@ -24,29 +24,12 @@
     <link rel="stylesheet" href="/static/fallback.css">
     
     <style>
+        /* Use global theme variables with enhancements */
         :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --secondary: #06b6d4;
-            --accent: #f59e0b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #0f172a;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            /* Additional landing page specific gradients */
+            --hero-gradient: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 50%, var(--brand-accent) 100%);
+            --glass-strong: rgba(255, 255, 255, 0.15);
+            --glass-stronger: rgba(255, 255, 255, 0.25);
         }
         
         * {
@@ -56,39 +39,67 @@
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: var(--gradient);
+            font-family: var(--font-primary);
+            background: var(--hero-gradient);
             min-height: 100vh;
-            color: var(--gray-800);
+            color: var(--text-primary);
             overflow-x: hidden;
+            position: relative;
         }
         
-        /* Enhanced Navigation */
+        /* Floating background animations */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(54, 207, 201, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 193, 7, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            animation: float 20s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(5px) rotate(-1deg); }
+        }
+        
+        /* Enhanced Navigation with Theme Colors */
         .navbar {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+            background: var(--bg-glass);
+            backdrop-filter: blur(30px);
+            border-bottom: var(--border-glass);
             padding: 1rem 0;
+            box-shadow: var(--shadow-glass);
         }
         
         .navbar-brand {
-            font-family: 'Playfair Display', serif;
+            font-family: var(--font-heading);
             font-weight: 700;
-            color: var(--primary-dark) !important;
+            color: var(--white) !important;
             font-size: 1.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         
         .nav-link {
-            color: var(--gray-700) !important;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            padding: 0.5rem 1rem !important;
-            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            transition: var(--transition-normal);
+            padding: 0.75rem 1.25rem !important;
+            border-radius: var(--border-radius-lg);
         }
         
         .nav-link:hover, .nav-link.active {
-            color: var(--primary) !important;
-            background: rgba(99, 102, 241, 0.1);
+            color: var(--white) !important;
+            background: var(--bg-glass);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
         .user-menu {
@@ -98,16 +109,18 @@
         }
         
         .user-avatar {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--brand-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
+            color: var(--white);
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-md);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
         
         /* Hero Section */
@@ -125,12 +138,16 @@
         }
         
         .hero-title {
-            font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 700;
+            font-family: var(--font-heading);
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 800;
             margin-bottom: 1.5rem;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            text-shadow: 0 6px 30px rgba(0,0,0,0.4);
             letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--white) 0%, rgba(255,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .hero-subtitle {
@@ -157,7 +174,8 @@
         }
         
         .hero-feature i {
-            color: var(--accent);
+            color: var(--brand-accent);
+            font-size: 1.2rem;
         }
         
         /* Quick Actions */
@@ -170,39 +188,42 @@
         }
         
         .quick-action-btn {
-            background: var(--glass-bg);
-            border: 2px solid var(--glass-border);
-            color: var(--gray-800);
-            padding: 0.75rem 1.5rem;
-            border-radius: 16px;
-            font-weight: 600;
+            background: var(--bg-glass);
+            border: 2px solid var(--border-glass);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius-xl);
+            font-weight: 700;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
+            gap: 0.75rem;
+            transition: var(--transition-smooth);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-glass);
+            font-size: 1.1rem;
         }
         
         .quick-action-btn:hover {
-            background: white;
-            color: var(--primary);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+            background: var(--glass-stronger);
+            color: var(--white);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow-xl);
         }
         
         .quick-action-btn.primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
+            background: var(--brand-gradient);
+            color: var(--white);
             border-color: transparent;
+            box-shadow: var(--shadow-brand);
         }
         
         .quick-action-btn.primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.3);
+            background: var(--brand-gradient-hover);
+            color: var(--white);
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: var(--shadow-brand-hover);
         }
         
         /* Enhanced Trip Planner Form */
@@ -211,23 +232,42 @@
         }
         
         .planner-card {
-            background: var(--glass-bg);
-            border-radius: 32px;
+            background: var(--bg-glass);
+            border-radius: var(--border-radius-xxl);
             padding: 3rem;
-            box-shadow: 0 32px 64px rgba(0,0,0,0.1);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            max-width: 800px;
+            box-shadow: var(--shadow-glass);
+            border: var(--border-glass);
+            backdrop-filter: blur(30px);
+            max-width: 900px;
             margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .planner-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 2s;
+        }
+        
+        .planner-card:hover::before {
+            transform: translateX(100%);
         }
         
         .planner-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 800;
             text-align: center;
-            margin-bottom: 2rem;
-            color: var(--gray-800);
+            margin-bottom: 2.5rem;
+            color: var(--white);
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         
         .form-group {
@@ -235,27 +275,38 @@
         }
         
         .form-label {
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 0.75rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         
         .form-control, .form-select {
-            border: 2px solid rgba(99, 102, 241, 0.2);
-            border-radius: 16px;
-            padding: 1rem 1.25rem;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--border-glass);
+            border-radius: var(--border-radius-xl);
+            padding: 1.25rem 1.5rem;
+            font-size: 1.1rem;
+            transition: var(--transition-smooth);
+            background: var(--bg-glass);
+            color: var(--white);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
         
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-            background: white;
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
+            background: var(--glass-stronger);
+            color: var(--white);
+            transform: translateY(-2px);
         }
         
         .route-types {
@@ -266,66 +317,78 @@
         }
         
         .route-type-card {
-            background: rgba(255, 255, 255, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            border-radius: 16px;
-            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border-light);
+            border-radius: var(--border-radius-xl);
+            padding: 1.5rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition-smooth);
             position: relative;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(20px);
         }
         
         .route-type-card:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            background: var(--style-bg);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--style-color);
         }
         
         .route-type-card.selected {
             border-color: var(--style-color);
             background: var(--style-bg);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-brand);
         }
         
         .route-type-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: var(--style-gradient, linear-gradient(135deg, var(--primary), var(--secondary)));
+            width: 60px;
+            height: 60px;
+            border-radius: var(--border-radius-lg);
+            background: var(--style-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            margin: 0 auto 0.75rem;
+            color: var(--white);
+            font-size: 1.8rem;
+            margin: 0 auto 1rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-smooth);
         }
         
         .route-type-name {
-            font-weight: 700;
-            color: var(--gray-800);
-            margin-bottom: 0.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.2rem;
         }
         
         .route-type-desc {
-            font-size: 0.9rem;
-            color: var(--gray-600);
-            line-height: 1.4;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            font-weight: 500;
         }
         
         .plan-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: var(--brand-gradient);
             border: none;
-            color: white;
-            padding: 1.25rem 2.5rem;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 1.1rem;
+            color: var(--white);
+            padding: 1.5rem 3rem;
+            border-radius: var(--border-radius-xxl);
+            font-weight: 800;
+            font-size: 1.2rem;
             width: 100%;
-            margin-top: 1.5rem;
-            transition: all 0.2s ease;
+            margin-top: 2rem;
+            transition: var(--transition-smooth);
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow-brand);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .plan-btn::before {
@@ -344,9 +407,13 @@
         }
         
         .plan-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--shadow-brand-hover);
+            background: var(--brand-gradient-hover);
+        }
+        
+        .plan-btn:active {
+            transform: translateY(-2px) scale(0.98);
         }
         
         .plan-btn:disabled {
@@ -685,50 +752,50 @@
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">
-                    Your AI-Powered European Adventure Awaits
+                    🚗✨ Your Magical European Adventure Starts Here!
                 </h1>
                 <p class="hero-subtitle">
-                    Discover breathtaking routes, hidden gems, and personalized recommendations 
-                    powered by advanced AI technology. Plan the perfect road trip with real-time 
-                    bookings and intelligent insights.
+                    Unleash the power of AI to discover breathtaking routes, hidden gems, and personalized magic! 
+                    From romantic getaways to thrilling adventures - let Claude AI be your travel companion and 
+                    create memories that will last a lifetime.
                 </p>
                 
                 <div class="hero-features">
                     <div class="hero-feature">
-                        <i class="fas fa-robot"></i>
-                        <span>AI-Powered Planning</span>
+                        <i class="fas fa-magic"></i>
+                        <span>🤖 Claude AI Travel Wizard</span>
                     </div>
                     <div class="hero-feature">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <span>6 Route Types</span>
+                        <i class="fas fa-heart"></i>
+                        <span>💎 6 Magical Route Styles</span>
                     </div>
                     <div class="hero-feature">
-                        <i class="fas fa-hotel"></i>
-                        <span>Real Hotel Bookings</span>
+                        <i class="fas fa-sparkles"></i>
+                        <span>✨ Real-time Smart Bookings</span>
                     </div>
                     <div class="hero-feature">
-                        <i class="fas fa-comments"></i>
-                        <span>24/7 AI Assistant</span>
+                        <i class="fas fa-comments-alt"></i>
+                        <span>💬 24/7 AI Travel Buddy</span>
                     </div>
                 </div>
                 
                 <div class="quick-actions">
                     <a href="/ai-travel-planner" class="quick-action-btn primary">
-                        <i class="fas fa-magic"></i>
-                        AI Travel Suggestions
-                    </a>
-                    <a href="#planner" class="quick-action-btn">
-                        <i class="fas fa-play"></i>
-                        Start Planning
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        🎯 Get AI Travel Suggestions Now!
                     </a>
                     <a href="/ai-assistant" class="quick-action-btn">
                         <i class="fas fa-robot"></i>
-                        Ask AI Assistant
+                        💬 Chat with Claude AI
+                    </a>
+                    <a href="#planner" class="quick-action-btn">
+                        <i class="fas fa-rocket"></i>
+                        🚀 Start Planning Adventure
                     </a>
                     {% if not current_user %}
                         <a href="/auth/register" class="quick-action-btn">
                             <i class="fas fa-user-plus"></i>
-                            Create Account
+                            🎉 Join the Adventure!
                         </a>
                     {% endif %}
                 </div>
@@ -835,8 +902,8 @@
         <div class="container">
             <div class="planner-card">
                 <h2 class="planner-title">
-                    <i class="fas fa-map-marked-alt me-2"></i>
-                    Plan Your Perfect Journey
+                    <i class="fas fa-wand-magic-sparkles me-2"></i>
+                    🎨 Create Your Magical Journey
                 </h2>
                 
                 <form id="tripPlannerForm">
@@ -873,58 +940,91 @@
                                 <div class="route-type-icon">
                                     <i class="fas fa-mountain"></i>
                                 </div>
-                                <div class="route-type-name">Scenic</div>
-                                <div class="route-type-desc">Breathtaking landscapes and natural wonders</div>
+                                <div class="route-type-name">🏔️ Scenic</div>
+                                <div class="route-type-desc">Breathtaking landscapes and natural wonders that'll take your breath away!</div>
                             </div>
                             <div class="route-type-card trip-cultural" data-type="cultural">
                                 <div class="route-type-icon">
                                     <i class="fas fa-monument"></i>
                                 </div>
-                                <div class="route-type-name">Cultural</div>
-                                <div class="route-type-desc">Historic sites and cultural landmarks</div>
+                                <div class="route-type-name">🏰 Cultural</div>
+                                <div class="route-type-desc">Historic sites and cultural landmarks rich with stories and legends</div>
                             </div>
                             <div class="route-type-card trip-adventure" data-type="adventure">
                                 <div class="route-type-icon">
                                     <i class="fas fa-hiking"></i>
                                 </div>
-                                <div class="route-type-name">Adventure</div>
-                                <div class="route-type-desc">Thrilling activities and outdoor experiences</div>
+                                <div class="route-type-name">🏄 Adventure</div>
+                                <div class="route-type-desc">Thrilling activities and outdoor experiences for adrenaline seekers!</div>
                             </div>
                             <div class="route-type-card trip-culinary" data-type="culinary">
                                 <div class="route-type-icon">
                                     <i class="fas fa-utensils"></i>
                                 </div>
-                                <div class="route-type-name">Culinary</div>
-                                <div class="route-type-desc">Gastronomic delights and local cuisine</div>
+                                <div class="route-type-name">🍽️ Culinary</div>
+                                <div class="route-type-desc">Gastronomic delights and local cuisine that'll make you fall in love</div>
                             </div>
                             <div class="route-type-card trip-romantic" data-type="romantic">
                                 <div class="route-type-icon">
                                     <i class="fas fa-heart"></i>
                                 </div>
-                                <div class="route-type-name">Romantic</div>
-                                <div class="route-type-desc">Perfect for couples and romantic getaways</div>
+                                <div class="route-type-name">💕 Romantic</div>
+                                <div class="route-type-desc">Perfect for couples seeking magical moments and romantic getaways</div>
                             </div>
                             <div class="route-type-card trip-hidden_gems" data-type="hidden_gems">
                                 <div class="route-type-icon">
                                     <i class="fas fa-gem"></i>
                                 </div>
-                                <div class="route-type-name">Hidden Gems</div>
-                                <div class="route-type-desc">Secret spots and off-the-beaten-path treasures</div>
+                                <div class="route-type-name">💎 Hidden Gems</div>
+                                <div class="route-type-desc">Secret spots and off-the-beaten-path treasures few travelers know!</div>
                             </div>
                         </div>
                     </div>
                     
                     <button type="submit" class="plan-btn">
                         <span class="btn-text">
-                            <i class="fas fa-magic me-2"></i>
-                            Create My AI-Powered Adventure
+                            <i class="fas fa-wand-magic-sparkles me-2"></i>
+                            ✨ Create My Magical AI Adventure! ✨
                         </span>
                         <span class="loading">
                             <span class="spinner"></span>
-                            Planning your perfect trip...
+                            🤖 Claude AI is crafting your perfect adventure...
                         </span>
                     </button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Chat Widget -->
+    <div class="floating-ai-chat" id="aiChatWidget">
+        <div class="chat-toggle" onclick="toggleAiChat()">
+            <i class="fas fa-robot"></i>
+            <div class="chat-pulse"></div>
+        </div>
+        <div class="chat-panel" id="aiChatPanel">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="fas fa-robot me-2"></i>
+                    🤖 Claude Travel Assistant
+                </div>
+                <button class="chat-close" onclick="toggleAiChat()">×</button>
+            </div>
+            <div class="chat-messages" id="aiChatMessages">
+                <div class="ai-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        👋 Hi! I'm Claude, your AI travel companion! I can help you plan amazing European adventures, suggest destinations, or answer any travel questions. What's your dream trip?
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="aiChatInput" placeholder="Ask me about European destinations..." onkeypress="handleChatKeyPress(event)">
+                <button class="chat-send" onclick="sendAiMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -1388,6 +1488,105 @@
             }, 5000); // Auto-save after 5 seconds of inactivity
         }
         
+        // AI Chat Widget Functions
+        function toggleAiChat() {
+            const chatPanel = document.getElementById('aiChatPanel');
+            chatPanel.classList.toggle('active');
+            
+            if (chatPanel.classList.contains('active')) {
+                // Focus on input when opening
+                setTimeout(() => {
+                    document.getElementById('aiChatInput').focus();
+                }, 300);
+            }
+        }
+        
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendAiMessage();
+            }
+        }
+        
+        async function sendAiMessage() {
+            const input = document.getElementById('aiChatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addChatMessage('user', message);
+            input.value = '';
+            
+            // Disable send button
+            const sendBtn = document.querySelector('.chat-send');
+            sendBtn.disabled = true;
+            
+            // Add loading message
+            addChatMessage('ai', '🤖 Claude is thinking...', true);
+            
+            try {
+                const response = await fetch('/api/ai-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: 'main_page_chat'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove loading message
+                removeLoadingMessage();
+                
+                if (data.success) {
+                    addChatMessage('ai', data.response);
+                } else {
+                    addChatMessage('ai', '😅 Sorry, I encountered an issue. Try asking about European destinations, travel tips, or let me help you plan your next adventure!');
+                }
+                
+            } catch (error) {
+                console.error('AI chat error:', error);
+                removeLoadingMessage();
+                addChatMessage('ai', '🛠️ I\'m having connectivity issues right now. But I\'d love to help you plan an amazing European adventure! Try the AI Travel Planner above for instant suggestions!');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+        
+        function addChatMessage(sender, message, isLoading = false) {
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'ai' ? 'ai-message' : 'user-message';
+            
+            if (isLoading) {
+                messageDiv.classList.add('loading-message');
+            }
+            
+            const avatar = sender === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    ${avatar}
+                </div>
+                <div class="message-content">
+                    ${message}
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function removeLoadingMessage() {
+            const loadingMessage = document.querySelector('.loading-message');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+        
         // Enhanced initialization with memory management
         document.addEventListener('DOMContentLoaded', function() {
             // Wait for memory manager to initialize
@@ -1414,6 +1613,14 @@
                         scheduleAutoSave();
                     });
                 });
+                
+                // Auto-open chat widget briefly to show it's available
+                setTimeout(() => {
+                    const chatToggle = document.querySelector('.chat-toggle');
+                    if (chatToggle) {
+                        chatToggle.style.animation = 'bounce 1s ease-in-out 3';
+                    }
+                }, 3000);
             }, 1000);
         });
     </script>
@@ -1631,7 +1838,252 @@
             margin-left: auto;
         }
         
+        /* Floating AI Chat Widget */
+        .floating-ai-chat {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        
+        .chat-toggle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--brand-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-brand);
+            transition: var(--transition-smooth);
+            position: relative;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-brand-hover);
+        }
+        
+        .chat-toggle i {
+            color: var(--white);
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+        }
+        
+        .chat-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--brand-gradient);
+            animation: pulse 2s infinite;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+        
+        .chat-panel {
+            position: absolute;
+            bottom: 90px;
+            right: 0;
+            width: 400px;
+            height: 500px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xxl);
+            box-shadow: var(--shadow-xl);
+            border: var(--border-glass);
+            backdrop-filter: blur(20px);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-panel.active {
+            display: flex;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .chat-header {
+            background: var(--brand-gradient);
+            color: var(--white);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: var(--border-radius-xxl) var(--border-radius-xxl) 0 0;
+        }
+        
+        .chat-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .chat-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--bg-primary);
+        }
+        
+        .ai-message, .user-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            max-width: 85%;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--brand-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .user-message .message-avatar {
+            background: var(--gray-600);
+        }
+        
+        .message-content {
+            background: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            padding: 1rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            box-shadow: var(--shadow-sm);
+            border: var(--border-light);
+        }
+        
+        .user-message .message-content {
+            background: var(--brand-gradient);
+            color: var(--white);
+        }
+        
+        .chat-input-area {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            border-top: var(--border-light);
+        }
+        
+        .chat-input {
+            flex: 1;
+            background: var(--bg-card);
+            border: var(--border-medium);
+            border-radius: var(--border-radius-lg);
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--transition-normal);
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+        
+        .chat-input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .chat-send {
+            background: var(--brand-gradient);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            color: var(--white);
+        }
+        
+        .chat-send:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .chat-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         @media (max-width: 768px) {
+            .floating-ai-chat {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            
+            .chat-toggle {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .chat-toggle i {
+                font-size: 1.5rem;
+            }
+            
+            .chat-panel {
+                width: calc(100vw - 2rem);
+                right: -1rem;
+                height: 450px;
+            }
+            
             .photo-analysis-modal {
                 padding: 1rem;
             }
