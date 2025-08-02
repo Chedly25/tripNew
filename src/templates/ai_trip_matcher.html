@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trip Matcher - EuroRoam</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='modern-theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .matcher-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .matcher-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .matcher-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .matcher-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .matcher-form {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 3rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray);
+            border-radius: var(--radius-md);
+            background: white;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .match-button {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-top: 2rem;
+        }
+        
+        .match-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .match-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .trip-match {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .match-score {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .match-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .match-route {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .match-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .detail-section {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+        }
+        
+        .detail-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .detail-list li {
+            padding: 0.25rem 0;
+            color: var(--text-secondary);
+        }
+        
+        .detail-list li::before {
+            content: "✓ ";
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .cons-list li::before {
+            content: "⚠ ";
+            color: var(--warning);
+        }
+        
+        .select-trip-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .select-trip-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="/" class="brand-link">
+                    <i class="fas fa-route"></i>
+                    <span>EuroRoam</span>
+                </a>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item" onclick="goHome()">Home</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">AI Trip Matcher</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="header-btn" onclick="goHome()">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="matcher-container">
+        <!-- Header Section -->
+        <div class="matcher-header">
+            <h1 class="matcher-title">
+                <i class="fas fa-magic"></i>
+                AI Trip Matcher
+            </h1>
+            <p class="matcher-subtitle">
+                Tell us your constraints and preferences, and our AI will find the perfect European routes tailored specifically for you.
+            </p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="matcher-form">
+            <form id="matcherForm">
+                <div class="form-grid">
+                    <!-- Left Column -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label" for="duration">Trip Duration</label>
+                            <select class="form-select" id="duration" name="duration_days" required>
+                                <option value="">Select duration...</option>
+                                <option value="3">3 days - Weekend getaway</option>
+                                <option value="5">5 days - Short vacation</option>
+                                <option value="7">1 week - Classic trip</option>
+                                <option value="10">10 days - Extended journey</option>
+                                <option value="14">2 weeks - Grand tour</option>
+                                <option value="21">3 weeks - Epic adventure</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="budget">Total Budget (EUR)</label>
+                            <input type="number" class="form-input" id="budget" name="budget_total" 
+                                   placeholder="e.g. 2000" min="300" max="20000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="groupType">Group Type</label>
+                            <select class="form-select" id="groupType" name="group_type">
+                                <option value="">Any group size</option>
+                                <option value="solo">Solo traveler</option>
+                                <option value="couple">Couple</option>
+                                <option value="family">Family with children</option>
+                                <option value="friends">Group of friends</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="travelMonth">Preferred Month</label>
+                            <select class="form-select" id="travelMonth" name="travel_month">
+                                <option value="">Any time</option>
+                                <option value="march">March - Spring awakening</option>
+                                <option value="april">April - Mild weather</option>
+                                <option value="may">May - Perfect temperatures</option>
+                                <option value="june">June - Long days</option>
+                                <option value="july">July - Summer peak</option>
+                                <option value="august">August - Festival season</option>
+                                <option value="september">September - Harvest time</option>
+                                <option value="october">October - Fall colors</option>
+                                <option value="november">November - Fewer crowds</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Travel Interests</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="culture" name="interests" value="culture">
+                                    <label for="culture">Culture & History</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="food" name="interests" value="food">
+                                    <label for="food">Food & Wine</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="nature" name="interests" value="nature">
+                                    <label for="nature">Nature & Outdoors</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="art" name="interests" value="art">
+                                    <label for="art">Art & Architecture</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="adventure" name="interests" value="adventure">
+                                    <label for="adventure">Adventure Sports</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="nightlife" name="interests" value="nightlife">
+                                    <label for="nightlife">Nightlife</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="mustInclude">Must Include (optional)</label>
+                            <input type="text" class="form-input" id="mustInclude" name="must_include" 
+                                   placeholder="e.g. France, Italy, Alps">
+                            <small style="color: var(--text-secondary);">Countries or regions you definitely want to visit</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="avoid">Avoid (optional)</label>
+                            <input type="text" class="form-input" id="avoid" name="avoid" 
+                                   placeholder="e.g. Crowded places, Mountains">
+                            <small style="color: var(--text-secondary);">What you'd prefer to avoid</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="match-button" id="matchButton">
+                    <i class="fas fa-magic"></i>
+                    Find My Perfect Trips
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading Section -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <h3>AI is analyzing your preferences...</h3>
+            <p>Finding the perfect trips tailored just for you</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-container" id="resultsContainer">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary);">
+                <i class="fas fa-trophy"></i>
+                Your Perfect Trip Matches
+            </h2>
+            <div id="tripMatches"></div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('matcherForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = document.getElementById('matchButton');
+            const spinner = document.getElementById('loadingSpinner');
+            const results = document.getElementById('resultsContainer');
+            
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Matching...';
+            spinner.style.display = 'block';
+            results.style.display = 'none';
+            
+            try {
+                // Collect form data
+                const formData = new FormData(e.target);
+                const data = {};
+                
+                // Basic fields
+                data.duration_days = parseInt(formData.get('duration_days'));
+                data.budget_total = parseFloat(formData.get('budget_total'));
+                data.group_type = formData.get('group_type') || null;
+                data.travel_month = formData.get('travel_month') || null;
+                
+                // Interests (checkboxes)
+                data.interests = [];
+                document.querySelectorAll('input[name="interests"]:checked').forEach(cb => {
+                    data.interests.push(cb.value);
+                });
+                
+                // Must include and avoid (split by commas)
+                const mustInclude = formData.get('must_include');
+                data.must_include = mustInclude ? mustInclude.split(',').map(s => s.trim()) : [];
+                
+                const avoid = formData.get('avoid');
+                data.avoid = avoid ? avoid.split(',').map(s => s.trim()) : [];
+                
+                // Call API
+                const response = await fetch('/api/ai/trip-matcher', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayMatches(result.matched_trips);
+                    results.style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Failed to match trips');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to find trip matches. Please try again.');
+            } finally {
+                // Reset button state
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-magic"></i> Find My Perfect Trips';
+                spinner.style.display = 'none';
+            }
+        });
+        
+        function displayMatches(matches) {
+            const container = document.getElementById('tripMatches');
+            container.innerHTML = '';
+            
+            matches.forEach((match, index) => {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'trip-match';
+                
+                const route = match.route;
+                const routeText = `${route.start_city?.name || 'Start'} → ${route.intermediate_cities?.map(c => c.name).join(' → ') || ''} → ${route.end_city?.name || 'End'}`;
+                
+                matchDiv.innerHTML = `
+                    <div class="match-header">
+                        <div>
+                            <div class="match-title">Perfect Match #${index + 1}</div>
+                            <div class="match-route">${routeText}</div>
+                        </div>
+                        <div class="match-score">${Math.round(match.match_score)}% Match</div>
+                    </div>
+                    
+                    <div class="match-details">
+                        <div class="detail-section">
+                            <div class="detail-title">Why This Works</div>
+                            <ul class="detail-list">
+                                ${match.pros.map(pro => `<li>${pro}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-title">Consider This</div>
+                            <ul class="detail-list cons-list">
+                                ${match.cons.map(con => `<li>${con}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-title">Perfect For</div>
+                            <ul class="detail-list">
+                                ${match.best_for.map(bf => `<li>${bf}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-title">Unique Features</div>
+                            <ul class="detail-list">
+                                ${match.unique_selling_points.map(usp => `<li>${usp}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <button class="select-trip-btn" onclick="selectTrip(${index})">
+                        <i class="fas fa-check"></i>
+                        Plan This Trip
+                    </button>
+                `;
+                
+                container.appendChild(matchDiv);
+            });
+        }
+        
+        function selectTrip(index) {
+            // Store selected trip and redirect to results page
+            // For now, just show an alert
+            alert('Trip selected! This would integrate with the existing trip planning flow.');
+        }
+        
+        function goHome() {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

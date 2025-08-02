@@ -977,6 +977,11 @@ def create_app() -> Flask:
         """AI travel suggestion planner page."""
         return render_template('ai_travel_planner.html')
     
+    @app.route('/ai-trip-matcher')
+    def ai_trip_matcher_page():
+        """AI Trip Matcher page."""
+        return render_template('ai_trip_matcher.html')
+    
     # Trip detail page for route types
     @app.route('/trip-detail/<route_type>')
     def trip_detail_page(route_type):
@@ -1519,6 +1524,77 @@ def create_app() -> Flask:
             logger.error(f"Photo analysis failed: {e}")
             return jsonify({'error': 'Photo analysis service unavailable'}), 500
     
+    @app.route('/api/ai/trip-matcher', methods=['POST'])
+    def ai_trip_matcher():
+        """AI-powered trip matching based on constraints."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
+            
+            # Validate required fields
+            required_fields = ['duration_days', 'budget_total']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({'error': f'Missing required field: {field}'}), 400
+            
+            # Import here to avoid circular imports
+            from services.ai_trip_matcher import AITripMatcher, TripConstraints
+            from services.travel_planner import TravelPlanner
+            from services.google_places_city_service import GooglePlacesCityService
+            from services.city_description_service import CityDescriptionService
+            
+            # Initialize services
+            city_service = GooglePlacesCityService()
+            description_service = CityDescriptionService()
+            travel_planner = TravelPlanner(city_service, description_service)
+            matcher = AITripMatcher(travel_planner, city_service, description_service)
+            
+            # Create constraints object
+            constraints = TripConstraints(
+                duration_days=data['duration_days'],
+                budget_total=data['budget_total'],
+                budget_currency=data.get('budget_currency', 'EUR'),
+                travel_month=data.get('travel_month'),
+                group_type=data.get('group_type'),
+                must_include=data.get('must_include', []),
+                avoid=data.get('avoid', []),
+                interests=data.get('interests', [])
+            )
+            
+            # Run matching asynchronously
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                matched_trips = loop.run_until_complete(matcher.match_trips(constraints))
+            finally:
+                loop.close()
+            
+            # Convert to JSON-serializable format
+            trips_json = []
+            for trip in matched_trips:
+                trip_data = {
+                    'route': trip.route,
+                    'match_score': trip.match_score,
+                    'pros': trip.pros,
+                    'cons': trip.cons,
+                    'estimated_cost': trip.estimated_cost,
+                    'best_for': trip.best_for,
+                    'unique_selling_points': trip.unique_selling_points
+                }
+                trips_json.append(trip_data)
+            
+            return jsonify({
+                'success': True,
+                'matched_trips': trips_json,
+                'message': f'Found {len(trips_json)} matched trips for your criteria'
+            })
+            
+        except Exception as e:
+            logger.error(f"AI trip matcher error: {e}")
+            return jsonify({'error': 'Trip matching service unavailable'}), 500
+
     @app.route('/api/ai/travel-insights', methods=['GET'])
     @login_required
     def get_ai_travel_insights():
