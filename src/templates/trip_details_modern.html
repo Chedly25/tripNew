@@ -787,6 +787,23 @@
                 justify-content: center;
             }
         }
+
+        /* Route Type Visual Identity */
+        .route-type-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .route-type-display[data-route-type="romantic"] { color: #ef4444; }
+        .route-type-display[data-route-type="adventure"] { color: #22c55e; }
+        .route-type-display[data-route-type="cultural"] { color: #8b5cf6; }
+        .route-type-display[data-route-type="scenic"] { color: #06b6d4; }
+        .route-type-display[data-route-type="hidden_gems"] { color: #f59e0b; }
+        .route-type-display[data-route-type="budget"] { color: #10b981; }
+        .route-type-display[data-route-type="luxury"] { color: #fbbf24; }
+        .route-type-display[data-route-type="fastest"] { color: #6b7280; }
+        .route-type-display[data-route-type="culinary"] { color: #f97316; }
     </style>
 </head>
 <body>
@@ -889,7 +906,10 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-label">Travel Style</div>
-                        <div class="stat-value">{{ trip_data.route_type|title if trip_data else 'Scenic' }}</div>
+                        <div class="stat-value route-type-display" data-route-type="{{ trip_data.route_type if trip_data.route_type else 'scenic' }}">
+                            <span class="route-type-icon"></span>
+                            {{ trip_data.route_type|title if trip_data else 'Scenic' }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1097,6 +1117,31 @@
         let routeLayer;
         let routingControl;
         
+        // Initialize route type icon
+        function initializeRouteTypeIcon() {
+            const routeTypeDisplay = document.querySelector('.route-type-display');
+            if (routeTypeDisplay) {
+                const routeType = routeTypeDisplay.getAttribute('data-route-type');
+                const iconElement = routeTypeDisplay.querySelector('.route-type-icon');
+                
+                const icons = {
+                    'romantic': '💕',
+                    'adventure': '🏔️',
+                    'cultural': '🏛️',
+                    'scenic': '🌄',
+                    'hidden_gems': '💎',
+                    'budget': '💰',
+                    'luxury': '✨',
+                    'fastest': '⚡',
+                    'culinary': '🍷'
+                };
+                
+                if (iconElement && icons[routeType]) {
+                    iconElement.textContent = icons[routeType];
+                }
+            }
+        }
+
         // Utility function to format route type
         function formatRouteType(routeType) {
             if (!routeType) return 'Scenic';
@@ -1501,6 +1546,7 @@
             {% endif %}
             
             initializeMap();
+            initializeRouteTypeIcon();
             
             // Close user dropdown when clicking outside
             document.addEventListener('click', function(event) {

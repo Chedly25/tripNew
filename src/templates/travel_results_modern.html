@@ -283,14 +283,98 @@
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background: rgba(255, 255, 255, 0.2);
             color: var(--white);
             padding: 0.5rem 1rem;
             border-radius: 20px;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Route Type Color Themes */
+        .route-type-romantic { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .route-type-adventure { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .route-type-cultural { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .route-type-scenic { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .route-type-hidden_gems { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .route-type-budget { background: linear-gradient(135deg, #10b981, #059669); }
+        .route-type-luxury { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .route-type-fastest { background: linear-gradient(135deg, #6b7280, #4b5563); }
+        .route-type-culinary { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+        /* Route Card Theme Accents */
+        .route-card-modern[data-theme="romantic"] { border-left: 4px solid #ef4444; }
+        .route-card-modern[data-theme="adventure"] { border-left: 4px solid #22c55e; }
+        .route-card-modern[data-theme="cultural"] { border-left: 4px solid #8b5cf6; }
+        .route-card-modern[data-theme="scenic"] { border-left: 4px solid #06b6d4; }
+        .route-card-modern[data-theme="hidden_gems"] { border-left: 4px solid #f59e0b; }
+        .route-card-modern[data-theme="budget"] { border-left: 4px solid #10b981; }
+        .route-card-modern[data-theme="luxury"] { border-left: 4px solid #fbbf24; }
+        .route-card-modern[data-theme="fastest"] { border-left: 4px solid #6b7280; }
+        .route-card-modern[data-theme="culinary"] { border-left: 4px solid #f97316; }
+
+        /* Route Type Icons */
+        .route-type-icon {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+
+        /* City Info Icons */
+        .city-info-icon {
+            margin-left: 0.5rem;
+            opacity: 0.7;
+            font-size: 0.8rem;
+            transition: opacity 0.2s ease;
+        }
+
+        .highlight-tag:hover .city-info-icon {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        /* Enhanced Tooltips */
+        .highlight-tag {
+            position: relative;
+            cursor: help;
+        }
+
+        .highlight-tag:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            max-width: 200px;
+            white-space: normal;
+            width: max-content;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: tooltipFadeIn 0.2s ease;
+        }
+
+        .highlight-tag:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 92%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--primary);
+            z-index: 1001;
+        }
+
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         
         .route-title {
@@ -775,6 +859,80 @@
             if (!routeType) return 'Scenic';
             return routeType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
+
+        // Get icon for route type
+        function getRouteTypeIcon(routeType) {
+            const icons = {
+                'romantic': '💕',
+                'adventure': '🏔️',
+                'cultural': '🏛️',
+                'scenic': '🌄',
+                'hidden_gems': '💎',
+                'budget': '💰',
+                'luxury': '✨',
+                'fastest': '⚡',
+                'culinary': '🍷'
+            };
+            return icons[routeType] || '🗺️';
+        }
+
+        // Generate explanation for why a city is chosen
+        function getCityExplanation(cityName, routeType) {
+            const explanations = {
+                'romantic': [
+                    'Perfect for couples seeking intimate moments',
+                    'Charming architecture and cozy atmosphere',
+                    'Beautiful sunset views and romantic dining',
+                    'Historic romance and fairy-tale settings'
+                ],
+                'adventure': [
+                    'Excellent base for outdoor activities',
+                    'Gateway to hiking and mountain sports',
+                    'Thrilling experiences and extreme sports',
+                    'Adventure tours and adrenaline activities'
+                ],
+                'cultural': [
+                    'Rich historical heritage and museums',
+                    'Architectural marvels and art galleries',
+                    'Cultural festivals and local traditions',
+                    'UNESCO World Heritage sites nearby'
+                ],
+                'scenic': [
+                    'Breathtaking natural landscapes',
+                    'Panoramic views and photo opportunities',
+                    'Beautiful natural surroundings',
+                    'Scenic drives and viewpoints'
+                ],
+                'hidden_gems': [
+                    'Off-the-beaten-path local experiences',
+                    'Authentic local culture and traditions',
+                    'Undiscovered treasures and secret spots',
+                    'Unique experiences away from crowds'
+                ],
+                'budget': [
+                    'Affordable accommodations and dining',
+                    'Great value for money experiences',
+                    'Budget-friendly attractions and activities',
+                    'Cost-effective travel hub'
+                ],
+                'luxury': [
+                    'Premium accommodations and fine dining',
+                    'Exclusive experiences and high-end shopping',
+                    'Luxury spas and sophisticated nightlife',
+                    'World-class service and amenities'
+                ],
+                'culinary': [
+                    'Renowned local cuisine and specialties',
+                    'Famous food markets and restaurants',
+                    'Culinary traditions and cooking experiences',
+                    'Wine regions and gastronomic tours'
+                ]
+            };
+
+            const typeExplanations = explanations[routeType] || explanations['scenic'];
+            const randomIndex = Math.floor(Math.random() * typeExplanations.length);
+            return typeExplanations[randomIndex];
+        }
         
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -916,9 +1074,12 @@
             }
             
             gridContainer.innerHTML = routes.map((route, index) => `
-                <div class="route-card-modern">
+                <div class="route-card-modern" data-theme="${route.route_type}">
                     <div class="route-header">
-                        <div class="route-type-badge">${formatRouteType(route.route_type)}</div>
+                        <div class="route-type-badge route-type-${route.route_type}">
+                            <span class="route-type-icon">${getRouteTypeIcon(route.route_type)}</span>
+                            ${formatRouteType(route.route_type)}
+                        </div>
                         <h3 class="route-title">${route.title || `Route ${index + 1}`}</h3>
                         <p class="route-subtitle">${route.description || 'Discover amazing places along the way'}</p>
                     </div>
@@ -970,9 +1131,14 @@
                             <div class="route-highlights">
                                 <h4 class="highlights-title">Route Highlights</h4>
                                 <div class="highlights-list">
-                                    ${route.intermediate_cities.slice(0, 4).map(city => 
-                                        `<span class="highlight-tag">${city.name || city}</span>`
-                                    ).join('')}
+                                    ${route.intermediate_cities.slice(0, 4).map(city => {
+                                        const cityName = city.name || city;
+                                        const explanation = getCityExplanation(cityName, route.route_type);
+                                        return `<span class="highlight-tag" title="${explanation}" data-tooltip="${explanation}">
+                                            ${cityName}
+                                            <i class="fas fa-info-circle city-info-icon"></i>
+                                        </span>`;
+                                    }).join('')}
                                     ${route.intermediate_cities.length > 4 ? `<span class="highlight-tag">+${route.intermediate_cities.length - 4} more</span>` : ''}
                                 </div>
                             </div>
