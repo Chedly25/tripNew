@@ -29,10 +29,155 @@
             color: var(--text-primary) !important;
         }
         
+        /* Modern Header */
+        .modern-header {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--primary);
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .brand-link i {
+            color: var(--accent);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb-item.current {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: 1px solid var(--gray);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition-normal);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        
+        .header-btn:hover {
+            background: var(--light-gray);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            border: none;
+            color: var(--white);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition-normal);
+        }
+        
+        .user-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--gray);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            min-width: 150px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--transition-normal);
+            z-index: 1000;
+            margin-top: 0.5rem;
+        }
+        
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-dropdown a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition-normal);
+        }
+        
+        .user-dropdown a:hover {
+            background: var(--light-gray);
+            color: var(--accent);
+        }
+        
+        .user-dropdown a:first-child {
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+        
+        .user-dropdown a:last-child {
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+        }
+
         .results-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 100px 2rem 2rem 2rem; /* Top padding for fixed navbar */
+            padding: 2rem;
         }
         
         .results-header {
@@ -324,23 +469,42 @@
     </style>
 </head>
 <body>
-    <!-- Modern Navigation -->
-    <nav class="navbar-modern">
-        <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;">
-            <a href="/" class="navbar-brand">
-                <i class="fas fa-route" style="margin-right: 0.5rem;"></i>
-                EuroRoam
-            </a>
-            <div style="display: flex; gap: 2rem; align-items: center;">
-                <a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a>
-                <a href="/auth/profile" style="color: var(--text-secondary); text-decoration: none;">My Trips</a>
-                <button class="btn-modern btn-primary-modern">
-                    <i class="fas fa-user"></i>
-                    Account
+    <!-- Integrated Header -->
+    <header class="modern-header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="/" class="brand-link">
+                    <i class="fas fa-route"></i>
+                    <span>EuroRoam</span>
+                </a>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item">Trip Planning</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">Results</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="header-btn" onclick="goHome()">
+                    <i class="fas fa-home"></i>
+                    <span>New Trip</span>
                 </button>
+                <button class="header-btn" onclick="viewMyTrips()">
+                    <i class="fas fa-bookmark"></i>
+                    <span>My Trips</span>
+                </button>
+                <div class="user-menu">
+                    <button class="user-btn" onclick="toggleUserMenu()">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/auth/profile">Profile</a>
+                        <a href="/auth/logout">Sign Out</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
     
     <!-- Results Container -->
     <div class="results-container">
@@ -371,13 +535,44 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             loadTravelData();
+            
+            // Close user dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const userMenu = document.querySelector('.user-menu');
+                const dropdown = document.getElementById('userDropdown');
+                if (!userMenu.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
         });
+        
+        // Header functions
+        function goHome() {
+            window.location.href = '/';
+        }
+        
+        function viewMyTrips() {
+            window.location.href = '/auth/profile';
+        }
+        
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
         
         // Load travel data from session storage or API
         async function loadTravelData() {
             try {
-                // First try to get data from session storage
-                const sessionData = sessionStorage.getItem('currentTripData');
+                // First try to get data from session storage with the correct key
+                let sessionData = sessionStorage.getItem('travelPlanResult');
+                if (sessionData) {
+                    travelData = JSON.parse(sessionData);
+                    displayResults();
+                    return;
+                }
+                
+                // Also try the other possible keys
+                sessionData = sessionStorage.getItem('currentTripData');
                 if (sessionData) {
                     travelData = JSON.parse(sessionData);
                     displayResults();
@@ -387,11 +582,15 @@
                 // If no session data, try to fetch from API
                 const response = await fetch('/api/get-current-trip-data');
                 if (response.ok) {
-                    travelData = await response.json();
-                    displayResults();
-                } else {
-                    showEmptyState();
+                    const apiData = await response.json();
+                    if (apiData.data && apiData.data.routes && apiData.data.routes.length > 0) {
+                        travelData = apiData;
+                        displayResults();
+                        return;
+                    }
                 }
+                
+                showEmptyState();
             } catch (error) {
                 console.error('Error loading travel data:', error);
                 showEmptyState();
