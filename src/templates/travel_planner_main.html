@@ -35,6 +35,9 @@
             --highlight: #0f3460;
             --success: #00b894;
             --warning: #fdcb6e;
+            --tuscan-gold: #d4af37;
+            --midnight-navy: #1a1a2e;
+            --electric-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             
             /* Neutral Colors */
             --white: #ffffff;
@@ -78,7 +81,20 @@
         }
         
         /* Only specific elements should be white */
-        .btn-primary, .btn-accent, .hero-section * {
+        .btn-primary, .btn-accent, .hero-title, .hero-subtitle {
+            color: var(--white) !important;
+        }
+        
+        /* Form elements should have proper contrast */
+        .form-control, .form-control::placeholder, .form-label {
+            color: var(--text-primary) !important;
+        }
+        
+        .specialty-btn {
+            color: var(--text-primary) !important;
+        }
+        
+        .specialty-btn:hover, .specialty-btn.active {
             color: var(--white) !important;
         }
 
@@ -122,7 +138,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            color: white;
+            color: var(--text-primary) !important;
             text-decoration: none;
             font-weight: 700;
             font-size: 1.5rem;
@@ -131,7 +147,7 @@
 
         .logo:hover {
             transform: scale(1.05);
-            color: var(--tuscan-gold);
+            color: var(--accent) !important;
         }
 
         .logo-icon {
@@ -158,7 +174,7 @@
         }
 
         .nav-link {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary) !important;
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -172,12 +188,12 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--tuscan-gold);
+            background: var(--accent);
             transition: width 0.3s ease;
         }
 
         .nav-link:hover {
-            color: var(--tuscan-gold);
+            color: var(--accent) !important;
         }
 
         .nav-link:hover::after {
@@ -194,6 +210,7 @@
             position: relative;
             z-index: 1;
             padding: 2rem;
+            background: var(--hero-gradient);
         }
 
         .hero-content {
@@ -231,7 +248,7 @@
 
         .handwritten-accent {
             font-family: 'Caveat', cursive;
-            color: var(--tuscan-gold);
+            color: var(--accent) !important;
             font-size: 1.2em;
             font-weight: 600;
             display: inline-block;
@@ -265,7 +282,7 @@
         .form-title {
             font-size: 2rem;
             font-weight: 700;
-            color: white;
+            color: var(--primary) !important;
             text-align: center;
             margin-bottom: 2rem;
             position: relative;
@@ -308,24 +325,23 @@
         .form-control {
             width: 100%;
             padding: 1rem 1.25rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            background: var(--white);
+            border: 1.5px solid var(--gray);
             border-radius: 16px;
-            color: white;
+            color: var(--text-primary) !important;
             font-size: 1rem;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--tuscan-gold);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.2);
+            border-color: var(--accent);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
         }
 
         .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-secondary) !important;
         }
 
         /* Custom Select Styling */
@@ -373,9 +389,9 @@
         }
 
         .specialty-btn:hover, .specialty-btn.active {
-            background: rgba(255, 210, 63, 0.2);
-            border-color: var(--tuscan-gold);
-            color: white;
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--white) !important;
             transform: translateY(-2px);
         }
 

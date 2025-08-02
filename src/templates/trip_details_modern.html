@@ -782,7 +782,7 @@
                 </div>
                 <div class="toolkit-stat">
                     <span class="toolkit-stat-label">Per Person:</span>
-                    <span class="toolkit-stat-value">€{{ "%.0f"|format(trip_data.estimated_cost.per_person) if trip_data else '0' }}</span>
+                    <span class="toolkit-stat-value">€{{ "%.0f"|format((trip_data.estimated_cost.total_estimate / 2) if trip_data and trip_data.estimated_cost and trip_data.estimated_cost.total_estimate else 0) }}</span>
                 </div>
                 <div class="toolkit-stat">
                     <span class="toolkit-stat-label">Duration:</span>
