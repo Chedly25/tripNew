@@ -26,26 +26,29 @@
         }
 
         :root {
-            /* European Travel Inspired Color Palette */
-            --sunset-orange: #FF6B35;
-            --mediterranean-blue: #004E89;
-            --alpine-green: #1A5D1A;
-            --tuscan-gold: #FFD23F;
-            --nordic-teal: #7209B7;
-            --coastal-mint: #06FFA5;
-            --cobblestone-gray: #4A5568;
-            --vintage-cream: #FFF8E7;
-            --midnight-navy: #1A202C;
+            /* Modern Vibrant Color Palette */
+            --electric-blue: #3B82F6;
+            --vibrant-purple: #8B5CF6;
+            --hot-pink: #EC4899;
+            --neon-green: #10B981;
+            --solar-yellow: #F59E0B;
+            --fire-red: #EF4444;
+            --deep-indigo: #4338CA;
+            --cyber-teal: #06B6D4;
+            --modern-gray: #6B7280;
+            --pure-white: #FFFFFF;
+            --rich-black: #111827;
             
-            /* Gradients */
-            --hero-gradient: linear-gradient(135deg, var(--mediterranean-blue) 0%, var(--nordic-teal) 50%, var(--sunset-orange) 100%);
-            --card-gradient: linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
-            --accent-gradient: linear-gradient(90deg, var(--tuscan-gold) 0%, var(--sunset-orange) 100%);
+            /* Modern Gradients */
+            --hero-gradient: linear-gradient(135deg, var(--electric-blue) 0%, var(--vibrant-purple) 30%, var(--hot-pink) 70%, var(--solar-yellow) 100%);
+            --card-gradient: linear-gradient(145deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
+            --accent-gradient: linear-gradient(90deg, var(--solar-yellow) 0%, var(--fire-red) 100%);
+            --electric-gradient: linear-gradient(135deg, var(--cyber-teal) 0%, var(--electric-blue) 50%, var(--vibrant-purple) 100%);
             
-            /* Glass morphism */
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.25);
+            /* Modern Glass morphism */
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
 
         body {
@@ -827,14 +830,14 @@
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            background: linear-gradient(135deg, #FFD23F 0%, #FF6B35 50%, #7209B7 100%);
+            background: var(--electric-gradient);
             color: white;
             text-decoration: none;
             padding: 1.25rem 2.5rem;
             border-radius: 50px;
             font-weight: 700;
             font-size: 1.2rem;
-            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.4);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             border: 3px solid rgba(255, 255, 255, 0.3);
             animation: pulse-glow 3s ease-in-out infinite;
