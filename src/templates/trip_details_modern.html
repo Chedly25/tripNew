@@ -18,12 +18,29 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     
     <style>
+        /* Global text color fixes */
+        * {
+            color: var(--text-primary);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary) !important;
+        }
+        
+        p, span, div, li, td, th, label {
+            color: var(--text-primary) !important;
+        }
+        
         /* Page-specific styles */
         .hero-section {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: var(--white);
             padding: 2rem 0;
             margin-bottom: 2rem;
+        }
+        
+        .hero-section * {
+            color: var(--white) !important;
         }
         
         .hero-content {

@@ -20,27 +20,43 @@
     
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --secondary: #06b6d4;
-            --success: #10b981;
-            --warning: #f59e0b;
+            /* Modern sophisticated colors */
+            --primary: #1a1a2e;
+            --primary-light: #16213e;
+            --primary-dark: #0f0f1e;
+            --secondary: #e94560;
+            --success: #00b894;
+            --warning: #fdcb6e;
             --danger: #ef4444;
             --gray-50: #f8fafc;
             --gray-100: #f1f5f9;
             --gray-600: #475569;
             --gray-800: #1e293b;
-            --glass-bg: rgba(255, 255, 255, 0.7);
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --glass-bg: rgba(255, 255, 255, 0.95);
             --glass-border: rgba(255, 255, 255, 0.3);
-            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+        
+        /* Fix text colors */
+        * {
+            color: var(--text-primary);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary) !important;
+        }
+        
+        p, span, div, li, td, th, label {
+            color: var(--text-primary) !important;
         }
         
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--gradient);
+            background: #fafafa;
             min-height: 100vh;
-            color: var(--gray-800);
+            color: var(--text-primary) !important;
         }
         
         .navbar {

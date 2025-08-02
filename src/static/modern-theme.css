@@ -67,11 +67,29 @@
 
 body {
   font-family: var(--font-primary);
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
   background-color: var(--off-white);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure all text elements have proper colors */
+p, span, div, li, td, th {
+  color: var(--text-primary);
+}
+
+/* Override any white text that might be inherited */
+.text-white {
+  color: var(--white) !important;
+}
+
+.text-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
 }
 
 /* Typography */

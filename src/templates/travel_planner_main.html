@@ -63,6 +63,24 @@
         }
 
         /* Clean background - no animations */
+        
+        /* Force proper text colors globally */
+        * {
+            color: var(--text-primary);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary) !important;
+        }
+        
+        p, span, div, li, td, th, label, input {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Only specific elements should be white */
+        .btn-primary, .btn-accent, .hero-section * {
+            color: var(--white) !important;
+        }
 
         /* Navigation */
         .navbar {
@@ -71,15 +89,25 @@
             width: 100%;
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--gray);
             padding: 1rem 2rem;
             z-index: 1000;
             transition: all 0.3s ease;
         }
 
         .navbar.scrolled {
-            background: rgba(26, 32, 44, 0.9);
+            background: var(--white);
             backdrop-filter: blur(30px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .navbar * {
+            color: var(--text-primary) !important;
+        }
+
+        .navbar a {
+            color: var(--text-primary) !important;
+            text-decoration: none;
         }
 
         .nav-container {
