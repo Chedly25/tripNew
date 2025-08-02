@@ -16,6 +16,7 @@ from .enhanced_city_service import get_enhanced_city_service
 from .opentripmap_service import get_opentripmap_service
 from .ml_recommendation_service import MLRecommendationService, TripPreference
 from .preference_scoring_service import get_preference_scoring_service, UserPreferences
+from .route_optimization_service import get_route_optimization_service
 
 logger = structlog.get_logger(__name__)
 
@@ -53,6 +54,7 @@ class EnhancedIntermediateCityService:
         self.opentripmap_service = get_opentripmap_service()
         self.ml_service = ml_service or MLRecommendationService(city_service)
         self.preference_service = get_preference_scoring_service()
+        self.route_optimizer = get_route_optimization_service()
         
         # Scoring weights for different factors
         self.scoring_weights = {
@@ -97,14 +99,14 @@ class EnhancedIntermediateCityService:
             candidates, start_city, end_city, request, route_type
         )
         
-        # Step 3: Optimize route with smart selection
-        selected_cities = await self._optimize_route_selection(
-            scored_cities, start_city, end_city, max_cities, request
+        # Step 3: Advanced route optimization using multiple algorithms
+        optimized_route = await self._advanced_route_optimization(
+            scored_cities, start_city, end_city, max_cities, route_type, request
         )
         
-        # Step 4: Apply final diversity and spacing optimization
-        final_cities = self._apply_final_optimization(
-            selected_cities, start_city, end_city, max_cities
+        # Step 4: Final validation and adjustments
+        final_cities = self._validate_and_adjust_route(
+            optimized_route, start_city, end_city, max_cities
         )
         
         logger.info(f"Selected {len(final_cities)} intermediate cities", 
@@ -473,6 +475,148 @@ class EnhancedIntermediateCityService:
         )
         
         return final_selection
+    
+    async def _advanced_route_optimization(
+        self,
+        scored_cities: List[CityScore],
+        start_city: City,
+        end_city: City,
+        max_cities: int,
+        route_type: str,
+        request: TripRequest
+    ) -> List[CityScore]:
+        """Advanced route optimization using multiple algorithms."""
+        
+        logger.info("Starting advanced route optimization")
+        
+        # Prepare data for optimization
+        candidate_cities = [scored_city.city for scored_city in scored_cities]
+        city_scores = {scored_city.city.name: scored_city.total_score for scored_city in scored_cities}
+        
+        try:
+            # Use the route optimization service
+            optimized_route = self.route_optimizer.optimize_route(
+                start_city=start_city,
+                end_city=end_city,
+                candidate_cities=candidate_cities,
+                max_cities=max_cities,
+                route_type=route_type,
+                city_scores=city_scores
+            )
+            
+            logger.info(f"Route optimization completed using {optimized_route.optimization_method}")
+            logger.info(f"Performance: {optimized_route.performance_metrics}")
+            logger.info(f"Explanation: {optimized_route.routing_explanation}")
+            
+            # Convert back to CityScore objects
+            optimized_scored_cities = []
+            for city in optimized_route.cities:
+                # Find the original scored city
+                original_scored = next(
+                    (sc for sc in scored_cities if sc.city.name == city.name), 
+                    None
+                )
+                if original_scored:
+                    optimized_scored_cities.append(original_scored)
+            
+            return optimized_scored_cities
+            
+        except Exception as e:
+            logger.error(f"Advanced route optimization failed: {e}")
+            # Fallback to simpler optimization
+            return await self._fallback_route_optimization(
+                scored_cities, start_city, end_city, max_cities, request
+            )
+    
+    async def _fallback_route_optimization(
+        self,
+        scored_cities: List[CityScore],
+        start_city: City,
+        end_city: City,
+        max_cities: int,
+        request: TripRequest
+    ) -> List[CityScore]:
+        """Fallback route optimization method."""
+        
+        logger.info("Using fallback route optimization")
+        
+        # Simple greedy selection with constraints
+        selected = []
+        remaining = scored_cities.copy()
+        
+        route_opt = RouteOptimization()
+        
+        while len(selected) < max_cities and remaining:
+            best_candidate = None
+            best_score = -1
+            
+            for candidate in remaining:
+                # Check route constraints
+                if not self._satisfies_route_constraints(
+                    candidate, selected, start_city, end_city, route_opt
+                ):
+                    continue
+                
+                # Calculate composite score including spacing
+                composite_score = self._calculate_composite_score(
+                    candidate, selected, start_city, end_city
+                )
+                
+                if composite_score > best_score:
+                    best_score = composite_score
+                    best_candidate = candidate
+            
+            if best_candidate:
+                selected.append(best_candidate)
+                remaining.remove(best_candidate)
+            else:
+                break
+        
+        return selected
+    
+    def _validate_and_adjust_route(
+        self,
+        optimized_cities: List[CityScore],
+        start_city: City,
+        end_city: City,
+        max_cities: int
+    ) -> List[CityScore]:
+        """Validate and make final adjustments to the optimized route."""
+        
+        if not optimized_cities:
+            return []
+        
+        # Ensure we don't exceed max cities
+        if len(optimized_cities) > max_cities:
+            optimized_cities = optimized_cities[:max_cities]
+        
+        # Validate minimum distances
+        validated_cities = []
+        min_distance = 50  # km
+        
+        for city_score in optimized_cities:
+            is_valid = True
+            
+            # Check distance from start city
+            if self._calculate_distance(city_score.city.coordinates, start_city.coordinates) < min_distance:
+                is_valid = False
+            
+            # Check distance from end city  
+            if self._calculate_distance(city_score.city.coordinates, end_city.coordinates) < min_distance:
+                is_valid = False
+            
+            # Check distance from other selected cities
+            for selected in validated_cities:
+                if self._calculate_distance(city_score.city.coordinates, selected.city.coordinates) < min_distance:
+                    is_valid = False
+                    break
+            
+            if is_valid:
+                validated_cities.append(city_score)
+        
+        logger.info(f"Route validation: {len(optimized_cities)} -> {len(validated_cities)} cities")
+        
+        return validated_cities
     
     # Helper methods for scoring and optimization
     
