@@ -1148,7 +1148,7 @@
                         <div class="stat-label">Travel Style</div>
                         <div class="stat-value route-type-display" data-route-type="{{ trip_data.route_type if trip_data.route_type else 'scenic' }}">
                             <span class="route-type-icon"></span>
-                            {{ trip_data.route_type|title if trip_data else 'Scenic' }}
+                            <span id="route-type-text">{{ trip_data.route_type|title if trip_data else 'Scenic' }}</span>
                         </div>
                     </div>
                 </div>
@@ -1492,6 +1492,10 @@
         // Utility function to format route type
         function formatRouteType(routeType) {
             if (!routeType) return 'Scenic';
+            // Special case for hidden_gems
+            if (routeType.toLowerCase() === 'hidden_gems') {
+                return 'Hidden Gems';
+            }
             return routeType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
         
@@ -1908,7 +1912,9 @@
             document.querySelectorAll('.toggle-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             // Hide all views
             document.querySelectorAll('.view-container').forEach(container => {
@@ -2195,7 +2201,22 @@
                 console.log('No trip data available');
             {% endif %}
             
-            initializeMap();
+            // Fix route type display
+            const routeTypeElement = document.getElementById('route-type-text');
+            if (routeTypeElement) {
+                const routeType = document.querySelector('.route-type-display').dataset.routeType;
+                routeTypeElement.textContent = formatRouteType(routeType);
+            }
+            
+            // Initialize map with error handling
+            setTimeout(() => {
+                try {
+                    initializeMap();
+                } catch (error) {
+                    console.error('Failed to initialize map:', error);
+                }
+            }, 100);
+            
             initializeRouteTypeIcon();
             
             // Close user dropdown when clicking outside
@@ -2834,6 +2855,38 @@
             
             // Wait a bit for other initializations to complete
             setTimeout(initializeAmenities, 1000);
+        });
+        
+        // Button action functions
+        function openInGoogleMaps(lat, lng, name) {
+            const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            window.open(url, '_blank');
+        }
+        
+        function exploreCity(cityName) {
+            // For now, just search on Google
+            const url = `https://www.google.com/search?q=${encodeURIComponent(cityName + ' things to do')}`;
+            window.open(url, '_blank');
+        }
+        
+        function viewDetails(cityName) {
+            // For now, search for city information
+            const url = `https://www.google.com/search?q=${encodeURIComponent(cityName + ' tourist information')}`;
+            window.open(url, '_blank');
+        }
+        
+        // Fix for map initialization
+        window.addEventListener('load', function() {
+            // Ensure Leaflet is loaded before initializing map
+            if (typeof L !== 'undefined') {
+                console.log('Leaflet loaded, initializing map...');
+                // Re-initialize map if it failed on DOMContentLoaded
+                if (!window.map || !window.map._container) {
+                    initializeMap();
+                }
+            } else {
+                console.error('Leaflet not loaded!');
+            }
         });
     </script>
     
