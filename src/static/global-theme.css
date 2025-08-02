@@ -24,6 +24,11 @@
   --culinary-gradient: linear-gradient(135deg, #f97316 0%, #fed7aa 100%);
   --hidden-gradient: linear-gradient(135deg, #eab308 0%, #fde047 100%);
   
+  /* === BRAND GRADIENTS === */
+  --brand-gradient: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 50%, var(--brand-accent) 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #d97706 100%);
+  --hero-gradient: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 50%, var(--brand-accent) 100%);
+  
   /* === MODERN NEUTRAL PALETTE === */
   --white: #ffffff;
   --gray-50: #f8fafc;
@@ -60,11 +65,18 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.25);
+  --shadow-brand: 0 12px 32px rgba(37, 99, 235, 0.3);
+  --shadow-brand-hover: 0 20px 48px rgba(37, 99, 235, 0.4);
   
   /* === TYPOGRAPHY === */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Playfair Display', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  
+  /* === TEXT COLORS === */
+  --text-primary: var(--gray-800);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
   
   /* === LAYOUT & SPACING === */
   --container-max: 1400px;
@@ -74,11 +86,13 @@
   --border-radius: 16px;
   --border-radius-lg: 24px;
   --border-radius-xl: 32px;
+  --border-radius-xxl: 40px;
   
   /* === TRANSITIONS === */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
+  --transition-smooth: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   
   /* === Z-INDEX SYSTEM === */
   --z-dropdown: 1000;
@@ -418,4 +432,50 @@ body {
   :root {
     --section-padding: 2rem 0;
   }
+}
+
+/* =====================================================
+   TRIP STYLE SPECIFIC CLASSES
+   ===================================================== */
+
+/* Trip Scenic */
+.trip-scenic {
+  --style-color: var(--scenic-blue);
+  --style-gradient: var(--scenic-gradient);
+  --style-bg: rgba(59, 130, 246, 0.1);
+}
+
+/* Trip Cultural */
+.trip-cultural {
+  --style-color: var(--cultural-purple);
+  --style-gradient: var(--cultural-gradient);
+  --style-bg: rgba(139, 92, 246, 0.1);
+}
+
+/* Trip Adventure */
+.trip-adventure {
+  --style-color: var(--adventure-green);
+  --style-gradient: var(--adventure-gradient);
+  --style-bg: rgba(34, 197, 94, 0.1);
+}
+
+/* Trip Culinary */
+.trip-culinary {
+  --style-color: var(--culinary-orange);
+  --style-gradient: var(--culinary-gradient);
+  --style-bg: rgba(249, 115, 22, 0.1);
+}
+
+/* Trip Romantic */
+.trip-romantic {
+  --style-color: var(--romantic-red);
+  --style-gradient: var(--romantic-gradient);
+  --style-bg: rgba(239, 68, 68, 0.1);
+}
+
+/* Trip Hidden Gems */
+.trip-hidden_gems {
+  --style-color: var(--hidden-gold);
+  --style-gradient: var(--hidden-gradient);
+  --style-bg: rgba(234, 179, 8, 0.1);
 }
