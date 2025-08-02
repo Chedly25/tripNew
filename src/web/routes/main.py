@@ -1124,15 +1124,30 @@ def create_app() -> Flask:
             if not trip_data:
                 logger.warning("No trip data provided to set-trip-session")
                 return jsonify({'error': 'No trip data provided'}), 400
+            
+            # Reduce session data size by keeping only essential fields
+            essential_trip_data = {
+                'route_type': trip_data.get('route_type'),
+                'name': trip_data.get('name'),
+                'description': trip_data.get('description'),
+                'start_city': trip_data.get('start_city'),
+                'end_city': trip_data.get('end_city'),
+                'intermediate_cities': trip_data.get('intermediate_cities'),
+                'total_distance_km': trip_data.get('total_distance_km'),
+                'total_duration_hours': trip_data.get('total_duration_hours'),
+                'estimated_driving_time': trip_data.get('estimated_driving_time'),
+                'highlights': trip_data.get('highlights'),
+                'ideal_for': trip_data.get('ideal_for')
+            }
                 
-            session['current_trip_data'] = trip_data
+            session['current_trip_data'] = essential_trip_data
             session['current_trip_id'] = trip_id
             session['current_trip_name'] = trip_name
             
             # Debug logging
-            logger.info(f"Setting trip session - trip_id: {trip_id}, data keys: {list(trip_data.keys()) if trip_data else 'No data'}")
-            logger.info(f"Trip data has intermediate_cities: {bool(trip_data.get('intermediate_cities')) if trip_data else False}")
-            logger.info(f"Session updated - current_trip_data size: {len(str(trip_data)) if trip_data else 0} chars")
+            logger.info(f"Setting trip session - trip_id: {trip_id}, essential data keys: {list(essential_trip_data.keys())}")
+            logger.info(f"Essential trip data has intermediate_cities: {bool(essential_trip_data.get('intermediate_cities'))}")
+            logger.info(f"Session updated - essential_trip_data size: {len(str(essential_trip_data))} chars (reduced from {len(str(trip_data))} chars)")
             
             return jsonify({
                 'success': True,
