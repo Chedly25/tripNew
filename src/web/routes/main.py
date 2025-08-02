@@ -196,7 +196,7 @@ def generate_route_coordinates(start_city, end_city):
 
 def create_app() -> Flask:
     """Enhanced application factory with all new features."""
-    app = Flask(__name__, template_folder='.../templates', static_folder='.../static')
+    app = Flask(__name__, template_folder='../../templates', static_folder='../../static')
     
     # Security configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(32))
