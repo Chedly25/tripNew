@@ -17,6 +17,8 @@ from .opentripmap_service import get_opentripmap_service
 from .ml_recommendation_service import MLRecommendationService, TripPreference
 from .preference_scoring_service import get_preference_scoring_service, UserPreferences
 from .route_optimization_service import get_route_optimization_service
+from .advanced_filtering_service import get_advanced_filtering_service
+from .dynamic_learning_service import get_dynamic_learning_service
 
 logger = structlog.get_logger(__name__)
 
@@ -55,6 +57,8 @@ class EnhancedIntermediateCityService:
         self.ml_service = ml_service or MLRecommendationService(city_service)
         self.preference_service = get_preference_scoring_service()
         self.route_optimizer = get_route_optimization_service()
+        self.filtering_service = get_advanced_filtering_service()
+        self.learning_service = get_dynamic_learning_service()
         
         # Scoring weights for different factors
         self.scoring_weights = {
@@ -84,8 +88,13 @@ class EnhancedIntermediateCityService:
                    max_cities=max_cities)
         
         # Step 1: Gather candidates from multiple sources
-        candidates = await self._gather_candidate_cities(
+        raw_candidates = await self._gather_candidate_cities(
             start_city, end_city, request, route_type
+        )
+        
+        # Step 1.5: Apply advanced filtering
+        candidates = await self._apply_advanced_filtering(
+            raw_candidates, request, route_type
         )
         
         if not candidates:
@@ -230,6 +239,45 @@ class EnhancedIntermediateCityService:
             logger.error(f"Fallback candidates error: {e}")
             return []
     
+    async def _apply_advanced_filtering(
+        self, candidates: List[City], request: TripRequest, route_type: str
+    ) -> List[City]:
+        """Apply advanced filtering to candidate cities."""
+        
+        if not candidates:
+            return candidates
+        
+        try:
+            # Create filter criteria from request
+            filter_criteria = self.filtering_service.create_filter_criteria_from_request(request)
+            
+            # Apply route-type specific adjustments
+            if route_type == 'adventure':
+                filter_criteria.weather_dependent = True
+            elif route_type == 'romantic':
+                filter_criteria.avoid_tourist_traps = True
+                filter_criteria.crowd_level_preference = 'low'
+            elif route_type == 'cultural':
+                filter_criteria.cultural_significance_min = 0.7
+            elif route_type == 'culinary':
+                filter_criteria.prioritize_local_experiences = True
+            
+            # Apply filtering
+            filter_result = await self.filtering_service.apply_advanced_filters(
+                candidates, filter_criteria, request
+            )
+            
+            logger.info(f"Advanced filtering: {len(candidates)} -> {len(filter_result.filtered_cities)} cities")
+            if filter_result.filter_explanations:
+                logger.info("Filter explanations:", explanations=filter_result.filter_explanations)
+            
+            return filter_result.filtered_cities
+            
+        except Exception as e:
+            logger.warning(f"Advanced filtering failed: {e}")
+            # Return original candidates if filtering fails
+            return candidates
+    
     async def _score_candidates(
         self, 
         candidates: List[City], 
@@ -309,7 +357,10 @@ class EnhancedIntermediateCityService:
         # Budget score: fits budget constraints
         budget_score = self._calculate_budget_score(city, request)
         
-        # Calculate weighted total score
+        # Apply learning-based adjustments
+        learning_boost = self._get_learning_adjustments(city, route_type, request)
+        
+        # Calculate weighted total score with learning adjustments
         total_score = (
             distance_score * self.scoring_weights['distance'] +
             preference_score * self.scoring_weights['preference'] +
@@ -319,6 +370,9 @@ class EnhancedIntermediateCityService:
             timing_score * self.scoring_weights['timing'] +
             budget_score * self.scoring_weights['budget']
         )
+        
+        # Apply learning boost
+        total_score = min(total_score * (1.0 + learning_boost), 1.0)
         
         return CityScore(
             city=city,
@@ -617,6 +671,30 @@ class EnhancedIntermediateCityService:
         logger.info(f"Route validation: {len(optimized_cities)} -> {len(validated_cities)} cities")
         
         return validated_cities
+    
+    def _get_learning_adjustments(self, city: City, route_type: str, request: TripRequest) -> float:
+        """Get learning-based scoring adjustments."""
+        
+        try:
+            # Get popularity boost from learning service
+            popularity_boost = self.learning_service.get_popularity_boost(
+                city.name, route_type
+            )
+            
+            # Get personalized adjustments if user_id available
+            user_id = getattr(request, 'user_id', None)
+            if user_id:
+                personal_adjustments = self.learning_service.get_personalized_adjustments(
+                    user_id, route_type
+                )
+                # Apply personalization factor
+                popularity_boost *= personal_adjustments.get('popularity_weight', 1.0)
+            
+            return popularity_boost
+            
+        except Exception as e:
+            logger.warning(f"Learning adjustments failed for {city.name}: {e}")
+            return 0.0
     
     # Helper methods for scoring and optimization
     
