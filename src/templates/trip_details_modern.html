@@ -1565,7 +1565,8 @@
                     show: false,
                     collapsible: true,
                     router: L.Routing.osrmv1({
-                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                        serviceUrl: 'https://router.project-osrm.org/route/v1',
+                        profile: 'driving' // Explicitly request car routing
                     })
                 }).addTo(map);
                 
@@ -1909,20 +1910,81 @@
                 maxZoom: 19
             }).addTo(itineraryMap);
             
-            // Add route if available
-            {% if trip_data and trip_data.coordinates %}
-                const coordinates = {{ trip_data.coordinates | tojson }};
-                drawItineraryRoute(coordinates);
+            // Add route with proper city data
+            {% if trip_data %}
+                drawItineraryRoute();
             {% endif %}
         }
         
-        function drawItineraryRoute(coordinates) {
-            if (!itineraryMap || coordinates.length < 2) return;
+        async function drawItineraryRoute() {
+            if (!itineraryMap) return;
+            
+            // Build city data just like the main map does
+            const cities = [];
+            const cityNames = [];
+            const cityInfo = []; // Store city names with coordinates for tooltips
+            
+            console.log('Creating itinerary route from city data...');
+            
+            {% if trip_data %}
+                // Collect city data in the same way as main map
+                {% if trip_data.start_city %}
+                    {% if trip_data.start_city.coordinates %}
+                        cities.push({{ trip_data.start_city.coordinates | tojson }});
+                        cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
+                    {% elif trip_data.start_city.name %}
+                        cityNames.push('{{ trip_data.start_city.name }}');
+                    {% endif %}
+                {% endif %}
+                
+                {% if trip_data.intermediate_cities %}
+                    {% for city in trip_data.intermediate_cities %}
+                        {% if city.coordinates %}
+                            cities.push({{ city.coordinates | tojson }});
+                            cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
+                        {% elif city.name %}
+                            cityNames.push('{{ city.name }}');
+                        {% elif city is string %}
+                            cityNames.push('{{ city }}');
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                
+                {% if trip_data.end_city %}
+                    {% if trip_data.end_city.coordinates %}
+                        cities.push({{ trip_data.end_city.coordinates | tojson }});
+                        cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
+                    {% elif trip_data.end_city.name %}
+                        cityNames.push('{{ trip_data.end_city.name }}');
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+            
+            // Geocode any missing cities
+            if (cityNames.length > 0) {
+                console.log('Geocoding cities for itinerary map:', cityNames);
+                for (const cityName of cityNames) {
+                    const coords = await geocodeCity(cityName);
+                    if (coords) {
+                        cities.push(coords);
+                        cityInfo.push({ name: cityName, coords: coords });
+                        console.log(`Geocoded ${cityName} for itinerary:`, coords);
+                    }
+                }
+            }
+            
+            console.log('Cities for itinerary routing:', cities);
+            console.log('City info for itinerary:', cityInfo);
+            
+            if (cities.length < 2) {
+                console.warn('Not enough cities for itinerary routing');
+                return;
+            }
             
             // Create waypoints for routing
-            const waypoints = coordinates.map(coord => L.latLng(coord[0], coord[1]));
+            const waypoints = cities.map(coord => L.latLng(coord[0], coord[1]));
             
-            // Create routing control
+            // Create routing control with car routing
             const itineraryRouting = L.Routing.control({
                 waypoints: waypoints,
                 routeWhileDragging: false,
@@ -1930,9 +1992,13 @@
                 createMarker: function(i, waypoint, n) {
                     const isStart = i === 0;
                     const isEnd = i === n - 1;
-                    const color = isStart ? '#00b894' : isEnd ? '#e94560' : '#0f3460';
+                    const color = isStart ? '#00b894' : isEnd ? '#e94560' : '#f59e0b';
                     
-                    return L.marker(waypoint.latLng, {
+                    // Get city name from cityInfo
+                    const cityName = cityInfo[i] ? cityInfo[i].name : `City ${i + 1}`;
+                    const cityType = isStart ? 'Start' : isEnd ? 'End' : 'Stop';
+                    
+                    const marker = L.marker(waypoint.latLng, {
                         icon: L.divIcon({
                             className: 'custom-marker',
                             html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
@@ -1940,6 +2006,16 @@
                             iconAnchor: [13, 13]
                         })
                     });
+                    
+                    // Add tooltip with city name
+                    marker.bindTooltip(`<strong>${cityName}</strong><br/><small>${cityType}</small>`, {
+                        permanent: false,
+                        direction: 'top',
+                        offset: [0, -10],
+                        className: 'custom-tooltip'
+                    });
+                    
+                    return marker;
                 },
                 lineOptions: {
                     styles: [{
@@ -1951,7 +2027,8 @@
                 show: false,
                 collapsible: true,
                 router: L.Routing.osrmv1({
-                    serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    serviceUrl: 'https://router.project-osrm.org/route/v1',
+                    profile: 'driving' // Explicitly request car routing
                 })
             }).addTo(itineraryMap);
             
