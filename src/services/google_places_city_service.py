@@ -68,13 +68,13 @@ class GooglePlacesCityService:
         
         try:
             # Calculate midpoint and search radius
-            mid_lat = (start.coordinates.latitude + end.coordinates.latitude) / 2
+            mid_lat = (start.latitude + end.latitude) / 2
             mid_lng = (start.longitude + end.longitude) / 2
             
             # Calculate distance between start and end to determine search radius
             route_distance = geodesic(
-                (start.coordinates.latitude, start.coordinates.longitude),
-                (end.coordinates.latitude, end.coordinates.longitude)
+                (start.latitude, start.longitude),
+                (end.latitude, end.longitude)
             ).kilometers
             
             # Search radius should cover the route corridor
@@ -296,17 +296,17 @@ class GooglePlacesCityService:
             # Calculate distance from place to route line (simplified)
             start_dist = geodesic(
                 (place_lat, place_lng),
-                (route_start.coordinates.latitude, route_start.coordinates.longitude)
+                (route_start.latitude, route_start.longitude)
             ).kilometers
             
             end_dist = geodesic(
                 (place_lat, place_lng),
-                (route_end.coordinates.latitude, route_end.coordinates.longitude)
+                (route_end.latitude, route_end.longitude)
             ).kilometers
             
             route_dist = geodesic(
-                (route_start.coordinates.latitude, route_start.coordinates.longitude),
-                (route_end.coordinates.latitude, route_end.coordinates.longitude)
+                (route_start.latitude, route_start.longitude),
+                (route_end.latitude, route_end.longitude)
             ).kilometers
             
             # If the place forms a reasonable triangle with start/end, it's likely on route
@@ -330,17 +330,17 @@ class GooglePlacesCityService:
             # Calculate distance from place to route line (simplified)
             start_dist = geodesic(
                 (place_lat, place_lng),
-                (route_start.coordinates.latitude, route_start.coordinates.longitude)
+                (route_start.latitude, route_start.longitude)
             ).kilometers
             
             end_dist = geodesic(
                 (place_lat, place_lng),
-                (route_end.coordinates.latitude, route_end.coordinates.longitude)
+                (route_end.latitude, route_end.longitude)
             ).kilometers
             
             route_dist = geodesic(
-                (route_start.coordinates.latitude, route_start.coordinates.longitude),
-                (route_end.coordinates.latitude, route_end.coordinates.longitude)
+                (route_start.latitude, route_start.longitude),
+                (route_end.latitude, route_end.longitude)
             ).kilometers
             
             # If the place forms a reasonable triangle with start/end, it's likely on route
@@ -593,7 +593,7 @@ class GooglePlacesCityService:
         # Sort by distance from start point for initial ordering
         from geopy.distance import geodesic
         candidates.sort(key=lambda c: geodesic(
-            (start.coordinates.latitude, start.coordinates.longitude),
+            (start.latitude, start.longitude),
             (c.coordinates.latitude, c.coordinates.longitude)
         ).kilometers)
         
@@ -810,17 +810,17 @@ class GooglePlacesCityService:
         # Calculate distances
         start_dist = geodesic(
             (city_coords.latitude, city_coords.longitude),
-            (start.coordinates.latitude, start.coordinates.longitude)
+            (start.latitude, start.longitude)
         ).kilometers
         
         end_dist = geodesic(
             (city_coords.latitude, city_coords.longitude),
-            (end.coordinates.latitude, end.coordinates.longitude)
+            (end.latitude, end.longitude)
         ).kilometers
         
         route_dist = geodesic(
-            (start.coordinates.latitude, start.coordinates.longitude),
-            (end.coordinates.latitude, end.coordinates.longitude)
+            (start.latitude, start.longitude),
+            (end.latitude, end.longitude)
         ).kilometers
         
         # If the city creates a reasonable detour, it's on the route
