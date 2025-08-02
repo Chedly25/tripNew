@@ -1660,9 +1660,17 @@
                 // Collect city names for geocoding in correct order
                 {% if trip_data.start_city %}
                     {% if trip_data.start_city.coordinates %}
-                        console.log('Using start city coordinates:', {{ trip_data.start_city.coordinates | tojson }});
-                        cities.push({{ trip_data.start_city.coordinates | tojson }});
-                        cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
+                        {% if trip_data.start_city.coordinates.latitude and trip_data.start_city.coordinates.longitude %}
+                            // Handle Coordinates object format
+                            console.log('Using start city coordinates (object):', [{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}]);
+                            cities.push([{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}]);
+                            cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: [{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}] });
+                        {% else %}
+                            // Handle array format
+                            console.log('Using start city coordinates (array):', {{ trip_data.start_city.coordinates | tojson }});
+                            cities.push({{ trip_data.start_city.coordinates | tojson }});
+                            cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
+                        {% endif %}
                     {% elif trip_data.start_city.name %}
                         console.log('Will geocode start city:', '{{ trip_data.start_city.name }}');
                         cityNames.push('{{ trip_data.start_city.name }}');
@@ -1673,9 +1681,17 @@
                     console.log('Processing intermediate cities:', {{ trip_data.intermediate_cities | tojson }});
                     {% for city in trip_data.intermediate_cities %}
                         {% if city.coordinates %}
-                            console.log('Using intermediate city coordinates:', {{ city.coordinates | tojson }});
-                            cities.push({{ city.coordinates | tojson }});
-                            cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
+                            {% if city.coordinates.latitude and city.coordinates.longitude %}
+                                // Handle Coordinates object format
+                                console.log('Using intermediate city coordinates (object):', [{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}]);
+                                cities.push([{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}]);
+                                cityInfo.push({ name: '{{ city.name }}', coords: [{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}] });
+                            {% else %}
+                                // Handle array format
+                                console.log('Using intermediate city coordinates (array):', {{ city.coordinates | tojson }});
+                                cities.push({{ city.coordinates | tojson }});
+                                cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
+                            {% endif %}
                         {% elif city.name %}
                             console.log('Will geocode intermediate city:', '{{ city.name }}');
                             cityNames.push('{{ city.name }}');
@@ -1690,9 +1706,17 @@
                 
                 {% if trip_data.end_city %}
                     {% if trip_data.end_city.coordinates %}
-                        console.log('Using end city coordinates:', {{ trip_data.end_city.coordinates | tojson }});
-                        cities.push({{ trip_data.end_city.coordinates | tojson }});
-                        cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
+                        {% if trip_data.end_city.coordinates.latitude and trip_data.end_city.coordinates.longitude %}
+                            // Handle Coordinates object format
+                            console.log('Using end city coordinates (object):', [{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}]);
+                            cities.push([{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}]);
+                            cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: [{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}] });
+                        {% else %}
+                            // Handle array format
+                            console.log('Using end city coordinates (array):', {{ trip_data.end_city.coordinates | tojson }});
+                            cities.push({{ trip_data.end_city.coordinates | tojson }});
+                            cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
+                        {% endif %}
                     {% elif trip_data.end_city.name %}
                         console.log('Will geocode end city:', '{{ trip_data.end_city.name }}');
                         cityNames.push('{{ trip_data.end_city.name }}');
@@ -1900,7 +1924,11 @@
                     mapCenter = [latSum / coords.length, lngSum / coords.length];
                 }
             {% elif trip_data and trip_data.start_city and trip_data.start_city.coordinates %}
-                mapCenter = {{ trip_data.start_city.coordinates | tojson }};
+                {% if trip_data.start_city.coordinates.latitude and trip_data.start_city.coordinates.longitude %}
+                    mapCenter = [{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}];
+                {% else %}
+                    mapCenter = {{ trip_data.start_city.coordinates | tojson }};
+                {% endif %}
             {% endif %}
             
             itineraryMap = L.map('itineraryMap').setView(mapCenter, 6);
@@ -1930,8 +1958,13 @@
                 // Collect city data in the same way as main map
                 {% if trip_data.start_city %}
                     {% if trip_data.start_city.coordinates %}
-                        cities.push({{ trip_data.start_city.coordinates | tojson }});
-                        cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
+                        {% if trip_data.start_city.coordinates.latitude and trip_data.start_city.coordinates.longitude %}
+                            cities.push([{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}]);
+                            cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: [{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}] });
+                        {% else %}
+                            cities.push({{ trip_data.start_city.coordinates | tojson }});
+                            cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
+                        {% endif %}
                     {% elif trip_data.start_city.name %}
                         cityNames.push('{{ trip_data.start_city.name }}');
                     {% endif %}
@@ -1940,8 +1973,13 @@
                 {% if trip_data.intermediate_cities %}
                     {% for city in trip_data.intermediate_cities %}
                         {% if city.coordinates %}
-                            cities.push({{ city.coordinates | tojson }});
-                            cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
+                            {% if city.coordinates.latitude and city.coordinates.longitude %}
+                                cities.push([{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}]);
+                                cityInfo.push({ name: '{{ city.name }}', coords: [{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}] });
+                            {% else %}
+                                cities.push({{ city.coordinates | tojson }});
+                                cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
+                            {% endif %}
                         {% elif city.name %}
                             cityNames.push('{{ city.name }}');
                         {% elif city is string %}
@@ -1952,8 +1990,13 @@
                 
                 {% if trip_data.end_city %}
                     {% if trip_data.end_city.coordinates %}
-                        cities.push({{ trip_data.end_city.coordinates | tojson }});
-                        cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
+                        {% if trip_data.end_city.coordinates.latitude and trip_data.end_city.coordinates.longitude %}
+                            cities.push([{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}]);
+                            cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: [{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}] });
+                        {% else %}
+                            cities.push({{ trip_data.end_city.coordinates | tojson }});
+                            cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
+                        {% endif %}
                     {% elif trip_data.end_city.name %}
                         cityNames.push('{{ trip_data.end_city.name }}');
                     {% endif %}
