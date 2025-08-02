@@ -688,58 +688,60 @@ class TravelPlannerServiceImpl(TravelPlannerService):
         return enriched_route
     
     def _enhance_cities_with_descriptions(self, cities: List, route_type: str, request) -> List[Dict]:
-        """Enhance cities with AI-generated descriptions."""
+        """Enhance cities with descriptions - optimized for speed to prevent timeouts."""
         try:
             enhanced_cities = []
+            
             for city in cities:
-                # Get description synchronously (the service handles async internally)
-                import asyncio
-                try:
-                    # Try to get existing event loop
-                    loop = asyncio.get_event_loop()
-                    if loop.is_running():
-                        # We're in an async context, create task
-                        import concurrent.futures
-                        def get_desc():
-                            new_loop = asyncio.new_event_loop()
-                            asyncio.set_event_loop(new_loop)
-                            try:
-                                return new_loop.run_until_complete(
-                                    self.description_service.get_city_description(city, route_type, request)
-                                )
-                            finally:
-                                new_loop.close()
-                        
-                        with concurrent.futures.ThreadPoolExecutor() as executor:
-                            description = executor.submit(get_desc).result(timeout=10)
-                    else:
-                        # No running loop
-                        description = asyncio.run(
-                            self.description_service.get_city_description(city, route_type, request)
-                        )
-                except Exception:
-                    # Fallback: run in new event loop
-                    description = asyncio.run(
-                        self.description_service.get_city_description(city, route_type, request)
-                    )
+                # Use only predefined descriptions to avoid AI API calls that cause timeouts
+                description = None
                 
-                enhanced_city = {
-                    'name': city.name,
-                    'country': city.country,
-                    'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
-                    'types': city.types,
-                    'region': city.region,
-                    'description': {
-                        'short': description.short_description,
-                        'detailed': description.detailed_description,
-                        'highlights': description.highlights,
-                        'best_for': description.best_for,
-                        'hidden_gems': description.hidden_gems,
-                        'practical_info': description.practical_info,
-                        'why_visit': description.why_visit_reason,
-                        'photo_keywords': description.photo_keywords
+                # Check predefined descriptions in the service
+                city_key = city.name.lower().replace(' ', '_').replace('-', '_')
+                if hasattr(self.description_service, 'predefined_descriptions'):
+                    predefined = self.description_service.predefined_descriptions
+                    if city_key in predefined:
+                        description = predefined[city_key]
+                
+                # Create enhanced city data
+                if description:
+                    enhanced_city = {
+                        'name': city.name,
+                        'country': city.country,
+                        'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
+                        'types': city.types,
+                        'region': city.region,
+                        'description': {
+                            'short': description.short_description,
+                            'detailed': description.detailed_description,
+                            'highlights': description.highlights,
+                            'best_for': description.best_for,
+                            'hidden_gems': description.hidden_gems,
+                            'practical_info': description.practical_info,
+                            'why_visit': description.why_visit_reason,
+                            'photo_keywords': description.photo_keywords
+                        }
                     }
-                }
+                else:
+                    # Basic city data without AI description to avoid timeouts
+                    enhanced_city = {
+                        'name': city.name,
+                        'country': city.country,
+                        'coordinates': [city.coordinates.latitude, city.coordinates.longitude],
+                        'types': city.types,
+                        'region': city.region,
+                        'description': {
+                            'short': f"A charming destination in {city.country} perfect for your journey.",
+                            'detailed': f"{city.name} offers authentic local experiences and cultural attractions that make it an ideal stop on your European adventure.",
+                            'highlights': [f"{city.name} historic center", "Local cultural sites", "Regional specialties"],
+                            'best_for': ["Cultural travelers", "Authentic experiences", "Road trip adventurers"],
+                            'hidden_gems': ["Local markets", "Traditional restaurants", "Scenic viewpoints"],
+                            'practical_info': f"A pleasant stop in {city.country} with good amenities.",
+                            'why_visit': f"Experience the authentic charm of {city.country}.",
+                            'photo_keywords': [city.name.lower(), city.country.lower(), "historic", "culture"]
+                        }
+                    }
+                
                 enhanced_cities.append(enhanced_city)
             
             return enhanced_cities
