@@ -1417,6 +1417,7 @@
     <script>
         // Check if trip data is available, fallback to session storage if needed
         let tripData = {{ trip_data | tojson | safe }};
+        let needsReload = false;
         
         // If no trip data from server, try session storage
         if (!tripData || Object.keys(tripData).length === 0) {
@@ -1427,7 +1428,7 @@
                     tripData = JSON.parse(sessionData);
                     console.log('Retrieved trip data from session storage:', tripData);
                     
-                    // Send to server to restore session state
+                    // Send to server to restore session state (but don't wait for it)
                     fetch('/api/set-trip-session', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1438,21 +1439,24 @@
                         })
                     }).then(() => {
                         console.log('Session state restored');
-                        // Reload page to get proper server data
-                        window.location.reload();
                     }).catch(error => {
                         console.error('Failed to restore session:', error);
                     });
-                    return; // Exit early, page will reload
+                    
+                    // Continue with initialization using session data
+                    console.log('Using trip data from session storage for initialization');
                 } catch (e) {
                     console.error('Failed to parse session data:', e);
+                    tripData = null;
                 }
             }
             
-            // If no valid data available, redirect to home
-            console.log('No valid trip data available, redirecting to home');
-            window.location.href = '/';
-            return;
+            // If still no valid data available, redirect to home
+            if (!tripData) {
+                console.log('No valid trip data available, redirecting to home');
+                window.location.href = '/';
+                return;
+            }
         }
         
         // Initialize map
@@ -1683,10 +1687,10 @@
             const cityInfo = []; // Store city names with coordinates for tooltips
             
             console.log('Creating route from city data...');
-            console.log('Trip data:', {{ trip_data | tojson if trip_data else 'null' }});
+            console.log('Trip data:', tripData);
             
-            // Add some hardcoded coordinates as absolute fallback for testing
-            {% if not trip_data %}
+            // Check if we have trip data
+            if (!tripData) {
                 console.log('No trip data found, using test coordinates');
                 cities.push([43.6047, 1.4442]); // Toulouse
                 cities.push([43.9352, 4.8357]); // Nîmes 
@@ -1694,75 +1698,50 @@
                 cityInfo.push({ name: 'Toulouse', coords: [43.6047, 1.4442] });
                 cityInfo.push({ name: 'Nîmes', coords: [43.9352, 4.8357] });
                 cityInfo.push({ name: 'Marseille', coords: [43.2965, 5.3698] });
-            {% endif %}
-            
-            {% if trip_data %}
-                // Collect city names for geocoding in correct order
-                {% if trip_data.start_city %}
-                    {% if trip_data.start_city.coordinates %}
-                        {% if trip_data.start_city.coordinates.latitude and trip_data.start_city.coordinates.longitude %}
-                            // Handle Coordinates object format
-                            console.log('Using start city coordinates (object):', [{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}]);
-                            cities.push([{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}]);
-                            cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: [{{ trip_data.start_city.coordinates.latitude }}, {{ trip_data.start_city.coordinates.longitude }}] });
-                        {% else %}
-                            // Handle array format
-                            console.log('Using start city coordinates (array):', {{ trip_data.start_city.coordinates | tojson }});
-                            cities.push({{ trip_data.start_city.coordinates | tojson }});
-                            cityInfo.push({ name: '{{ trip_data.start_city.name }}', coords: {{ trip_data.start_city.coordinates | tojson }} });
-                        {% endif %}
-                    {% elif trip_data.start_city.name %}
-                        console.log('Will geocode start city:', '{{ trip_data.start_city.name }}');
-                        cityNames.push('{{ trip_data.start_city.name }}');
-                    {% endif %}
-                {% endif %}
+            } else {
+                // Process trip data using JavaScript (works with both server and session storage data)
                 
-                {% if trip_data.intermediate_cities %}
-                    console.log('Processing intermediate cities:', {{ trip_data.intermediate_cities | tojson }});
-                    {% for city in trip_data.intermediate_cities %}
-                        {% if city.coordinates %}
-                            {% if city.coordinates.latitude and city.coordinates.longitude %}
-                                // Handle Coordinates object format
-                                console.log('Using intermediate city coordinates (object):', [{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}]);
-                                cities.push([{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}]);
-                                cityInfo.push({ name: '{{ city.name }}', coords: [{{ city.coordinates.latitude }}, {{ city.coordinates.longitude }}] });
-                            {% else %}
-                                // Handle array format
-                                console.log('Using intermediate city coordinates (array):', {{ city.coordinates | tojson }});
-                                cities.push({{ city.coordinates | tojson }});
-                                cityInfo.push({ name: '{{ city.name }}', coords: {{ city.coordinates | tojson }} });
-                            {% endif %}
-                        {% elif city.name %}
-                            console.log('Will geocode intermediate city:', '{{ city.name }}');
-                            cityNames.push('{{ city.name }}');
-                        {% elif city is string %}
-                            console.log('Will geocode intermediate city (string):', '{{ city }}');
-                            cityNames.push('{{ city }}');
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
+                // Add start city
+                if (tripData.start_city) {
+                    if (tripData.start_city.coordinates) {
+                        console.log('Using start city coordinates:', tripData.start_city.coordinates);
+                        cities.push(tripData.start_city.coordinates);
+                        cityInfo.push({ name: tripData.start_city.name, coords: tripData.start_city.coordinates });
+                    } else if (tripData.start_city.name) {
+                        console.log('Will geocode start city:', tripData.start_city.name);
+                        cityNames.push(tripData.start_city.name);
+                    }
+                }
+                
+                // Add intermediate cities
+                if (tripData.intermediate_cities && Array.isArray(tripData.intermediate_cities)) {
+                    console.log('Processing intermediate cities:', tripData.intermediate_cities);
+                    tripData.intermediate_cities.forEach(city => {
+                        if (city.coordinates) {
+                            console.log('Using intermediate city coordinates:', city.coordinates);
+                            cities.push(city.coordinates);
+                            cityInfo.push({ name: city.name, coords: city.coordinates });
+                        } else if (city.name) {
+                            console.log('Will geocode intermediate city:', city.name);
+                            cityNames.push(city.name);
+                        }
+                    });
+                } else {
                     console.log('No intermediate cities found');
-                {% endif %}
+                }
                 
-                {% if trip_data.end_city %}
-                    {% if trip_data.end_city.coordinates %}
-                        {% if trip_data.end_city.coordinates.latitude and trip_data.end_city.coordinates.longitude %}
-                            // Handle Coordinates object format
-                            console.log('Using end city coordinates (object):', [{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}]);
-                            cities.push([{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}]);
-                            cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: [{{ trip_data.end_city.coordinates.latitude }}, {{ trip_data.end_city.coordinates.longitude }}] });
-                        {% else %}
-                            // Handle array format
-                            console.log('Using end city coordinates (array):', {{ trip_data.end_city.coordinates | tojson }});
-                            cities.push({{ trip_data.end_city.coordinates | tojson }});
-                            cityInfo.push({ name: '{{ trip_data.end_city.name }}', coords: {{ trip_data.end_city.coordinates | tojson }} });
-                        {% endif %}
-                    {% elif trip_data.end_city.name %}
-                        console.log('Will geocode end city:', '{{ trip_data.end_city.name }}');
-                        cityNames.push('{{ trip_data.end_city.name }}');
-                    {% endif %}
-                {% endif %}
-            {% endif %}
+                // Add end city
+                if (tripData.end_city) {
+                    if (tripData.end_city.coordinates) {
+                        console.log('Using end city coordinates:', tripData.end_city.coordinates);
+                        cities.push(tripData.end_city.coordinates);
+                        cityInfo.push({ name: tripData.end_city.name, coords: tripData.end_city.coordinates });
+                    } else if (tripData.end_city.name) {
+                        console.log('Will geocode end city:', tripData.end_city.name);
+                        cityNames.push(tripData.end_city.name);
+                    }
+                }
+            }
             
             // Geocode city names to get coordinates
             if (cityNames.length > 0) {
