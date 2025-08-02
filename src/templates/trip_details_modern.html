@@ -1427,49 +1427,55 @@
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     
     <script>
-        // Check if trip data is available, fallback to session storage if needed
-        let tripData = {{ trip_data | tojson | safe }};
-        let needsReload = false;
+        // Global variable for trip data
+        let tripData = null;
         
-        // If no trip data from server, try session storage
-        if (!tripData || Object.keys(tripData).length === 0) {
-            console.log('No trip data from server, trying session storage...');
-            const sessionData = sessionStorage.getItem('currentTripData');
-            if (sessionData) {
-                try {
-                    tripData = JSON.parse(sessionData);
-                    console.log('Retrieved trip data from session storage:', tripData);
-                    
-                    // Send to server to restore session state (but don't wait for it)
-                    fetch('/api/set-trip-session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            trip_data: tripData,
-                            trip_name: tripData.name || 'Trip Details',
-                            trip_id: 0
-                        })
-                    }).then(() => {
-                        console.log('Session state restored');
-                    }).catch(error => {
-                        console.error('Failed to restore session:', error);
-                    });
-                    
-                    // Continue with initialization using session data
-                    console.log('Using trip data from session storage for initialization');
-                } catch (e) {
-                    console.error('Failed to parse session data:', e);
-                    tripData = null;
+        // Initialize trip data immediately
+        (function() {
+            // Check if trip data is available, fallback to session storage if needed
+            tripData = {{ trip_data | tojson | safe }};
+            let needsReload = false;
+            
+            // If no trip data from server, try session storage
+            if (!tripData || Object.keys(tripData).length === 0) {
+                console.log('No trip data from server, trying session storage...');
+                const sessionData = sessionStorage.getItem('currentTripData');
+                if (sessionData) {
+                    try {
+                        tripData = JSON.parse(sessionData);
+                        console.log('Retrieved trip data from session storage:', tripData);
+                        
+                        // Send to server to restore session state (but don't wait for it)
+                        fetch('/api/set-trip-session', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                trip_data: tripData,
+                                trip_name: tripData.name || 'Trip Details',
+                                trip_id: 0
+                            })
+                        }).then(() => {
+                            console.log('Session state restored');
+                        }).catch(error => {
+                            console.error('Failed to restore session:', error);
+                        });
+                        
+                        // Continue with initialization using session data
+                        console.log('Using trip data from session storage for initialization');
+                    } catch (e) {
+                        console.error('Failed to parse session data:', e);
+                        tripData = null;
+                    }
+                }
+                
+                // If still no valid data available, redirect to home
+                if (!tripData) {
+                    console.log('No valid trip data available, redirecting to home');
+                    window.location.href = '/';
+                    return;
                 }
             }
-            
-            // If still no valid data available, redirect to home
-            if (!tripData) {
-                console.log('No valid trip data available, redirecting to home');
-                window.location.href = '/';
-                return;
-            }
-        }
+        })();
         
         // Initialize map
         window.map = null;
@@ -1557,11 +1563,11 @@
             // Clear existing route
             if (routeLayer) {
                 console.log('Removing existing route layer');
-                map.removeLayer(routeLayer);
+                window.map.removeLayer(routeLayer);
             }
             if (routingControl) {
                 console.log('Removing existing routing control');
-                map.removeControl(routingControl);
+                window.map.removeControl(routingControl);
             }
             
             if (coordinates.length >= 2) {
@@ -1578,7 +1584,7 @@
                         weight: 4,
                         opacity: 0.8,
                         smoothFactor: 1
-                    }).addTo(map);
+                    }).addTo(window.map);
                     
                     // Add markers for each city
                     coordinates.forEach((coord, index) => {
@@ -1593,10 +1599,10 @@
                                 iconSize: [22, 22],
                                 iconAnchor: [11, 11]
                             })
-                        }).addTo(map);
+                        }).addTo(window.map);
                     });
                     
-                    map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                    window.map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
                     return;
                 }
                 
@@ -1634,7 +1640,7 @@
                         serviceUrl: 'https://router.project-osrm.org/route/v1',
                         profile: 'driving' // Explicitly request car routing
                     })
-                }).addTo(map);
+                }).addTo(window.map);
                 
                 console.log('Routing control created and added to map');
                 
@@ -1649,7 +1655,7 @@
                 routingControl.on('routesfound', function(e) {
                     console.log('Route found, fitting map bounds');
                     const bounds = L.latLngBounds(waypoints);
-                    map.fitBounds(bounds, { padding: [50, 50] });
+                    window.map.fitBounds(bounds, { padding: [50, 50] });
                 });
                 
                 // Add error handling
@@ -1663,7 +1669,7 @@
                     weight: 4,
                     opacity: 0.8,
                     smoothFactor: 1
-                }).addTo(map);
+                }).addTo(window.map);
                 
                 // Add simple markers
                 coordinates.forEach((coord, index) => {
@@ -1674,31 +1680,31 @@
                         iconAnchor: [8, 8]
                     });
                     
-                    L.marker(coord, { icon }).addTo(map);
+                    L.marker(coord, { icon }).addTo(window.map);
                 });
                 
-                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                window.map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
             }
         }
         
         // Map controls
         function zoomIn() {
-            map.zoomIn();
+            if (window.map) window.map.zoomIn();
         }
         
         function zoomOut() {
-            map.zoomOut();
+            if (window.map) window.map.zoomOut();
         }
         
         function fitBounds() {
-            if (routingControl) {
+            if (window.map && routingControl) {
                 const waypoints = routingControl.getWaypoints().filter(wp => wp.latLng);
                 if (waypoints.length > 0) {
                     const bounds = L.latLngBounds(waypoints.map(wp => wp.latLng));
-                    map.fitBounds(bounds, { padding: [50, 50] });
+                    window.window.map.fitBounds(bounds, { padding: [50, 50] });
                 }
-            } else if (routeLayer) {
-                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+            } else if (window.map && routeLayer) {
+                window.window.map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
             }
         }
         
@@ -1807,13 +1813,13 @@
             } else if (normalizedCities.length === 1) {
                 console.log('Only one city found, centering map');
                 // Center map on single city
-                map.setView(normalizedCities[0], 10);
+                window.map.setView(normalizedCities[0], 10);
                 const cityName = cityInfo.length > 0 ? cityInfo[0].name : 'City';
-                L.marker(normalizedCities[0]).bindTooltip(cityName, {permanent: false, direction: 'top'}).addTo(map);
+                L.marker(normalizedCities[0]).bindTooltip(cityName, {permanent: false, direction: 'top'}).addTo(window.map);
             } else {
                 console.warn('No valid city coordinates found for mapping');
                 // Show a default view if no cities found
-                map.setView([48.8566, 2.3522], 5); // Default to Europe view
+                window.map.setView([48.8566, 2.3522], 5); // Default to Europe view
                 console.log('Showing default Europe view');
             }
         }
@@ -1828,11 +1834,11 @@
                 // Clear existing route
                 if (routeLayer) {
                     console.log('Removing existing route layer');
-                    map.removeLayer(routeLayer);
+                    window.map.removeLayer(routeLayer);
                 }
                 if (routingControl) {
                     console.log('Removing existing routing control');
-                    map.removeControl(routingControl);
+                    window.map.removeControl(routingControl);
                 }
                 
                 // Validate coordinates
@@ -1847,7 +1853,7 @@
                     weight: 4,
                     opacity: 0.8,
                     smoothFactor: 1
-                }).addTo(map);
+                }).addTo(window.map);
                 
                 console.log('Route polyline created successfully');
                 
@@ -1869,7 +1875,7 @@
                                 iconSize: [24, 24],
                                 iconAnchor: [12, 12]
                             })
-                        }).addTo(map);
+                        }).addTo(window.map);
                         
                         // Add tooltip with city name
                         marker.bindTooltip(`<strong>${cityName}</strong><br/><small>${cityType}</small>`, {
@@ -1886,13 +1892,13 @@
                 });
                 
                 // Fit map to show entire route
-                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                window.map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
                 console.log('Map fitted to route bounds');
                 
             } catch (error) {
                 console.error('Error in drawSimpleRoute:', error);
                 // Fallback: just show a basic map
-                map.setView([48.8566, 2.3522], 5);
+                window.map.setView([48.8566, 2.3522], 5);
             }
         }
         
