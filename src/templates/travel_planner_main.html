@@ -6,10 +6,8 @@
     <title>EuroRoam - Premium European Road Trip Planner</title>
     
     <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/logo-180.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/logo-16.png">
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -106,7 +104,7 @@
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--gray);
-            padding: 1rem 2rem;
+            padding: 0.75rem 2rem;
             z-index: 1000;
             transition: all 0.3s ease;
         }
@@ -200,16 +198,139 @@
             width: 100%;
         }
 
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .login-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray);
+            transition: all 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background: var(--gray);
+            color: var(--text-primary) !important;
+        }
+
+        .login-btn::after {
+            display: none;
+        }
+
+        .signup-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: var(--accent);
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .signup-btn:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        .signup-btn::after {
+            display: none;
+        }
+
+        /* Saved Trips Section */
+        .saved-trips-section {
+            padding: 4rem 2rem;
+            background: var(--white);
+        }
+
+        .saved-trips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .saved-trip-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--gray);
+            transition: all 0.3s ease;
+        }
+
+        .saved-trip-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .saved-trip-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .saved-trip-route {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .saved-trip-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .saved-trip-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .trip-action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-view {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--accent-dark);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: 70vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             position: relative;
             z-index: 1;
-            padding: 2rem;
+            padding: 1.5rem;
             background: var(--hero-gradient);
         }
 
@@ -561,7 +682,7 @@
 
             .hero {
                 padding: 1rem;
-                min-height: 90vh;
+                min-height: 60vh;
             }
 
             .planning-container {
@@ -922,8 +1043,10 @@
             </a>
             <div class="nav-links">
                 <a href="#features" class="nav-link">Features</a>
-                <a href="/auth/login" class="nav-link">Login</a>
-                <a href="/auth/register" class="nav-link">Sign Up</a>
+                <div class="auth-buttons">
+                    <a href="/auth/login" class="nav-link login-btn">Login</a>
+                    <a href="/auth/register" class="nav-link signup-btn">Sign Up</a>
+                </div>
             </div>
         </div>
     </nav>
@@ -1036,6 +1159,21 @@
         </div>
     </section>
 
+    <!-- Saved Trips Section -->
+    <section id="savedTrips" class="saved-trips-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">Your Saved Trips</h2>
+            <div id="savedTripsContainer" class="saved-trips-grid">
+                <!-- Saved trips will be loaded here -->
+            </div>
+            <div id="noSavedTrips" class="empty-state" style="display: none;">
+                <i class="fas fa-map"></i>
+                <h3>No saved trips yet</h3>
+                <p>Start planning your European adventure and save your favorite routes!</p>
+            </div>
+        </div>
+    </section>
+
     <!-- Features Section -->
     <section class="features" id="features">
         <div class="features-container">
@@ -1093,6 +1231,9 @@
     </section>
 
     <script>
+        // Load saved trips on page load
+        document.addEventListener('DOMContentLoaded', loadSavedTrips);
+
         // Navbar scroll effect
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('navbar');
@@ -1102,6 +1243,71 @@
                 navbar.classList.remove('scrolled');
             }
         });
+
+        // Load and display saved trips
+        async function loadSavedTrips() {
+            try {
+                const response = await fetch('/api/user-trips');
+                const data = await response.json();
+                
+                if (data.success && data.trips && data.trips.length > 0) {
+                    displaySavedTrips(data.trips, data.user_type, data.user_email);
+                    document.getElementById('savedTrips').style.display = 'block';
+                } else if (data.user_type === 'guest' || data.user_type === 'authenticated') {
+                    // Show empty state for users with email sessions but no trips
+                    document.getElementById('savedTrips').style.display = 'block';
+                    document.getElementById('noSavedTrips').style.display = 'block';
+                }
+            } catch (error) {
+                console.log('Could not load saved trips:', error);
+            }
+        }
+
+        function displaySavedTrips(trips, userType, userEmail) {
+            const container = document.getElementById('savedTripsContainer');
+            container.innerHTML = '';
+
+            trips.forEach(trip => {
+                const tripCard = document.createElement('div');
+                tripCard.className = 'saved-trip-card';
+                
+                const tripData = typeof trip.trip_data === 'string' ? JSON.parse(trip.trip_data) : trip.trip_data;
+                const startCity = trip.start_city || tripData?.start_city?.name || 'Unknown';
+                const endCity = trip.end_city || tripData?.end_city?.name || 'Unknown';
+                
+                tripCard.innerHTML = `
+                    <div class="saved-trip-title">${trip.trip_name}</div>
+                    <div class="saved-trip-route">
+                        <i class="fas fa-route"></i> ${startCity} → ${endCity}
+                    </div>
+                    <div class="saved-trip-meta">
+                        <span><i class="fas fa-calendar"></i> ${new Date(trip.created_at).toLocaleDateString()}</span>
+                        <span><i class="fas fa-${trip.is_favorite ? 'heart' : 'heart-o'}"></i> ${trip.is_favorite ? 'Favorite' : ''}</span>
+                    </div>
+                    <div class="saved-trip-actions">
+                        <button class="trip-action-btn btn-view" onclick="viewTrip(${trip.id}, '${userType}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(tripCard);
+            });
+
+            // Show user type indicator
+            if (userType === 'guest' && userEmail) {
+                const indicator = document.createElement('div');
+                indicator.style.cssText = 'text-align: center; margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9rem;';
+                indicator.innerHTML = `<i class="fas fa-envelope"></i> Trips saved to: ${userEmail}`;
+                container.parentNode.insertBefore(indicator, container);
+            }
+        }
+
+        function viewTrip(tripId, userType) {
+            // Navigate to trip details page
+            const baseUrl = userType === 'guest' ? '/trip-detail-guest' : '/trip-detail';
+            window.location.href = `${baseUrl}/${tripId}`;
+        }
 
         // Specialty button selection (multiple selection allowed)
         document.querySelectorAll('.specialty-btn').forEach(btn => {

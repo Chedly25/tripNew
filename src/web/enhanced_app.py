@@ -549,7 +549,7 @@ def create_enhanced_app() -> Flask:
     
     @app.route('/api/travel-insights')
     @login_required
-    async def get_travel_insights():
+    async def get_travel_insights_enhanced():
         """Get AI-powered travel insights for the user."""
         try:
             user = get_current_user()

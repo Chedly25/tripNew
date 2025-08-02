@@ -1046,26 +1046,55 @@
                     trip_details: travelData.data.trip_details
                 };
                 
+                // Check if user needs to provide email for saving
+                let userEmail = null;
+                
+                // Check if user is logged in by trying to get user info
+                try {
+                    const userResponse = await fetch('/api/user-trips');
+                    const userData = await userResponse.json();
+                    
+                    if (userData.user_type === 'anonymous') {
+                        // Prompt for email if not logged in
+                        userEmail = prompt('Please enter your email to save this trip:');
+                        if (!userEmail || !userEmail.includes('@')) {
+                            showNotification('Valid email required to save trip.', 'warning');
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not check user status');
+                }
+                
+                const requestBody = {
+                    trip_name: `${formatRouteType(route.route_type)} Route`,
+                    trip_data: tripData,
+                    is_favorite: false
+                };
+                
+                // Add email if provided
+                if (userEmail) {
+                    requestBody.user_email = userEmail;
+                }
+                
                 const response = await fetch('/api/save-trip', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        trip_name: `${formatRouteType(route.route_type)} Route`,
-                        trip_data: tripData,
-                        is_favorite: false
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (response.ok) {
+                    const responseData = await response.json();
+                    
                     // Update button state
                     const button = event.target.closest('.btn-save');
                     button.classList.add('saved');
                     button.innerHTML = '<i class="fas fa-check"></i> Saved';
                     
-                    // Show success message
-                    showNotification('Trip saved successfully!', 'success');
+                    // Show success message with email info if applicable
+                    showNotification(responseData.message || 'Trip saved successfully!', 'success');
                 } else {
                     showNotification('Failed to save trip. Please try again.', 'error');
                 }

@@ -835,34 +835,104 @@ def create_app() -> Flask:
     
     # Trip saving and management
     @app.route('/api/save-trip', methods=['POST'])
-    @login_required
     def save_trip():
-        """Save a trip for the current user."""
+        """Save a trip for the current user or email session."""
         try:
-            user = get_current_user()
-            if not user:
-                return jsonify({'error': 'Authentication required'}), 401
-            
             data = request.get_json()
             trip_data = data.get('trip_data')
             trip_name = data.get('trip_name', f"Trip to {trip_data.get('end_city', {}).get('name', 'Unknown')}")
             is_favorite = data.get('is_favorite', False)
+            user_email = data.get('user_email')  # Allow email-based saving
             
             if not trip_data:
                 return jsonify({'error': 'Trip data is required'}), 400
             
+            # Try to get authenticated user first
+            user = get_current_user()
+            user_id = None
+            
+            if user:
+                # Fully authenticated user
+                user_id = user['id']
+                user_email = user.get('email')
+            elif user_email:
+                # Email-based session (guest user with email)
+                # Store email in session for future reference
+                session['guest_email'] = user_email
+                
+                # Try to find existing user by email or create a guest entry
+                user_manager = get_user_manager()
+                existing_user = user_manager.get_user_by_email(user_email)
+                if existing_user:
+                    user_id = existing_user['id']
+                else:
+                    # Create a guest user entry or use email as identifier
+                    user_id = f"guest_{hash(user_email) % 1000000}"  # Simple hash for guest users
+            elif 'guest_email' in session:
+                # Use previously saved guest email
+                user_email = session['guest_email']
+                user_id = f"guest_{hash(user_email) % 1000000}"
+            else:
+                return jsonify({'error': 'User identification required (login or email)'}), 401
+            
             trip_manager = get_trip_manager()
-            trip_id = trip_manager.save_trip(user['id'], trip_name, trip_data, is_favorite)
+            
+            # For guest users, save to a special guest trips table or use email as user identifier
+            if isinstance(user_id, str) and user_id.startswith('guest_'):
+                # Save guest trip with email association
+                trip_id = trip_manager.save_guest_trip(user_email, trip_name, trip_data, is_favorite)
+            else:
+                # Save regular authenticated user trip
+                trip_id = trip_manager.save_trip(user_id, trip_name, trip_data, is_favorite)
             
             return jsonify({
                 'success': True,
                 'trip_id': trip_id,
-                'message': 'Trip saved successfully!'
+                'message': f'Trip saved successfully! {"(Linked to your email)" if user_email and not user else ""}',
+                'user_email': user_email
             })
             
         except Exception as e:
             logger.error("Trip saving failed", error=str(e))
             return jsonify({'error': 'Failed to save trip'}), 500
+    
+    @app.route('/api/user-trips', methods=['GET'])
+    def get_user_trips():
+        """Get trips for current user or email session."""
+        try:
+            user = get_current_user()
+            trip_manager = get_trip_manager()
+            
+            if user:
+                # Authenticated user
+                trips = trip_manager.get_user_trips(user['id'])
+                return jsonify({
+                    'success': True,
+                    'trips': trips,
+                    'user_type': 'authenticated',
+                    'user_email': user.get('email')
+                })
+            elif 'guest_email' in session:
+                # Guest user with email session
+                guest_email = session['guest_email']
+                trips = trip_manager.get_guest_trips(guest_email)
+                return jsonify({
+                    'success': True,
+                    'trips': trips,
+                    'user_type': 'guest',
+                    'user_email': guest_email
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'trips': [],
+                    'user_type': 'anonymous',
+                    'message': 'No trips found. Please provide an email to save trips.'
+                })
+                
+        except Exception as e:
+            logger.error("Failed to get user trips", error=str(e))
+            return jsonify({'error': 'Failed to retrieve trips'}), 500
     
     # Weather API endpoints
     @app.route('/api/weather/route', methods=['POST'])
@@ -917,7 +987,7 @@ def create_app() -> Flask:
     
     @app.route('/api/travel-insights')
     @login_required
-    def get_travel_insights():
+    def get_travel_insights_legacy():
         """Get AI-powered travel insights for the user."""
         try:
             user = get_current_user()
@@ -1415,7 +1485,7 @@ def create_app() -> Flask:
     
     @app.route('/api/ai/travel-insights', methods=['GET'])
     @login_required
-    def get_travel_insights():
+    def get_ai_travel_insights():
         """Get AI-powered travel insights and achievements."""
         try:
             user = get_current_user()

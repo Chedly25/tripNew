@@ -560,6 +560,85 @@ class TripManager:
             
             return trip_id
     
+    def save_guest_trip(self, user_email: str, trip_name: str, trip_data: Dict, 
+                       is_favorite: bool = False) -> int:
+        """Save a trip for a guest user identified by email."""
+        with self.db.get_connection() as conn:
+            # First, ensure the guest_trips table exists
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS guest_trips (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_email TEXT NOT NULL,
+                    trip_name TEXT NOT NULL,
+                    trip_data TEXT NOT NULL,
+                    route_type TEXT,
+                    start_city TEXT,
+                    end_city TEXT,
+                    intermediate_cities TEXT,
+                    total_distance REAL,
+                    total_duration REAL,
+                    estimated_cost REAL,
+                    is_favorite BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            cursor = conn.execute('''
+                INSERT INTO guest_trips (
+                    user_email, trip_name, trip_data, route_type, start_city, end_city,
+                    intermediate_cities, total_distance, total_duration, estimated_cost,
+                    is_favorite
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                user_email, trip_name, json.dumps(trip_data),
+                trip_data.get('route_type', ''), 
+                trip_data.get('start_city', {}).get('name', ''),
+                trip_data.get('end_city', {}).get('name', ''),
+                json.dumps(trip_data.get('intermediate_cities', [])),
+                trip_data.get('total_distance_km', 0),
+                trip_data.get('total_duration_hours', 0),
+                trip_data.get('estimated_cost', {}).get('total_estimate', 0),
+                is_favorite
+            ))
+            
+            trip_id = cursor.lastrowid
+            conn.commit()
+            
+            return trip_id
+    
+    def get_guest_trips(self, user_email: str, limit: int = 50) -> List[Dict]:
+        """Get all trips for a guest user by email."""
+        with self.db.get_connection() as conn:
+            # Ensure table exists
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS guest_trips (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_email TEXT NOT NULL,
+                    trip_name TEXT NOT NULL,
+                    trip_data TEXT NOT NULL,
+                    route_type TEXT,
+                    start_city TEXT,
+                    end_city TEXT,
+                    intermediate_cities TEXT,
+                    total_distance REAL,
+                    total_duration REAL,
+                    estimated_cost REAL,
+                    is_favorite BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            trips = conn.execute('''
+                SELECT * FROM guest_trips 
+                WHERE user_email = ? 
+                ORDER BY updated_at DESC 
+                LIMIT ?
+            ''', (user_email, limit)).fetchall()
+            
+            return [dict(trip) for trip in trips]
+    
     def get_user_trips(self, user_id: int, limit: int = 50) -> List[Dict]:
         """Get all trips for a user."""
         with self.db.get_connection() as conn:
