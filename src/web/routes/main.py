@@ -493,7 +493,7 @@ def create_app() -> Flask:
         if not trip_data:
             return redirect('/')
         
-        return render_template('trip_details.html', 
+        return render_template('trip_details_modern.html', 
                              trip_data=trip_data, 
                              trip_id=trip_id,
                              trip_name=trip_name)
@@ -901,6 +901,12 @@ def create_app() -> Flask:
     def ai_travel_planner():
         """AI travel suggestion planner page."""
         return render_template('ai_travel_planner.html')
+    
+    # Trip detail page for route types
+    @app.route('/trip-detail/<route_type>')
+    def trip_detail_page(route_type):
+        """Individual trip style detail page."""
+        return render_template('trip_detail.html', route_type=route_type)
     
     # Travel insights page
     @app.route('/travel-insights')

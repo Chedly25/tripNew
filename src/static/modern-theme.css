@@ -1,0 +1,411 @@
+/* =====================================================
+   Modern Sophisticated Theme for EuroRoam
+   ===================================================== */
+
+:root {
+  /* Sophisticated Color Palette */
+  --primary: #1a1a2e;        /* Deep Navy */
+  --primary-dark: #0f0f1e;   /* Darker Navy */
+  --secondary: #16213e;      /* Midnight Blue */
+  --accent: #e94560;         /* Sophisticated Red */
+  --accent-light: #ff6b6b;   /* Light Red */
+  --highlight: #0f3460;      /* Ocean Blue */
+  --success: #00b894;        /* Mint Green */
+  --warning: #fdcb6e;        /* Warm Yellow */
+  
+  /* Neutral Colors */
+  --white: #ffffff;
+  --off-white: #fafafa;
+  --light-gray: #f5f5f5;
+  --gray: #e0e0e0;
+  --medium-gray: #9e9e9e;
+  --dark-gray: #616161;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  
+  /* Subtle Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  --gradient-subtle: linear-gradient(180deg, var(--white) 0%, var(--off-white) 100%);
+  
+  /* Modern Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+  
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-heading: 'Sora', 'DM Sans', sans-serif;
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-xxl: 24px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  background-color: var(--off-white);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--primary);
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+/* Modern Navigation */
+.navbar-modern {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray);
+  padding: 1rem 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: var(--transition-normal);
+}
+
+.navbar-modern.scrolled {
+  box-shadow: var(--shadow-md);
+}
+
+.navbar-brand {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* Modern Cards */
+.card-modern {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  border: 1px solid transparent;
+}
+
+.card-modern:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  border-color: var(--gray);
+}
+
+/* Modern Buttons */
+.btn-modern {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-primary-modern {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.btn-primary-modern:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-accent-modern {
+  background: var(--gradient-accent);
+  color: var(--white);
+}
+
+.btn-accent-modern:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(233, 69, 96, 0.3);
+}
+
+.btn-outline-modern {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-outline-modern:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* Seamless Trip Details Layout */
+.trip-details-modern {
+  min-height: 100vh;
+  background: var(--gradient-subtle);
+  padding-top: 80px; /* For fixed navbar */
+}
+
+.trip-details-header {
+  background: var(--white);
+  padding: var(--spacing-lg) 0;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.trip-details-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+/* Upper Left - General Details */
+.trip-info-section {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.trip-info-header {
+  border-bottom: 1px solid var(--gray);
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.trip-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.stat-card {
+  background: var(--light-gray);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: var(--transition-normal);
+}
+
+.stat-card:hover {
+  background: var(--gradient-subtle);
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Upper Right - Map */
+.trip-map-section {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+#trip-map {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+}
+
+/* Bottom - Detailed Itinerary */
+.trip-itinerary-section {
+  grid-column: 1 / -1;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  margin-top: var(--spacing-md);
+}
+
+.day-card {
+  border-left: 3px solid var(--accent);
+  padding-left: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.day-card::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 0;
+  width: 13px;
+  height: 13px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 3px solid var(--white);
+}
+
+/* Bottom Toolkit */
+.trip-toolkit {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--gray);
+  padding: var(--spacing-md);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.toolkit-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.toolkit-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* Smooth Page Transitions */
+.page-transition {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Trip Card Preview (for results page) */
+.trip-preview-modern {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.trip-preview-modern:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.trip-preview-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.trip-preview-content {
+  padding: var(--spacing-md);
+}
+
+.trip-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--spacing-sm);
+}
+
+.trip-preview-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.trip-preview-badge {
+  background: var(--gradient-accent);
+  color: var(--white);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Loading States */
+.skeleton {
+  background: linear-gradient(90deg, var(--light-gray) 25%, var(--gray) 50%, var(--light-gray) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .trip-details-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .trip-map-section {
+    height: 300px;
+  }
+  
+  .toolkit-container {
+    flex-direction: column;
+  }
+}

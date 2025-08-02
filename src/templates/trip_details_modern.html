@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ trip_name or 'Trip Details' }} - EuroRoam</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Modern Theme -->
+    <link rel="stylesheet" href="/static/modern-theme.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <style>
+        /* Page-specific styles */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .trip-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .trip-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            animation: fadeInUp 0.6s ease-out 0.1s;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Main content grid */
+        .content-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 100px 2rem; /* Bottom padding for toolkit */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            animation: fadeIn 0.4s ease-out 0.2s;
+            animation-fill-mode: both;
+        }
+        
+        /* Trip Overview Card */
+        .trip-overview {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+        }
+        
+        .overview-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .overview-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-accent);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.5rem;
+        }
+        
+        .overview-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .trip-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            background: var(--light-gray);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition-normal);
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+        
+        .stat-info {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Map Section */
+        .map-container {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            box-shadow: var(--shadow-md);
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #tripMap {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-lg);
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 500;
+        }
+        
+        .map-control-btn {
+            background: var(--white);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+        
+        .map-control-btn:hover {
+            box-shadow: var(--shadow-md);
+            transform: scale(1.05);
+        }
+        
+        /* Itinerary Section */
+        .itinerary-section {
+            grid-column: 1 / -1;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin-top: 1rem;
+        }
+        
+        .itinerary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .itinerary-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--light-gray);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+        }
+        
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .toggle-btn.active {
+            background: var(--white);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Day Cards */
+        .itinerary-days {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .day-card-modern {
+            border-left: 3px solid var(--accent);
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .day-card-modern::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 0;
+            width: 11px;
+            height: 11px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 3px solid var(--white);
+            box-shadow: 0 0 0 2px var(--light-gray);
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+        
+        .day-number {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .day-date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .day-content {
+            background: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+        }
+        
+        .location-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .location-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        
+        .location-details h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .location-details p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        /* Bottom Toolkit */
+        .trip-toolkit {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border-top: 1px solid var(--gray);
+            padding: 1rem 0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+            z-index: 100;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .trip-toolkit.hidden {
+            transform: translateY(100%);
+        }
+        
+        .toolkit-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toolkit-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .toolkit-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toolkit-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .toolkit-stat-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .toolkit-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Loading skeleton */
+        .skeleton-loader {
+            animation: skeleton-loading 1.5s infinite;
+        }
+        
+        @keyframes skeleton-loading {
+            0% {
+                background-color: var(--light-gray);
+            }
+            50% {
+                background-color: var(--gray);
+            }
+            100% {
+                background-color: var(--light-gray);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .trip-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-container {
+                height: 300px;
+            }
+            
+            .toolkit-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .toolkit-info {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .toolkit-actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar-modern">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-route" style="margin-right: 0.5rem;"></i>
+                EuroRoam
+            </a>
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a>
+                <a href="/auth/profile" style="color: var(--text-secondary); text-decoration: none;">My Trips</a>
+                <button class="btn-modern btn-primary-modern">
+                    <i class="fas fa-user"></i>
+                    Account
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="trip-title">{{ trip_name or 'Your European Adventure' }}</h1>
+            <p class="trip-subtitle">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ trip_data.start_city.name if trip_data else 'Starting City' }} → 
+                {{ trip_data.end_city.name if trip_data else 'Ending City' }}
+            </p>
+        </div>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+        <!-- Trip Overview (Upper Left) -->
+        <div class="trip-overview">
+            <div class="overview-header">
+                <div class="overview-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h2 class="overview-title">Trip Overview</h2>
+            </div>
+            
+            <div class="trip-stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Total Distance</div>
+                        <div class="stat-value">{{ "%.0f"|format(trip_data.total_distance_km) if trip_data else '0' }} km</div>
+                    </div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Duration</div>
+                        <div class="stat-value">{{ trip_data.trip_details.duration_days if trip_data else '0' }} days</div>
+                    </div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Estimated Cost</div>
+                        <div class="stat-value">€{{ "%.0f"|format(trip_data.estimated_cost.total_estimate) if trip_data else '0' }}</div>
+                    </div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Travel Style</div>
+                        <div class="stat-value">{{ trip_data.route_type|title if trip_data else 'Scenic' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if trip_data and trip_data.intermediate_cities %}
+            <div style="margin-top: 1.5rem;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">Route Highlights</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    {% for city in trip_data.intermediate_cities %}
+                    <span style="background: var(--gradient-accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem;">
+                        {{ city.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Map (Upper Right) -->
+        <div class="map-container">
+            <div id="tripMap"></div>
+            <div class="map-controls">
+                <button class="map-control-btn" onclick="zoomIn()" title="Zoom In">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="map-control-btn" onclick="zoomOut()" title="Zoom Out">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="map-control-btn" onclick="fitBounds()" title="Fit Route">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Detailed Itinerary (Bottom) -->
+        <div class="itinerary-section">
+            <div class="itinerary-header">
+                <h2 class="itinerary-title">Detailed Itinerary</h2>
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="showView('timeline')">Timeline</button>
+                    <button class="toggle-btn" onclick="showView('list')">List View</button>
+                    <button class="toggle-btn" onclick="showView('map')">Map View</button>
+                </div>
+            </div>
+            
+            <div class="itinerary-days" id="timeline-view">
+                {% if trip_data and trip_data.daily_itinerary %}
+                    {% for day in trip_data.daily_itinerary %}
+                    <div class="day-card-modern">
+                        <div class="day-header">
+                            <h3 class="day-number">Day {{ day.day }}</h3>
+                            <span class="day-date">{{ day.date if day.date else '' }}</span>
+                        </div>
+                        <div class="day-content">
+                            {% for activity in day.activities %}
+                            <div class="location-item">
+                                <div class="location-icon">
+                                    <i class="fas {{ activity.icon if activity.icon else 'fa-map-marker-alt' }}"></i>
+                                </div>
+                                <div class="location-details">
+                                    <h4>{{ activity.name }}</h4>
+                                    <p>{{ activity.description }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="day-card-modern">
+                        <div class="day-content">
+                            <p style="text-align: center; color: var(--text-secondary);">
+                                Detailed itinerary will be generated based on your preferences.
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Toolkit -->
+    <div class="trip-toolkit" id="tripToolkit">
+        <div class="toolkit-content">
+            <div class="toolkit-info">
+                <div class="toolkit-stat">
+                    <span class="toolkit-stat-label">Total:</span>
+                    <span class="toolkit-stat-value">€{{ "%.0f"|format(trip_data.estimated_cost.total_estimate) if trip_data else '0' }}</span>
+                </div>
+                <div class="toolkit-stat">
+                    <span class="toolkit-stat-label">Per Person:</span>
+                    <span class="toolkit-stat-value">€{{ "%.0f"|format(trip_data.estimated_cost.per_person) if trip_data else '0' }}</span>
+                </div>
+                <div class="toolkit-stat">
+                    <span class="toolkit-stat-label">Duration:</span>
+                    <span class="toolkit-stat-value">{{ trip_data.trip_details.duration_days if trip_data else '0' }} days</span>
+                </div>
+            </div>
+            
+            <div class="toolkit-actions">
+                <button class="btn-modern btn-outline-modern" onclick="shareTri()">
+                    <i class="fas fa-share-alt"></i>
+                    Share
+                </button>
+                <button class="btn-modern btn-outline-modern" onclick="downloadItinerary()">
+                    <i class="fas fa-download"></i>
+                    Download
+                </button>
+                <button class="btn-modern btn-accent-modern" onclick="bookTrip()">
+                    <i class="fas fa-check"></i>
+                    Book This Trip
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize map
+        let map;
+        let routeLayer;
+        
+        function initializeMap() {
+            map = L.map('tripMap').setView([48.8566, 2.3522], 6);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Add route if available
+            {% if trip_data and trip_data.coordinates %}
+                const coordinates = {{ trip_data.coordinates | tojson }};
+                drawRoute(coordinates);
+            {% endif %}
+        }
+        
+        function drawRoute(coordinates) {
+            // Clear existing route
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+            
+            // Draw new route
+            routeLayer = L.polyline(coordinates, {
+                color: '#e94560',
+                weight: 4,
+                opacity: 0.8,
+                smoothFactor: 1
+            }).addTo(map);
+            
+            // Add markers
+            coordinates.forEach((coord, index) => {
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: ${index === 0 ? '#00b894' : index === coordinates.length - 1 ? '#e94560' : '#0f3460'}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+                
+                L.marker(coord, { icon }).addTo(map);
+            });
+            
+            // Fit map to route
+            map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+        }
+        
+        // Map controls
+        function zoomIn() {
+            map.zoomIn();
+        }
+        
+        function zoomOut() {
+            map.zoomOut();
+        }
+        
+        function fitBounds() {
+            if (routeLayer) {
+                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+            }
+        }
+        
+        // View toggle
+        function showView(view) {
+            // Update button states
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show appropriate view
+            // Implementation depends on your needs
+            console.log('Switching to view:', view);
+        }
+        
+        // Toolkit actions
+        function shareTrip() {
+            // Implement share functionality
+            console.log('Share trip');
+        }
+        
+        function downloadItinerary() {
+            // Implement download functionality
+            console.log('Download itinerary');
+        }
+        
+        function bookTrip() {
+            // Implement booking functionality
+            console.log('Book trip');
+        }
+        
+        // Smooth scroll behavior
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const toolkit = document.getElementById('tripToolkit');
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                toolkit.classList.add('hidden');
+            } else {
+                // Scrolling up
+                toolkit.classList.remove('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+        });
+    </script>
+</body>
+</html>
